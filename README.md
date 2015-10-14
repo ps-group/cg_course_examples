@@ -2,6 +2,7 @@
 Features
 - Is able to open, save and edit tables with 2 columns.
 - Documents are saved on disk in JSON format
+
 How to build
 - Requires at least Qt 5.0 to build
 - Project "QtTableEditor.pro" can be opened in Qt Creator IDE
