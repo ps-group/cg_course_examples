@@ -9,4 +9,4 @@
 - Урок 1 "OpenGL и SDL2", [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_1.md), [исходный код](lesson_1)
 - Урок 2 "Изучаем возможности OpenGL", [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_2.md), [исходный код](lesson_2)
 - Урок 3 "Рисуем на OpenGL": [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_3.md), [исходный код](lesson_3)
-- Урок 4 "Тригонометрия и цветы": [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_4.md), исходный код](lesson_4)
+- Урок 4 "Тригонометрия и цветы": [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_4.md), [исходный код](lesson_4)
