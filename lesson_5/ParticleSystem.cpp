@@ -16,7 +16,7 @@ void CFlowerParticle::Advance(float dt, const glm::vec2 &acceleration)
 
 bool CFlowerParticle::IsAlive() const
 {
-    constexpr float epsilon = std::numeric_limits<float>::epsilon();
+    const float epsilon = std::numeric_limits<float>::epsilon();
     return m_lifetime > epsilon;
 }
 
@@ -44,7 +44,6 @@ CParticleEmitter::CParticleEmitter()
 void CParticleEmitter::Advance(float dt)
 {
     m_elapsedSeconds += dt;
-    std::cerr << "m_elapsedSeconds increased, is " << m_elapsedSeconds << std::endl;
 }
 
 bool CParticleEmitter::IsEmitReady() const
@@ -62,8 +61,6 @@ std::unique_ptr<CFlowerParticle> CParticleEmitter::Emit()
     // Определяем время появления следующей частицы.
     m_elapsedSeconds -= m_nextEmitTime;
     m_nextEmitTime = m_emitIntervalRange(m_random);
-    std::cerr << "m_elapsedSeconds decreased, is " << m_elapsedSeconds << std::endl;
-    std::cerr << "m_nextEmitTime was changed, is " << m_nextEmitTime << std::endl;
 
     const float speed = m_speedRange(m_random);
     const float angle = m_angleRange(m_random);
