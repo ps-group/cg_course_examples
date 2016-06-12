@@ -10,3 +10,4 @@
 - Урок 2 "Изучаем возможности OpenGL", [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_2.md), [исходный код](lesson_2)
 - Урок 3 "Рисуем на OpenGL": [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_3.md), [исходный код](lesson_3)
 - Урок 4 "Тригонометрия и цветы": [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_4.md), [исходный код](lesson_4)
+- Урок 5 "Взрыв на цветочной фабрике": [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_5.md), [исходный код](lesson_5)

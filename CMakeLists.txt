@@ -22,3 +22,7 @@ target_link_libraries(lesson_3 ${PROJECT_LIBS})
 aux_source_directory(lesson_4 SRC_LESSON_4)
 add_executable(lesson_4 ${SRC_LESSON_4})
 target_link_libraries(lesson_4 ${PROJECT_LIBS})
+
+aux_source_directory(lesson_5 SRC_LESSON_5)
+add_executable(lesson_5 ${SRC_LESSON_5})
+target_link_libraries(lesson_5 ${PROJECT_LIBS})
