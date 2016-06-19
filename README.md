@@ -4,7 +4,7 @@
 
 - [инструкция по установке SDL2 (learnathing.weebly.com)](http://learnathing.weebly.com/part-1-prerequisites.html)
 
-## Часть 1: старый добрый OpenGL 1.x
+## Часть I: старый добрый OpenGL 1.x
 
 - Урок 1 "OpenGL и SDL2", [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_1.md), [исходный код](lesson_1)
 - Урок 2 "Изучаем возможности OpenGL", [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_2.md), [исходный код](lesson_2)
