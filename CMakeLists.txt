@@ -26,3 +26,11 @@ target_link_libraries(lesson_4 ${PROJECT_LIBS})
 aux_source_directory(lesson_5 SRC_LESSON_5)
 add_executable(lesson_5 ${SRC_LESSON_5})
 target_link_libraries(lesson_5 ${PROJECT_LIBS})
+
+aux_source_directory(lesson_7 SRC_LESSON_7)
+add_executable(lesson_7 ${SRC_LESSON_7})
+target_link_libraries(lesson_7 ${PROJECT_LIBS})
+
+aux_source_directory(lesson_8 SRC_LESSON_8)
+add_executable(lesson_8 ${SRC_LESSON_8})
+target_link_libraries(lesson_8 ${PROJECT_LIBS})

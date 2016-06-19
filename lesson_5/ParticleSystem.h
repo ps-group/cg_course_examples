@@ -13,7 +13,7 @@ class CClampedNormalDistribution
     float m_max = 0.f;
 public:
     // m_distribution требует два параметра:
-    // `mean`, т.е. медианное значение и одновремено мат. ожидание
+    // `mean`, т.е. медианное значение и одновременно мат. ожидание
     // `stddev`, т.е. стандартное отклонение (дисперсию)
     // мы выводим эти параметры из min/max.
     void param(float min, float max)
