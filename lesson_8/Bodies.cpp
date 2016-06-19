@@ -44,6 +44,7 @@ const uint16_t CUBE_INDICIES[] = {
     6, 4, 7,
 };
 
+/// @param phase - Фаза анимации на отрезке [0..1]
 glm::mat4 GetRotateZTransfrom(float phase)
 {
     // угол вращения вокруг оси Z лежит в отрезке [0...2*pi].
@@ -52,14 +53,17 @@ glm::mat4 GetRotateZTransfrom(float phase)
     return glm::rotate(glm::mat4(), angle, {0, 0, 1});
 }
 
+/// @param phase - Фаза анимации на отрезке [0..1]
 glm::mat4 GetScalingPulseTransform(float phase)
 {
     // число пульсаций размера - произвольная константа.
     const int pulseCount = 4;
     float scale = fabsf(cosf(float(pulseCount * M_PI) * phase));
+
     return glm::scale(glm::mat4(), {scale, scale, scale});
 }
 
+/// @param phase - Фаза анимации на отрезке [0..1]
 glm::mat4 GetBounceTransform(float phase)
 {
     // начальная скорость и число отскоков - произвольные константы.
