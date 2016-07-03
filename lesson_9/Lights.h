@@ -3,26 +3,21 @@
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
-#include <SDL2/SDL_events.h>
 #include <boost/noncopyable.hpp>
 #include <set>
-
-class CLightingSystem
-{
-public:
-    CLightingSystem() = delete;
-
-    static void Enable();
-    static void Disable();
-    static void SetGlobalAmbient(const glm::vec3 &color);
-    static void SetTwoSideLightingEnabled(bool enabled);
-};
 
 class ILightSource
 {
 public:
     virtual ~ILightSource() = default;
     virtual void Setup()const = 0;
+
+    virtual glm::vec4 GetAmbient() const = 0;
+    virtual glm::vec4 GetDiffuse() const = 0;
+    virtual glm::vec4 GetSpecular() const = 0;
+    virtual void SetAmbient(const glm::vec4 &color) = 0;
+    virtual void SetDiffuse(const glm::vec4 &color) = 0;
+    virtual void SetSpecular(const glm::vec4 &color) = 0;
 };
 
 class CAbstractLightSource : public ILightSource
@@ -32,12 +27,12 @@ public:
     CAbstractLightSource(unsigned index);
     ~CAbstractLightSource();
 
-    glm::vec4 GetAmbient() const;
-    glm::vec4 GetDiffuse() const;
-    glm::vec4 GetSpecular() const;
-    void SetAmbient(const glm::vec4 &color);
-    void SetDiffuse(const glm::vec4 &color);
-    void SetSpecular(const glm::vec4 &color);
+    glm::vec4 GetAmbient() const final;
+    glm::vec4 GetDiffuse() const final;
+    glm::vec4 GetSpecular() const final;
+    void SetAmbient(const glm::vec4 &color) final;
+    void SetDiffuse(const glm::vec4 &color) final;
+    void SetSpecular(const glm::vec4 &color) final;
 
 protected:
     void RenderImpl()const;

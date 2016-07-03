@@ -7,32 +7,9 @@ namespace
 {
 }
 
-void CLightingSystem::Enable()
-{
-    glEnable(GL_LIGHTING);
-}
-
-void CLightingSystem::Disable()
-{
-    glDisable(GL_LIGHTING);
-}
-
-void CLightingSystem::SetGlobalAmbient(const glm::vec3 &color)
-{
-    float values[] = { color.x, color.y, color.z, 1.0f };
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, values);
-}
-
-void CLightingSystem::SetTwoSideLightingEnabled(bool enabled)
-{
-    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, enabled ? GL_TRUE : GL_FALSE);
-}
-
 CAbstractLightSource::CAbstractLightSource(unsigned index)
     : m_index(index)
 {
-    static_assert(sizeof(unsigned) == sizeof(GLenum),
-                  "GLenum was trunckated before constructor called");
 }
 
 CAbstractLightSource::~CAbstractLightSource()

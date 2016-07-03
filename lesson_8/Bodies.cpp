@@ -29,7 +29,7 @@ const Vertex CUBE_VERTICIES[] = {
 
 // Привыкаем использовать 16-битный unsigned short,
 // чтобы экономить память на фигурах с тысячами вершин.
-const uint16_t CUBE_INDICIES[] = {
+const uint16_t CUBE_FACES[] = {
     0, 1, 2,
     0, 2, 3,
     2, 1, 5,
@@ -100,7 +100,7 @@ void CIdentityCube::Draw() const
     // менее оптимальный способ рисования: прямая отправка данных
     // могла бы работать быстрее, чем множество вызовов glColor/glVertex.
     glBegin(GL_TRIANGLES);
-    for (uint16_t i : CUBE_INDICIES)
+    for (uint16_t i : CUBE_FACES)
     {
         const Vertex &v = CUBE_VERTICIES[i];
         glColor3f(v.color.x, v.color.y, v.color.z);
