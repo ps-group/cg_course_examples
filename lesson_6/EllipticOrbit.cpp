@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "EllipticOrbit.h"
+#include <tuple>
+#include <limits>
+#include <boost/math/tools/roots.hpp>
 
 namespace
 {
@@ -47,7 +50,7 @@ double SolveKeplerEquation(double const& meanAnomaly, double const& eccentricity
         meanAnomaly,                // первое приближение корня
         meanAnomaly - eccentricity, // минимальное значение корня
         meanAnomaly + eccentricity, // максимальное значение корня
-        digits,                        // число разрядов
+        digits,                     // число разрядов
         maxIteractions);            // наибольшее число итераций
 }
 }
@@ -60,11 +63,6 @@ double CEllipticOrbit::Eccentricity() const
 double CEllipticOrbit::LargeAxis() const
 {
     return m_largeAxis;
-}
-
-double CEllipticOrbit::MeanMotion() const
-{
-    return m_meanMotion;
 }
 
 double CEllipticOrbit::MeanAnomaly(const double &time) const
@@ -92,38 +90,6 @@ double CEllipticOrbit::TrueAnomaly(const double &eccentricityAnomaly) const
 double CEllipticOrbit::RadiusVectorLength(const double &eccentricityAnomaly) const
 {
     return m_largeAxis * (1 - m_eccentricity * cos(eccentricityAnomaly));
-}
-
-glm::mat4 CEllipticOrbit::OrbitRotationMatrix() const
-{
-    const float cl = cosf(float(m_longitude));
-    const float sl = sinf(float(m_longitude));
-
-    const float cw = cosf(float(m_periapsisArgument));
-    const float sw = sinf(float(m_periapsisArgument));
-
-    const float ci = cosf(float(m_inclination));
-    const float si = sinf(float(m_inclination));
-
-    return {
-        // Столбец 1
-        cl * cw - sl * sw * ci,
-        sl * cw + cl * sw * ci,
-        sw * si,
-        0.f,
-        // Столбец 2
-        -cl * sw - sl * cw * ci,
-        -sl * cw + cl * cw * ci,
-        cw * si,
-        0.f,
-        // Столбец 3
-        sl * si,
-        cl * si,
-        ci,
-        0.f,
-        // Столбец 4
-        0.f, 0.f, 0.f, 1.f
-    };
 }
 
 glm::vec2 CEllipticOrbit::PlanetPosition2D(const double &time) const

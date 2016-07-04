@@ -26,7 +26,6 @@ private:
 
     float m_time;
     float m_timeSpeed;
-    unsigned m_currentYear;
     float m_viewScale;
 
     struct PlanetInfo

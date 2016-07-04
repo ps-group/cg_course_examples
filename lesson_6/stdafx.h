@@ -14,6 +14,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <SDL2/SDL_events.h>
 
+#include <cmath>
 #include <chrono>
 #include <type_traits>
 #include <iostream>

@@ -4,10 +4,10 @@
 namespace
 {
 const unsigned INITIAL_YEAR = 2012;
-const float DEFAULT_TIME_SPEED = 0.1;
+const float DEFAULT_TIME_SPEED = 0.1f;
 const float MIN_TIME_SPEED = -20;
 const float MAX_TIME_SPEED = +20;
-const float TIME_ADJUSTMENT = 0.02;
+const float TIME_ADJUSTMENT = 0.02f;
 
 // 40 пикселей на астрономическую единицу
 const float DEFAULT_SCALE = 100.f;

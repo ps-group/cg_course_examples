@@ -15,9 +15,11 @@ CWindow::CWindow()
 
 void CWindow::OnUpdateWindow(float deltaSeconds)
 {
+    m_system.Update(deltaSeconds);
+
+    // обновляем заголовок окна
     char timeString[20];
     sprintf(timeString, "%.2f", double(m_system.GetTimeSpeed()));
-    m_system.Update(deltaSeconds);
     SetTitle("Year " + std::to_string(m_system.GetYear())
              + " (" + std::string(timeString) + " years/second)");
 }
