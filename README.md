@@ -16,3 +16,4 @@
 
 - Урок 7 "Рисуем кубики": [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_7.md), [исходный код](lesson_7)
 - Урок 8 "Практикуемся с матрицами": [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_8.md), [исходный код](lesson_8)
+- Урок 9 "Да будет свет!": [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_9.md), [исходный код](lesson_9)
