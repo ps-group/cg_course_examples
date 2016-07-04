@@ -5,7 +5,7 @@
 
 namespace
 {
-const glm::vec4 QUIET_GREEN = {0, 0, 0, 1};
+const glm::vec4 BLACK = {0, 0, 0, 1};
 const float CAMERA_INITIAL_ROTATION = 0;
 const float CAMERA_INITIAL_DISTANCE = 5.f;
 
@@ -22,7 +22,7 @@ void SetupOpenGLState()
 CWindow::CWindow()
     : m_camera(CAMERA_INITIAL_ROTATION, CAMERA_INITIAL_DISTANCE)
 {
-    SetBackgroundColor(QUIET_GREEN);
+    SetBackgroundColor(BLACK);
 }
 
 void CWindow::OnWindowInit(const glm::ivec2 &size)

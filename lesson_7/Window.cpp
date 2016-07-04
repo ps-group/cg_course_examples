@@ -5,7 +5,7 @@
 
 namespace
 {
-const glm::vec4 QUIET_GREEN = {0, 0, 0, 1};
+const glm::vec4 BLACK = {0, 0, 0, 1};
 
 void SetupOpenGLState()
 {
@@ -19,7 +19,7 @@ void SetupOpenGLState()
 
 CWindow::CWindow()
 {
-    SetBackgroundColor(QUIET_GREEN);
+    SetBackgroundColor(BLACK);
 }
 
 void CWindow::OnWindowInit(const glm::ivec2 &size)

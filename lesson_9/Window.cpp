@@ -5,7 +5,7 @@
 
 namespace
 {
-const glm::vec4 QUIET_GREEN = {0, 0, 0, 1};
+const glm::vec4 BLACK = {0, 0, 0, 1};
 const glm::vec3 YELLOW = {1.f, 1.f, 0.f};
 const glm::vec3 ORANGE = {1.f, 0.5f, 0.f};
 const glm::vec3 PINK = {1.f, 0.3f, 0.3f};
@@ -35,7 +35,7 @@ CWindow::CWindow()
     : m_camera(CAMERA_INITIAL_ROTATION, CAMERA_INITIAL_DISTANCE)
     , m_sunlight(GL_LIGHT0)
 {
-    SetBackgroundColor(QUIET_GREEN);
+    SetBackgroundColor(BLACK);
 
     m_staticCube.SetFaceColor(CubeFace::Top, YELLOW);
     m_staticCube.SetFaceColor(CubeFace::Bottom, YELLOW);
@@ -47,6 +47,9 @@ CWindow::CWindow()
     m_sunlight.SetDirection(SUNLIGHT_DIRECTION);
     m_sunlight.SetDiffuse(WHITE_LIGHT);
     m_sunlight.SetAmbient(0.1f * WHITE_LIGHT);
+    // Из-за интерполяции освещения по Гуро
+    // смысл Specular компоненты для куба теряется.
+    // m_sunlight.SetSpecular(WHITE_LIGHT);
 }
 
 void CWindow::OnWindowInit(const glm::ivec2 &size)

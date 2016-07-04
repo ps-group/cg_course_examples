@@ -1,15 +1,9 @@
 #include "stdafx.h"
 #include "Bodies.h"
 #include <stdint.h>
-#include <type_traits>
 
 namespace
 {
-
-template <typename T, size_t N>
-char ( &_ArraySizeHelper( T (&array)[N] ))[N];
-
-#define sizeof_array(array) (sizeof(_ArraySizeHelper(array)))
 
 typedef glm::vec3 Vertex;
 
@@ -28,27 +22,27 @@ const Vertex CUBE_VERTICIES[] = {
 
 struct STriangleFace
 {
-    size_t vertexIndex1;
-    size_t vertexIndex2;
-    size_t vertexIndex3;
-    size_t colorIndex;
+    uint16_t vertexIndex1;
+    uint16_t vertexIndex2;
+    uint16_t vertexIndex3;
+    uint16_t colorIndex;
 };
 
 // Привыкаем использовать 16-битный unsigned short,
 // чтобы экономить память на фигурах с тысячами вершин.
 const STriangleFace CUBE_FACES[] = {
-    {0, 1, 2, static_cast<size_t>(CubeFace::Back)},
-    {0, 2, 3, static_cast<size_t>(CubeFace::Back)},
-    {2, 1, 5, static_cast<size_t>(CubeFace::Right)},
-    {2, 5, 6, static_cast<size_t>(CubeFace::Right)},
-    {3, 2, 6, static_cast<size_t>(CubeFace::Bottom)},
-    {3, 6, 7, static_cast<size_t>(CubeFace::Bottom)},
-    {0, 3, 7, static_cast<size_t>(CubeFace::Left)},
-    {0, 7, 4, static_cast<size_t>(CubeFace::Left)},
-    {1, 0, 4, static_cast<size_t>(CubeFace::Top)},
-    {1, 4, 5, static_cast<size_t>(CubeFace::Top)},
-    {6, 5, 4, static_cast<size_t>(CubeFace::Front)},
-    {6, 4, 7, static_cast<size_t>(CubeFace::Front)},
+    {0, 1, 2, static_cast<uint16_t>(CubeFace::Back)},
+    {0, 2, 3, static_cast<uint16_t>(CubeFace::Back)},
+    {2, 1, 5, static_cast<uint16_t>(CubeFace::Right)},
+    {2, 5, 6, static_cast<uint16_t>(CubeFace::Right)},
+    {3, 2, 6, static_cast<uint16_t>(CubeFace::Bottom)},
+    {3, 6, 7, static_cast<uint16_t>(CubeFace::Bottom)},
+    {0, 3, 7, static_cast<uint16_t>(CubeFace::Left)},
+    {0, 7, 4, static_cast<uint16_t>(CubeFace::Left)},
+    {1, 0, 4, static_cast<uint16_t>(CubeFace::Top)},
+    {1, 4, 5, static_cast<uint16_t>(CubeFace::Top)},
+    {6, 5, 4, static_cast<uint16_t>(CubeFace::Front)},
+    {6, 4, 7, static_cast<uint16_t>(CubeFace::Front)},
 };
 
 /// @param phase - Фаза анимации на отрезке [0..1]

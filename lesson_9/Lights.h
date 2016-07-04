@@ -20,7 +20,9 @@ public:
     virtual void SetSpecular(const glm::vec4 &color) = 0;
 };
 
-class CAbstractLightSource : public ILightSource
+class CAbstractLightSource
+        : public ILightSource
+        , private boost::noncopyable
 {
 public:
     /// @param index - один из GL_LIGHT*
@@ -35,7 +37,7 @@ public:
     void SetSpecular(const glm::vec4 &color) final;
 
 protected:
-    void RenderImpl()const;
+    void SetupImpl()const;
     unsigned GetIndex()const;
 
 private:

@@ -46,7 +46,7 @@ void CAbstractLightSource::SetSpecular(const glm::vec4 &color)
     m_specular = color;
 }
 
-void CAbstractLightSource::RenderImpl() const
+void CAbstractLightSource::SetupImpl() const
 {
     // Включаем источник света с заданным индексом.
     // Источник действует только когда включен режим GL_LIGHTING!
@@ -81,9 +81,9 @@ void CDirectedLightSource::SetDirection(const glm::vec3 &value)
 
 void CDirectedLightSource::Setup() const
 {
+    SetupImpl();
     // Если GL_POSITION установить как (x, y, z, 0), т.е. как вектор
     // в однородных координатах, источник света будет направленным.
-    RenderImpl();
     glLightfv(GetIndex(), GL_POSITION, glm::value_ptr(m_direction));
 }
 
@@ -107,8 +107,8 @@ void CPositionLightSource::SetPosition(const glm::vec3 &value)
 
 void CPositionLightSource::Setup() const
 {
+    SetupImpl();
     // Если GL_POSITION установить как (x, y, z, 1), т.е. как точку
     // в однородных координатах, источник света будет точечным.
-    RenderImpl();
     glLightfv(GetIndex(), GL_POSITION, glm::value_ptr(m_position));
 }
