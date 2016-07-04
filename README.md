@@ -12,6 +12,7 @@
 - Урок 3 "Рисуем на OpenGL": [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_3.md), [исходный код](lesson_3)
 - Урок 4 "Тригонометрия и цветы": [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_4.md), [исходный код](lesson_4)
 - Урок 5 "Взрыв на цветочной фабрике": [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_5.md), [исходный код](lesson_5)
+- Урок 6 "Законы Кеплера": [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_6.md), [исходный код](lesson_6)
 
 ## Часть II: рисуем тела
 
