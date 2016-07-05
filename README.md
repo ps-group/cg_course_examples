@@ -2,8 +2,8 @@
 
 Примеры основаны на C++14 и SDL2 и дsоступны под OpenSource лицензией MIT (см. LICENSE.md).
 
-- [инструкция по установке SDL2 (learnathing.weebly.com)](http://learnathing.weebly.com/part-1-prerequisites.html)
-- [инструкция по настройке проекта с GLEW в Visual Studio](http://sites.fas.harvard.edu/~lib175/pages/visstudio.html)
+- [полезные ссылки](https://github.com/PS-Group/ips-wiki/blob/master/opengl/links.md)
+- [соглашения о кодировании](https://github.com/PS-Group/ips-wiki/blob/master/opengl/coding_conventions.md)
 
 ## Часть I: старый добрый OpenGL 1.x
 
