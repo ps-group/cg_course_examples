@@ -6,6 +6,14 @@ namespace
 {
 typedef glm::vec3 Vertex;
 
+struct STriangleFace
+{
+    uint16_t vertexIndex1;
+    uint16_t vertexIndex2;
+    uint16_t vertexIndex3;
+    uint16_t colorIndex;
+};
+
 // Вершины куба служат материалом для формирования треугольников,
 // составляющих грани куба.
 const Vertex CUBE_VERTICIES[] = {
@@ -19,12 +27,13 @@ const Vertex CUBE_VERTICIES[] = {
     {-1, -1, +1},
 };
 
-struct STriangleFace
-{
-    uint16_t vertexIndex1;
-    uint16_t vertexIndex2;
-    uint16_t vertexIndex3;
-    uint16_t colorIndex;
+// Сторона тетраэдра равна √3,
+// расстояние от центра грани до вершины равно 1.
+const Vertex TETRAHEDRON_VERTICES[] = {
+    {0.f, 0.f, -1.0f},
+    {sqrtf(1.5f), 0.f, 0.5f},
+    {-sqrtf(1.5f), 0.f, 0.5f},
+    {0.f, sqrtf(2.f), 0.f},
 };
 
 // Привыкаем использовать 16-битный unsigned short,
@@ -42,6 +51,13 @@ const STriangleFace CUBE_FACES[] = {
     {1, 4, 5, static_cast<uint16_t>(CubeFace::Top)},
     {6, 5, 4, static_cast<uint16_t>(CubeFace::Front)},
     {6, 4, 7, static_cast<uint16_t>(CubeFace::Front)},
+};
+
+const STriangleFace TETRAHEDRON_FACES[] = {
+    {0, 1, 2, 0},
+    {0, 3, 1, 0},
+    {2, 1, 3, 0},
+    {0, 2, 3, 0},
 };
 }
 
@@ -64,14 +80,14 @@ void CIdentityCube::Update(float deltaTime)
 
 void CIdentityCube::Draw() const
 {
-    glBlendFunc(GL_ONE, GL_ZERO);
     if (m_alpha < 0.99f)
     {
+        glBlendFunc(GL_ONE, GL_ZERO);
         glFrontFace(GL_CW);
         OutputVertexes();
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glFrontFace(GL_CCW);
     }
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glFrontFace(GL_CCW);
     OutputVertexes();
 }
 
@@ -102,6 +118,51 @@ void CIdentityCube::OutputVertexes() const
         glm::vec3 color = m_colors[face.colorIndex];
 
         glColor4f(color.x, color.y, color.z, m_alpha);
+        glNormal3fv(glm::value_ptr(normal));
+        glVertex3fv(glm::value_ptr(v1));
+        glVertex3fv(glm::value_ptr(v2));
+        glVertex3fv(glm::value_ptr(v3));
+    }
+    glEnd();
+}
+
+void CIdentityTetrahedron::Update(float deltaTime)
+{
+    (void)deltaTime;
+}
+
+void CIdentityTetrahedron::Draw() const
+{
+    if (m_color.a < 0.99f)
+    {
+        glBlendFunc(GL_ONE, GL_ZERO);
+        glFrontFace(GL_CW);
+        OutputVertexes();
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glFrontFace(GL_CCW);
+    }
+    OutputVertexes();
+}
+
+void CIdentityTetrahedron::SetColor(const glm::vec4 &color)
+{
+    m_color = color;
+}
+
+void CIdentityTetrahedron::OutputVertexes() const
+{
+    // менее оптимальный способ рисования: прямая отправка данных
+    // могла бы работать быстрее, чем множество вызовов glColor/glVertex.
+    glBegin(GL_TRIANGLES);
+
+    for (const STriangleFace &face : TETRAHEDRON_FACES)
+    {
+        const Vertex &v1 = TETRAHEDRON_VERTICES[face.vertexIndex1];
+        const Vertex &v2 = TETRAHEDRON_VERTICES[face.vertexIndex2];
+        const Vertex &v3 = TETRAHEDRON_VERTICES[face.vertexIndex3];
+        glm::vec3 normal = glm::normalize(glm::cross(v2 - v1, v3 - v1));
+
+        glColor4fv(glm::value_ptr(m_color));
         glNormal3fv(glm::value_ptr(normal));
         glVertex3fv(glm::value_ptr(v1));
         glVertex3fv(glm::value_ptr(v2));

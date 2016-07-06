@@ -121,7 +121,7 @@ void CWindow::InitBodies()
         pCube->SetFaceColor(CubeFace::Back, PINK);
 
         auto pTransform = std::make_unique<CTransformDecorator>();
-        pTransform->SetTransform(glm::translate(glm::mat4(), {0.f, -1.5f, 0.f}));
+        pTransform->SetTransform(glm::translate(glm::mat4(), {-1.5f, 0.f, 0.f}));
         pTransform->SetChild(std::move(pCube));
         m_bodies.emplace_back(std::move(pTransform));
     }
@@ -142,9 +142,14 @@ void CWindow::InitBodies()
         pAnimator->SetChild(std::move(pCube));
 
         auto pTransform = std::make_unique<CTransformDecorator>();
-        pTransform->SetTransform(glm::translate(glm::mat4(), {0.f, 1.5f, 0.f}));
+        pTransform->SetTransform(glm::translate(glm::mat4(), {1.5f, 0.f, 0.f}));
         pTransform->SetChild(std::move(pAnimator));
 
         m_bodies.emplace_back(std::move(pTransform));
+    }
+    {
+        auto pTetrahedron = std::make_unique<CIdentityTetrahedron>();
+        pTetrahedron->SetColor({1, 0, 0, 1});
+        m_bodies.emplace_back(std::move(pTetrahedron));
     }
 }
