@@ -1,9 +1,11 @@
 project(opengl_samples)
 cmake_minimum_required(VERSION 2.8)
 
+if(UNIX)
 set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra")
 set(PROJECT_LIBS SDL2 GL GLEW)
+endif(UNIX)
 
 include(cmake/cotire.cmake)
 
