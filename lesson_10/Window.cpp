@@ -107,6 +107,12 @@ void CWindow::OnKeyUp(const SDL_KeyboardEvent &event)
 
 void CWindow::InitBodies()
 {
+    const glm::vec4 RED_RGBA = {1, 0, 0, 1};
+    {
+        auto pTetrahedron = std::make_unique<CIdentityTetrahedron>();
+        pTetrahedron->SetColor(RED_RGBA);
+        m_bodies.emplace_back(std::move(pTetrahedron));
+    }
     const glm::vec3 YELLOW = {1.f, 1.f, 0.f};
     const glm::vec3 ORANGE = {1.f, 0.5f, 0.f};
     const glm::vec3 PINK = {1.f, 0.3f, 0.3f};
@@ -146,10 +152,5 @@ void CWindow::InitBodies()
         pTransform->SetChild(std::move(pAnimator));
 
         m_bodies.emplace_back(std::move(pTransform));
-    }
-    {
-        auto pTetrahedron = std::make_unique<CIdentityTetrahedron>();
-        pTetrahedron->SetColor({1, 0, 0, 1});
-        m_bodies.emplace_back(std::move(pTetrahedron));
     }
 }
