@@ -5,6 +5,14 @@
 - [полезные ссылки](https://github.com/PS-Group/ips-wiki/blob/master/opengl/links.md)
 - [соглашения о кодировании](https://github.com/PS-Group/ips-wiki/blob/master/opengl/coding_conventions.md)
 
+## Сборка примеров на Windows
+
+- склонируйте репозиторий (допустим, каталог с клоном называется `cg_course_examples`)
+- перейдите в консоли (или в Far Manager) в каталог, который является родительским для `cg_course_samples`, создайте подкаталог (например, cg_build) и перейдите к нему
+- запустите команду `cmake -G "Visual Studio 14 ..\cg_course_examples"`
+- откройте сгенерированное решение `cg_build\opengl_samples.sln` в Visual Studio
+- при необходимости надо настроить пути к библиотекам, после чего собрать
+
 ## Часть I: старый добрый OpenGL 1.x
 
 - Урок 1 "OpenGL и SDL2", [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_1.md), [исходный код](lesson_1)
