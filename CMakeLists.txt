@@ -6,9 +6,11 @@ if(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra")
     set(PROJECT_LIBS SDL2 GL GLEW)
 else(UNIX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4201")
     set(PROJECT_LIBS SDL2main SDL2 glew32 OpenGL32)
 endif(UNIX)
 
+include(cmake/SetCompilerWarningAll.cmake)
 include(cmake/cotire.cmake)
 
 aux_source_directory(lesson_01 SRC_LESSON_1)
