@@ -1,6 +1,11 @@
 #include "AbstractWindow.h"
 #include <SDL2/SDL_video.h>
+
+#ifdef _WIN32
+#include <Windows.h>
 #include <GL/gl.h>
+#endif
+
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 #include <chrono>

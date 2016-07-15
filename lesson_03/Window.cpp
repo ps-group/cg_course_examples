@@ -16,7 +16,7 @@ void Stroke5PointStar(float xCenter, float yCenter, float radius)
     // Начинаем новую группу примитивов (замкнутая ломаная линия)
     glBegin(GL_LINE_LOOP);
 
-    float angle = float(-M_PI_2);
+    float angle = float(-0.5 * M_PI);
 
     // Соединяем отрезками прямой линии точки, расположенные на окружности
     // в точках, с углами: -90, 54, 198, 342, 486 (126) градусов
@@ -109,7 +109,7 @@ void CWindow::SetupView(const glm::ivec2 &size)
 {
     // Матрица ортографического проецирования изображения в трёхмерном пространстве
     // из параллелипипеда с размером, равным (size.X x size.Y x 2).
-    const glm::mat4 matrix = glm::ortho<float>(0, size.x, size.y, 0);
+    const glm::mat4 matrix = glm::ortho<float>(0, float(size.x), float(size.y), 0);
     glViewport(0, 0, size.x, size.y);
     glMatrixMode(GL_PROJECTION);
     glLoadMatrixf(glm::value_ptr(matrix));

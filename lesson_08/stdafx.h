@@ -20,6 +20,7 @@
 #include <chrono>
 #include <type_traits>
 #include <iostream>
+#include <string>
 #include <mutex>
 #include <memory>
 #include <vector>
