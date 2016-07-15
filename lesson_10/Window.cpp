@@ -13,6 +13,23 @@ const glm::vec3 SUNLIGHT_DIRECTION = {-1.f, 0.2f, 0.7f};
 const float CAMERA_INITIAL_ROTATION = 0;
 const float CAMERA_INITIAL_DISTANCE = 5.f;
 
+// включает смешивание цветов
+// перед выводом полупрозрачных тел
+void enableBlending()
+{
+    glDepthMask(GL_FALSE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+// отключает смешивание цветов
+// перед выводом непрозрачных тел
+void disableBlending()
+{
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
+}
+
 void SetupOpenGLState()
 {
     // включаем механизмы трёхмерного мира.
@@ -23,10 +40,6 @@ void SetupOpenGLState()
 
     // включаем систему освещения
     glEnable(GL_LIGHTING);
-
-    // включаем смешивание цветов
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // включаем применение цветов вершин как цвета материала.
     glEnable(GL_COLOR_MATERIAL);
@@ -58,7 +71,11 @@ void CWindow::OnWindowInit(const glm::ivec2 &size)
 void CWindow::OnUpdateWindow(float deltaSeconds)
 {
     m_camera.Update(deltaSeconds);
-    for (const IBodyUniquePtr &pBody : m_bodies)
+    for (const IBodyUniquePtr &pBody : m_opaqueBodies)
+    {
+        pBody->Update(deltaSeconds);
+    }
+    for (const IBodyUniquePtr &pBody : m_transparentBodies)
     {
         pBody->Update(deltaSeconds);
     }
@@ -68,10 +85,16 @@ void CWindow::OnDrawWindow(const glm::ivec2 &size)
 {
     SetupView(size);
     m_sunlight.Setup();
-    for (const IBodyUniquePtr &pBody : m_bodies)
+    for (const IBodyUniquePtr &pBody : m_opaqueBodies)
     {
         pBody->Draw();
     }
+    enableBlending();
+    for (const IBodyUniquePtr &pBody : m_transparentBodies)
+    {
+        pBody->Draw();
+    }
+    disableBlending();
 }
 
 void CWindow::SetupView(const glm::ivec2 &size)
@@ -107,12 +130,6 @@ void CWindow::OnKeyUp(const SDL_KeyboardEvent &event)
 
 void CWindow::InitBodies()
 {
-    const glm::vec4 RED_RGBA = {1, 0, 0, 1};
-    {
-        auto pTetrahedron = std::make_unique<CIdentityTetrahedron>();
-        pTetrahedron->SetColor(RED_RGBA);
-        m_bodies.emplace_back(std::move(pTetrahedron));
-    }
     const glm::vec3 YELLOW = {1.f, 1.f, 0.f};
     const glm::vec3 ORANGE = {1.f, 0.5f, 0.f};
     const glm::vec3 PINK = {1.f, 0.3f, 0.3f};
@@ -129,7 +146,7 @@ void CWindow::InitBodies()
         auto pTransform = std::make_unique<CTransformDecorator>();
         pTransform->SetTransform(glm::translate(glm::mat4(), {-1.5f, 0.f, 0.f}));
         pTransform->SetChild(std::move(pCube));
-        m_bodies.emplace_back(std::move(pTransform));
+        m_transparentBodies.emplace_back(std::move(pTransform));
     }
     const glm::vec3 RED = {1.f, 0.f, 0.f};
     const glm::vec3 GREEN = {0.f, 1.f, 0.f};
@@ -151,6 +168,12 @@ void CWindow::InitBodies()
         pTransform->SetTransform(glm::translate(glm::mat4(), {1.5f, 0.f, 0.f}));
         pTransform->SetChild(std::move(pAnimator));
 
-        m_bodies.emplace_back(std::move(pTransform));
+        m_transparentBodies.emplace_back(std::move(pTransform));
+    }
+    const glm::vec4 RED_RGBA = {1, 0, 0, 1};
+    {
+        auto pTetrahedron = std::make_unique<CIdentityTetrahedron>();
+        pTetrahedron->SetColor(RED_RGBA);
+        m_opaqueBodies.emplace_back(std::move(pTetrahedron));
     }
 }

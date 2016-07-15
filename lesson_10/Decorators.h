@@ -1,9 +1,9 @@
 #pragma once
-#include "IEntity.h"
+#include "IBody.h"
 #include <glm/fwd.hpp>
 #include <glm/mat4x4.hpp>
 
-class CAbstractDecorator : public IEntity
+class CAbstractDecorator : public IBody
 {
 public:
     void SetChild(IBodyUniquePtr && pChild);

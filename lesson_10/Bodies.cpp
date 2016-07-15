@@ -82,13 +82,11 @@ void CIdentityCube::Draw() const
 {
     if (m_alpha < 0.99f)
     {
-        glBlendFunc(GL_ONE, GL_ZERO);
         glFrontFace(GL_CW);
-        OutputVertexes();
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        OutputFaces();
         glFrontFace(GL_CCW);
     }
-    OutputVertexes();
+    OutputFaces();
 }
 
 void CIdentityCube::SetFaceColor(CubeFace face, const glm::vec3 &color)
@@ -103,7 +101,7 @@ void CIdentityCube::SetAlpha(float alpha)
     m_alpha = alpha;
 }
 
-void CIdentityCube::OutputVertexes() const
+void CIdentityCube::OutputFaces() const
 {
     // менее оптимальный способ рисования: прямая отправка данных
     // могла бы работать быстрее, чем множество вызовов glColor/glVertex.
@@ -135,13 +133,11 @@ void CIdentityTetrahedron::Draw() const
 {
     if (m_color.a < 0.99f)
     {
-        glBlendFunc(GL_ONE, GL_ZERO);
         glFrontFace(GL_CW);
-        OutputVertexes();
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        OutputFaces();
         glFrontFace(GL_CCW);
     }
-    OutputVertexes();
+    OutputFaces();
 }
 
 void CIdentityTetrahedron::SetColor(const glm::vec4 &color)
@@ -149,7 +145,7 @@ void CIdentityTetrahedron::SetColor(const glm::vec4 &color)
     m_color = color;
 }
 
-void CIdentityTetrahedron::OutputVertexes() const
+void CIdentityTetrahedron::OutputFaces() const
 {
     // менее оптимальный способ рисования: прямая отправка данных
     // могла бы работать быстрее, чем множество вызовов glColor/glVertex.

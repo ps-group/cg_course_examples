@@ -1,6 +1,6 @@
 #pragma once
 #include "DispatchEvent.h"
-#include "IEntity.h"
+#include "IBody.h"
 #include "Camera.h"
 #include "Lights.h"
 #include <vector>
@@ -24,7 +24,8 @@ private:
     void InitBodies();
     void SetupView(const glm::ivec2 &size);
 
-    std::vector<IBodyUniquePtr> m_bodies;
+    std::vector<IBodyUniquePtr> m_opaqueBodies;
+    std::vector<IBodyUniquePtr> m_transparentBodies;
     CCamera m_camera;
     CDirectedLightSource m_sunlight;
 };
