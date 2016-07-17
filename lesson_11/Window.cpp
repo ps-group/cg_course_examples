@@ -1,15 +1,17 @@
 #include "stdafx.h"
 #include "Window.h"
+#include "Bodies.h"
+#include "Decorators.h"
 #include <boost/range/algorithm/find_if.hpp>
 #include <boost/range/adaptor/reversed.hpp>
 
 namespace
 {
 const glm::vec4 BLACK = {0, 0, 0, 1};
-const glm::vec3 YELLOW = {1.f, 1.f, 0.f};
-const glm::vec3 ORANGE = {1.f, 0.5f, 0.f};
-const glm::vec3 PINK = {1.f, 0.3f, 0.3f};
+const float MATERIAL_SHININESS = 30.f;
 const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
+const glm::vec4 FADED_WHITE_RGBA = {0.3f, 0.3f, 0.3f, 1.f};
+const glm::vec4 YELLOW_RGBA = {1, 1, 0, 1};
 const glm::vec3 SUNLIGHT_DIRECTION = {-1.f, 0.2f, 0.7f};
 const float CAMERA_INITIAL_ROTATION = 0;
 const float CAMERA_INITIAL_DISTANCE = 5.f;
@@ -24,32 +26,38 @@ void SetupOpenGLState()
 
     // включаем систему освещения
     glEnable(GL_LIGHTING);
+}
 
-    // включаем применение цветов вершин как цвета материала.
-    glEnable(GL_COLOR_MATERIAL);
-    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+float GetSincFromXY(float x, float y)
+{
+    const float radius = std::hypotf(x, y);
+    if (radius < std::numeric_limits<float>::epsilon())
+    {
+        return 1;
+    }
+    return sinf(radius) / radius;
 }
 }
 
 CWindow::CWindow()
-    : m_camera(CAMERA_INITIAL_ROTATION, CAMERA_INITIAL_DISTANCE)
+    : m_surface(GetSincFromXY)
+    , m_camera(CAMERA_INITIAL_ROTATION, CAMERA_INITIAL_DISTANCE)
     , m_sunlight(GL_LIGHT0)
 {
     SetBackgroundColor(BLACK);
 
-    m_staticCube.SetFaceColor(CubeFace::Top, YELLOW);
-    m_staticCube.SetFaceColor(CubeFace::Bottom, YELLOW);
-    m_staticCube.SetFaceColor(CubeFace::Left, ORANGE);
-    m_staticCube.SetFaceColor(CubeFace::Right, ORANGE);
-    m_staticCube.SetFaceColor(CubeFace::Front, PINK);
-    m_staticCube.SetFaceColor(CubeFace::Back, PINK);
+    const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
+    m_material.SetAmbient(YELLOW_RGBA);
+    m_material.SetDiffuse(YELLOW_RGBA);
+    m_material.SetSpecular(FADED_WHITE_RGBA);
+    m_material.SetShininess(MATERIAL_SHININESS);
+
+    m_surface.Setup({-10, 10}, {-10, 10}, 0.1f);
 
     m_sunlight.SetDirection(SUNLIGHT_DIRECTION);
     m_sunlight.SetDiffuse(WHITE_RGBA);
     m_sunlight.SetAmbient(0.1f * WHITE_RGBA);
-    // Из-за интерполяции освещения по Гуро
-    // смысл Specular компоненты для куба теряется.
-    // m_sunlight.SetSpecular(WHITE_LIGHT);
+    m_sunlight.SetSpecular(WHITE_RGBA);
 }
 
 void CWindow::OnWindowInit(const glm::ivec2 &size)
@@ -61,26 +69,15 @@ void CWindow::OnWindowInit(const glm::ivec2 &size)
 void CWindow::OnUpdateWindow(float deltaSeconds)
 {
     m_camera.Update(deltaSeconds);
-    m_dynamicCube.Update(deltaSeconds);
-    m_staticCube.Update(deltaSeconds);
+    m_surface.Update(deltaSeconds);
 }
 
 void CWindow::OnDrawWindow(const glm::ivec2 &size)
 {
     SetupView(size);
+    m_material.Setup();
     m_sunlight.Setup();
-
-    // Смещаем анимированный единичный куб в другую сторону
-    glPushMatrix();
-    glTranslatef(0, -1.5f, 0);
-    m_dynamicCube.Draw();
-    glPopMatrix();
-
-    // Смещаем статический единичный куб в другую сторону
-    glPushMatrix();
-    glTranslatef(0, 1.5f, 0);
-    m_staticCube.Draw();
-    glPopMatrix();
+    m_surface.Draw();
 }
 
 void CWindow::SetupView(const glm::ivec2 &size)

@@ -73,11 +73,6 @@ CIdentityCube::CIdentityCube()
     }
 }
 
-void CIdentityCube::Update(float deltaTime)
-{
-    (void)deltaTime;
-}
-
 void CIdentityCube::Draw() const
 {
     if (m_alpha < 0.99f)
@@ -122,11 +117,6 @@ void CIdentityCube::OutputFaces() const
         glVertex3fv(glm::value_ptr(v3));
     }
     glEnd();
-}
-
-void CIdentityTetrahedron::Update(float deltaTime)
-{
-    (void)deltaTime;
 }
 
 void CIdentityTetrahedron::Draw() const
