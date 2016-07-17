@@ -212,14 +212,15 @@ void CConoidQuadric::Draw() const
     const int slices = 20;
     const int stacks = 1;
     glColor3fv(glm::value_ptr(m_color));
-    glTranslatef(0, 0, 1);
+    glPushMatrix();
+    glTranslatef(0, 0, -1);
     gluCylinder(m_quadric, baseRadius, m_topRadius, height, slices, stacks);
     glFrontFace(GL_CW);
     gluDisk(m_quadric, 0, baseRadius, slices, stacks);
     glFrontFace(GL_CCW);
     glTranslatef(0, 0, 2);
     gluDisk(m_quadric, 0, baseRadius, slices, stacks);
-    glTranslatef(0, 0, -1);
+    glPopMatrix();
 }
 
 void CConoidQuadric::SetTopRadius(double value)

@@ -26,6 +26,8 @@ void CalculateNormals(std::vector<SVertexP3N> &vertices,
     }
 }
 
+/// Привязывает вершины к состоянию OpenGL,
+/// затем вызывает 'callback'.
 template <class T>
 void DoWithBindedArrays(const std::vector<SVertexP3N> &vertices, T && callback)
 {
@@ -52,7 +54,7 @@ CDottedFunctionSurface::CDottedFunctionSurface(const Function2D &fn)
 {
 }
 
-void CDottedFunctionSurface::Setup(const glm::vec2 &rangeX, const glm::vec2 &rangeZ, float step)
+void CDottedFunctionSurface::Tesselate(const glm::vec2 &rangeX, const glm::vec2 &rangeZ, float step)
 {
     m_vertices.clear();
     // вычисляем позиции вершин.
@@ -79,7 +81,7 @@ CSolidFunctionSurface::CSolidFunctionSurface(const Function2D &fn)
 {
 }
 
-void CSolidFunctionSurface::Setup(const glm::vec2 &rangeX, const glm::vec2 &rangeZ, float step)
+void CSolidFunctionSurface::Tesselate(const glm::vec2 &rangeX, const glm::vec2 &rangeZ, float step)
 {
     m_vertices.clear();
     const unsigned columnCount = unsigned((rangeX.y - rangeX.x) / step);

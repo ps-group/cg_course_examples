@@ -26,9 +26,10 @@ class CDottedFunctionSurface final : public IBody
 public:
     CDottedFunctionSurface(const Function2D &fn);
 
+    /// Инициализирует сетку треугольников
     /// @param rangeX - диапазон, где x - нижняя граница, y - верхняя граница
     /// @param rangeZ - диапазон, где x - нижняя граница, y - верхняя граница
-    void Setup(const glm::vec2 &rangeX, const glm::vec2 &rangeZ, float step);
+    void Tesselate(const glm::vec2 &rangeX, const glm::vec2 &rangeZ, float step);
 
     // IBody interface.
     void Update(float) final {}
@@ -44,9 +45,10 @@ class CSolidFunctionSurface final : public IBody
 public:
     CSolidFunctionSurface(const Function2D &fn);
 
+    /// Инициализирует индексированную сетку треугольников
     /// @param rangeX - диапазон, где x - нижняя граница, y - верхняя граница
     /// @param rangeZ - диапазон, где x - нижняя граница, y - верхняя граница
-    void Setup(const glm::vec2 &rangeX, const glm::vec2 &rangeZ, float step);
+    void Tesselate(const glm::vec2 &rangeX, const glm::vec2 &rangeZ, float step);
 
     // IBody interface.
     void Update(float) final {}

@@ -184,4 +184,14 @@ void CWindow::InitBodies()
 
         m_opaqueBodies.emplace_back(std::move(pTransform));
     }
+    {
+        auto pConoid = std::make_unique<CConoidQuadric>();
+        pConoid->SetColor(YELLOW);
+
+        auto pTransform = std::make_unique<CTransformDecorator>();
+        pTransform->SetTransform(glm::translate(glm::mat4(), {-2.f, 1.5f, -0.01f}));
+        pTransform->SetChild(std::move(pConoid));
+
+        m_opaqueBodies.emplace_back(std::move(pTransform));
+    }
 }

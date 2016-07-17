@@ -52,7 +52,7 @@ CWindow::CWindow()
     m_material.SetSpecular(FADED_WHITE_RGBA);
     m_material.SetShininess(MATERIAL_SHININESS);
 
-    m_surface.Setup({-10, 10}, {-10, 10}, 0.1f);
+    m_surface.Tesselate({-10, 10}, {-10, 10}, 0.5f);
 
     m_sunlight.SetDirection(SUNLIGHT_DIRECTION);
     m_sunlight.SetDiffuse(WHITE_RGBA);
@@ -75,8 +75,8 @@ void CWindow::OnUpdateWindow(float deltaSeconds)
 void CWindow::OnDrawWindow(const glm::ivec2 &size)
 {
     SetupView(size);
-    m_material.Setup();
     m_sunlight.Setup();
+    m_material.Setup();
     m_surface.Draw();
 }
 
