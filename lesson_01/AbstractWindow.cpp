@@ -3,8 +3,8 @@
 
 #ifdef _WIN32
 #include <Windows.h>
-#include <GL/gl.h>
 #endif
+#include <GL/gl.h>
 
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>

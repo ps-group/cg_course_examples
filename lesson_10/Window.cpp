@@ -8,7 +8,7 @@
 namespace
 {
 const glm::vec4 BLACK = {0, 0, 0, 1};
-const glm::vec4 WHITE_LIGHT = {1, 1, 1, 1};
+const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
 const glm::vec3 SUNLIGHT_DIRECTION = {-1.f, 0.2f, 0.7f};
 const float CAMERA_INITIAL_ROTATION = 0;
 const float CAMERA_INITIAL_DISTANCE = 5.f;
@@ -55,11 +55,9 @@ CWindow::CWindow()
     InitBodies();
 
     m_sunlight.SetDirection(SUNLIGHT_DIRECTION);
-    m_sunlight.SetDiffuse(WHITE_LIGHT);
-    m_sunlight.SetAmbient(0.1f * WHITE_LIGHT);
-    // Из-за интерполяции освещения по Гуро
-    // смысл Specular компоненты для куба теряется.
-    // m_sunlight.SetSpecular(WHITE_LIGHT);
+    m_sunlight.SetDiffuse(WHITE_RGBA);
+    m_sunlight.SetAmbient(0.1f * WHITE_RGBA);
+    m_sunlight.SetSpecular(WHITE_RGBA);
 }
 
 void CWindow::OnWindowInit(const glm::ivec2 &size)
@@ -144,7 +142,7 @@ void CWindow::InitBodies()
         pCube->SetFaceColor(CubeFace::Back, PINK);
 
         auto pTransform = std::make_unique<CTransformDecorator>();
-        pTransform->SetTransform(glm::translate(glm::mat4(), {-1.5f, 0.f, 0.f}));
+        pTransform->SetTransform(glm::translate(glm::mat4(), {-2.5f, 0.f, 0.f}));
         pTransform->SetChild(std::move(pCube));
         m_transparentBodies.emplace_back(std::move(pTransform));
     }
@@ -165,7 +163,7 @@ void CWindow::InitBodies()
         pAnimator->SetChild(std::move(pCube));
 
         auto pTransform = std::make_unique<CTransformDecorator>();
-        pTransform->SetTransform(glm::translate(glm::mat4(), {1.5f, 0.f, 0.f}));
+        pTransform->SetTransform(glm::translate(glm::mat4(), {2.5f, 0.f, 0.f}));
         pTransform->SetChild(std::move(pAnimator));
 
         m_transparentBodies.emplace_back(std::move(pTransform));
@@ -175,5 +173,25 @@ void CWindow::InitBodies()
         auto pTetrahedron = std::make_unique<CIdentityTetrahedron>();
         pTetrahedron->SetColor(RED_RGBA);
         m_opaqueBodies.emplace_back(std::move(pTetrahedron));
+    }
+    {
+        auto pSphere = std::make_unique<CSphereQuadric>();
+        pSphere->SetColor(BLUE);
+
+        auto pTransform = std::make_unique<CTransformDecorator>();
+        pTransform->SetTransform(glm::translate(glm::mat4(), {1.f, 0.f, 0.f}));
+        pTransform->SetChild(std::move(pSphere));
+
+        m_opaqueBodies.emplace_back(std::move(pTransform));
+    }
+    {
+        auto pConoid = std::make_unique<CConoidQuadric>();
+        pConoid->SetColor(YELLOW);
+
+        auto pTransform = std::make_unique<CTransformDecorator>();
+        pTransform->SetTransform(glm::translate(glm::mat4(), {-2.f, 1.5f, -0.01f}));
+        pTransform->SetChild(std::move(pConoid));
+
+        m_opaqueBodies.emplace_back(std::move(pTransform));
     }
 }
