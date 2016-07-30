@@ -47,6 +47,35 @@ void DoWithBindedArrays(const std::vector<SVertexP3N> &vertices, T && callback)
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
 }
+
+void CalculateTriangleStripIndicies(std::vector<uint32_t> &indicies,
+                                    unsigned columnCount, unsigned rowCount)
+{
+    indicies.clear();
+    indicies.reserve((columnCount - 1) * rowCount * 2);
+    // вычисляем индексы вершин.
+    for (unsigned ci = 0; ci < columnCount - 1; ++ci)
+    {
+        if (ci % 2 == 0)
+        {
+            for (unsigned ri = 0; ri < rowCount; ++ri)
+            {
+                unsigned index = ci * rowCount + ri;
+                indicies.push_back(index + rowCount);
+                indicies.push_back(index);
+            }
+        }
+        else
+        {
+            for (unsigned ri = rowCount - 1; ri < rowCount; --ri)
+            {
+                unsigned index = ci * rowCount + ri;
+                indicies.push_back(index);
+                indicies.push_back(index + rowCount);
+            }
+        }
+    }
+}
 }
 
 CDottedFunctionSurface::CDottedFunctionSurface(const Function2D &fn)
@@ -83,9 +112,10 @@ CSolidFunctionSurface::CSolidFunctionSurface(const Function2D &fn)
 
 void CSolidFunctionSurface::Tesselate(const glm::vec2 &rangeX, const glm::vec2 &rangeZ, float step)
 {
-    m_vertices.clear();
     const unsigned columnCount = unsigned((rangeX.y - rangeX.x) / step);
     const unsigned rowCount = unsigned((rangeZ.y - rangeZ.x) / step);
+    m_vertices.clear();
+    m_vertices.reserve(columnCount * rowCount);
 
     // вычисляем позиции вершин.
     for (unsigned ci = 0; ci < columnCount; ++ci)
@@ -98,28 +128,7 @@ void CSolidFunctionSurface::Tesselate(const glm::vec2 &rangeX, const glm::vec2 &
         }
     }
     CalculateNormals(m_vertices, m_fn, step);
-    // вычисляем индексы вершин.
-    for (unsigned ci = 0; ci < columnCount - 1; ++ci)
-    {
-        if (ci % 2 == 0)
-        {
-            for (unsigned ri = 0; ri < rowCount; ++ri)
-            {
-                unsigned index = ci * rowCount + ri;
-                m_indicies.push_back(index + rowCount);
-                m_indicies.push_back(index);
-            }
-        }
-        else
-        {
-            for (unsigned ri = rowCount - 1; ri < rowCount; --ri)
-            {
-                unsigned index = ci * rowCount + ri;
-                m_indicies.push_back(index);
-                m_indicies.push_back(index + rowCount);
-            }
-        }
-    }
+    CalculateTriangleStripIndicies(m_indicies, columnCount, rowCount);
 }
 
 void CSolidFunctionSurface::Draw() const

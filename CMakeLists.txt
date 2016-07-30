@@ -56,3 +56,7 @@ target_link_libraries(lesson_10 ${PROJECT_LIBS})
 aux_source_directory(lesson_11 SRC_LESSON_11)
 add_executable(lesson_11 WIN32 ${SRC_LESSON_11})
 target_link_libraries(lesson_11 ${PROJECT_LIBS})
+
+aux_source_directory(lesson_12 SRC_LESSON_12)
+add_executable(lesson_12 WIN32 ${SRC_LESSON_12})
+target_link_libraries(lesson_12 ${PROJECT_LIBS})
