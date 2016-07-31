@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "Lights.h"
 #include "Decorators.h"
+#include "Texture2D.h"
 #include <vector>
 
 class CWindow : public CAbstractInputControlWindow
@@ -25,7 +26,8 @@ private:
     void SetupView(const glm::ivec2 &size);
 
     CPhongModelMaterial m_material;
-    CTransformDecorator m_decoratedSphere;
+    CTexture2DUniquePtr m_pEarthTexture;
+    CAnimatedDecorator m_decoratedSphere;
     CCamera m_camera;
     CDirectedLightSource m_sunlight;
 };

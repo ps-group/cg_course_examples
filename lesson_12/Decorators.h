@@ -34,6 +34,9 @@ public:
     void Update(float deltaTime);
     void Draw()const;
 
+    void SetPeriod(float value);
+
 private:
     float m_animationPhase = 0;
+    float m_period = 1;
 };

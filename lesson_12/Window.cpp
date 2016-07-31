@@ -8,14 +8,15 @@
 
 namespace
 {
+const char EARTH_TEX_PATH[] = "res/daily_earth.bmp";
 const glm::vec4 BLACK = {0, 0, 0, 1};
 const float MATERIAL_SHININESS = 30.f;
 const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
 const glm::vec4 FADED_WHITE_RGBA = {0.3f, 0.3f, 0.3f, 1.f};
-const glm::vec4 YELLOW_RGBA = {1, 1, 0, 1};
 const glm::vec3 SUNLIGHT_DIRECTION = {-1.f, 0.2f, 0.7f};
 const float CAMERA_INITIAL_ROTATION = 0;
-const float CAMERA_INITIAL_DISTANCE = 5.f;
+const float CAMERA_INITIAL_DISTANCE = 4.f;
+const float EARTH_ROTATION_PERIOD_SEC = 12.f;
 const unsigned SPHERE_PRECISION = 40;
 
 void SetupOpenGLState()
@@ -28,6 +29,9 @@ void SetupOpenGLState()
 
     // включаем систему освещения
     glEnable(GL_LIGHTING);
+
+    // включаем текстурирование в старом стиле (OpenGL 1.1)
+    glEnable(GL_TEXTURE_2D);
 }
 }
 
@@ -37,14 +41,12 @@ CWindow::CWindow()
 {
     SetBackgroundColor(BLACK);
 
-    const glm::vec3 axisZ = { 1, 0, 0};
-    const float angle = float(0.8 * M_PI);
     m_decoratedSphere.SetChild(std::make_unique<CIdentitySphere>(SPHERE_PRECISION, SPHERE_PRECISION));
-    m_decoratedSphere.SetTransform(glm::rotate(glm::mat4(), angle, axisZ));
+    m_decoratedSphere.SetPeriod(EARTH_ROTATION_PERIOD_SEC);
 
     const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
-    m_material.SetAmbient(YELLOW_RGBA);
-    m_material.SetDiffuse(YELLOW_RGBA);
+    m_material.SetAmbient(WHITE_RGBA);
+    m_material.SetDiffuse(WHITE_RGBA);
     m_material.SetSpecular(FADED_WHITE_RGBA);
     m_material.SetShininess(MATERIAL_SHININESS);
 
@@ -58,6 +60,8 @@ void CWindow::OnWindowInit(const glm::ivec2 &size)
 {
     (void)size;
     SetupOpenGLState();
+
+    m_pEarthTexture = LoadTexture2DFromBMP(EARTH_TEX_PATH);
 }
 
 void CWindow::OnUpdateWindow(float deltaSeconds)
@@ -71,7 +75,9 @@ void CWindow::OnDrawWindow(const glm::ivec2 &size)
     SetupView(size);
     m_sunlight.Setup();
     m_material.Setup();
-    m_decoratedSphere.Draw();
+    m_pEarthTexture->DoWhileBinded([&] {
+        m_decoratedSphere.Draw();
+    });
 }
 
 void CWindow::SetupView(const glm::ivec2 &size)
