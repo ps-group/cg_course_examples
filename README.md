@@ -29,3 +29,12 @@
 - Пример 9 "Да будет свет!": [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_9.md), [исходный код](lesson_09)
 - Пример 10 "Смешение цветов": [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_10.md), [исходный код](lesson_10)
 - Пример 11 "Гладкие объёмные тела": [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_11.md), [исходный код](lesson_11)
+- Пример 12 "Текстурированное тело вращения": [статья](https://github.com/PS-Group/ips-wiki/blob/master/opengl/lesson_12.md), [исходный код](lesson_12)
+
+## Часть III: программируемый конвейер
+
+Будет готова к сентябрю.
+
+## Часть IV: сырые данные
+
+Будет готова к октябрю.
