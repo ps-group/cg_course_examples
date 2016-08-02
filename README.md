@@ -1,6 +1,6 @@
 # Примеры для курса "Компьютерная Графика"
 
-Примеры основаны на C++14 и SDL2 и дsоступны под OpenSource лицензией MIT (см. LICENSE.md).
+Примеры основаны на C++14 и SDL2 и доступны под OpenSource лицензией MIT (см. LICENSE.md).
 
 - [полезные ссылки](https://github.com/PS-Group/ips-wiki/blob/master/opengl/links.md)
 - [соглашения о кодировании](https://github.com/PS-Group/ips-wiki/blob/master/opengl/coding_conventions.md)
