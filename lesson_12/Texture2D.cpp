@@ -6,7 +6,7 @@
 using SDLSurfacePtr = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>;
 using SDLPixelFormatPtr = std::unique_ptr<SDL_PixelFormat, void(*)(SDL_PixelFormat*)>;
 
-void FlipSurfaceVertically(SDL_Surface & surface)
+static void FlipSurfaceVertically(SDL_Surface & surface)
 {
     const auto rowSize = size_t(surface.w * surface.format->BytesPerPixel);
     std::vector<uint8_t> row(rowSize);

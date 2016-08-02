@@ -59,6 +59,18 @@ void DoWithBindedArrays(const std::vector<SVertexP3NT2> &vertices, T && callback
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
 }
+
+glm::vec3 GetPositionOnSphere(float u, float v)
+{
+    const float radius = 1.f;
+    const float latitude = float(M_PI) * (1.f - v); // 𝝅∙(𝟎.𝟓-𝒗)
+    const float longitude = float(2.0 * M_PI) * u; // 𝟐𝝅∙𝒖
+    const float latitudeRadius = radius * sinf(latitude);
+
+    return { cosf(longitude) * latitudeRadius,
+             cosf(latitude) * radius,
+             sinf(longitude) * latitudeRadius };
+}
 }
 
 CIdentitySphere::CIdentitySphere(unsigned slices, unsigned stacks)
@@ -87,7 +99,7 @@ void CIdentitySphere::Tesselate(unsigned slices, unsigned stacks)
             const float v = float(ri) / float(stacks - 1);
 
             SVertexP3NT2 vertex;
-            vertex.position = GetPosition(u, v);
+            vertex.position = GetPositionOnSphere(u, v);
 
             // Нормаль к сфере - это нормализованный вектор радиуса к данной точке
             // Поскольку координаты центра равны 0, координаты вектора радиуса
@@ -104,21 +116,5 @@ void CIdentitySphere::Tesselate(unsigned slices, unsigned stacks)
         }
     }
 
-    for (SVertexP3NT2 &v : m_vertices)
-    {
-        v.normal = v.position;
-    }
     CalculateTriangleStripIndicies(m_indicies, slices, stacks);
-}
-
-glm::vec3 CIdentitySphere::GetPosition(float u, float v) const
-{
-    const float radius = 1.f;
-    const float latitude = float(M_PI) * (1.f - v); // 𝝅∙(𝟎.𝟓-𝒗)
-    const float longitude = float(2.0 * M_PI) * u; // 𝟐𝝅∙𝒖
-    const float latitudeRadius = radius * sinf(latitude);
-
-    return { cosf(longitude) * latitudeRadius,
-             cosf(latitude) * radius,
-             sinf(longitude) * latitudeRadius };
 }

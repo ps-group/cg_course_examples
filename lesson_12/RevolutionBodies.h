@@ -7,9 +7,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
-using Function2D = std::function<float(float, float)>;
-
-// Вершина с трёхмерной позицией и нормалью.
+// Вершина с трёхмерной позицией, нормалью и 2D координатами текстуры.
 struct SVertexP3NT2
 {
     glm::vec3 position;
@@ -27,7 +25,6 @@ public:
 
 private:
     void Tesselate(unsigned slices, unsigned stacks);
-    glm::vec3 GetPosition(float u, float v)const;
 
     std::vector<SVertexP3NT2> m_vertices;
     std::vector<uint32_t> m_indicies;
