@@ -1,4 +1,4 @@
-project(opengl_samples)
+project(CG_chapter_1)
 cmake_minimum_required(VERSION 2.8)
 
 if(UNIX)
@@ -12,26 +12,15 @@ endif(UNIX)
 
 include(../cmake/SetCompilerWarningAll.cmake)
 
-aux_source_directory(lesson_01 SRC_LESSON_1)
-add_executable(lesson_01 ${SRC_LESSON_1})
-target_link_libraries(lesson_01 ${PROJECT_LIBS})
+macro(add_lesson NUM)
+    aux_source_directory(lesson_${NUM} SRC_LESSON_${NUM})
+    add_executable(lesson_${NUM} ${SRC_LESSON_${NUM}})
+    target_link_libraries(lesson_${NUM} ${PROJECT_LIBS})
+endmacro(add_lesson)
 
-aux_source_directory(lesson_02 SRC_LESSON_2)
-add_executable(lesson_02 ${SRC_LESSON_2})
-target_link_libraries(lesson_02 ${PROJECT_LIBS})
-
-aux_source_directory(lesson_03 SRC_LESSON_3)
-add_executable(lesson_03 WIN32 ${SRC_LESSON_3})
-target_link_libraries(lesson_03 ${PROJECT_LIBS})
-
-aux_source_directory(lesson_04 SRC_LESSON_4)
-add_executable(lesson_04 WIN32 ${SRC_LESSON_4})
-target_link_libraries(lesson_04 ${PROJECT_LIBS})
-
-aux_source_directory(lesson_05 SRC_LESSON_5)
-add_executable(lesson_05 WIN32 ${SRC_LESSON_5})
-target_link_libraries(lesson_05 ${PROJECT_LIBS})
-
-aux_source_directory(lesson_06 SRC_LESSON_6)
-add_executable(lesson_06 WIN32 ${SRC_LESSON_6})
-target_link_libraries(lesson_06 ${PROJECT_LIBS})
+add_lesson(01)
+add_lesson(02)
+add_lesson(03)
+add_lesson(04)
+add_lesson(05)
+add_lesson(06)

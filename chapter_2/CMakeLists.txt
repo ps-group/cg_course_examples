@@ -1,4 +1,4 @@
-project(opengl_samples)
+project(CG_chapter_2)
 cmake_minimum_required(VERSION 2.8)
 
 if(UNIX)
@@ -13,28 +13,17 @@ endif(UNIX)
 include(../cmake/SetCompilerWarningAll.cmake)
 include(../cmake/cotire.cmake)
 
-aux_source_directory(lesson_07 SRC_LESSON_7)
-add_executable(lesson_07 WIN32 ${SRC_LESSON_7})
-target_link_libraries(lesson_07 ${PROJECT_LIBS})
+macro(add_lesson NUM)
+    aux_source_directory(lesson_${NUM} SRC_LESSON_${NUM})
+    add_executable(lesson_${NUM} ${SRC_LESSON_${NUM}})
+    target_link_libraries(lesson_${NUM} ${PROJECT_LIBS})
+endmacro(add_lesson)
 
-aux_source_directory(lesson_08 SRC_LESSON_8)
-add_executable(lesson_08 WIN32 ${SRC_LESSON_8})
-target_link_libraries(lesson_08 ${PROJECT_LIBS})
-
-aux_source_directory(lesson_09 SRC_LESSON_9)
-add_executable(lesson_09 WIN32 ${SRC_LESSON_9})
-target_link_libraries(lesson_09 ${PROJECT_LIBS})
-
-aux_source_directory(lesson_10 SRC_LESSON_10)
-add_executable(lesson_10 WIN32 ${SRC_LESSON_10})
-target_link_libraries(lesson_10 ${PROJECT_LIBS})
-
-aux_source_directory(lesson_11 SRC_LESSON_11)
-add_executable(lesson_11 WIN32 ${SRC_LESSON_11})
-target_link_libraries(lesson_11 ${PROJECT_LIBS})
-
-aux_source_directory(lesson_12 SRC_LESSON_12)
-add_executable(lesson_12 WIN32 ${SRC_LESSON_12})
-target_link_libraries(lesson_12 ${PROJECT_LIBS})
+add_lesson(07)
+add_lesson(08)
+add_lesson(09)
+add_lesson(10)
+add_lesson(11)
+add_lesson(12)
 
 file(COPY res DESTINATION ${CMAKE_BINARY_DIR})
