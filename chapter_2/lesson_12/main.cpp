@@ -4,8 +4,6 @@
 
 int main(int, char *[])
 {
-    glewInit();
-
     try
     {
         CWindow window;
