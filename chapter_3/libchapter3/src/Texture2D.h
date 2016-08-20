@@ -14,7 +14,7 @@ public:
     static void Unbind();
 
     template <class TFunction>
-    void DoWhileBinded(TFunction && fn)
+    void DoWhileBinded(TFunction && fn)const
     {
         Bind();
         // При выходе из функции надо обязательно сделать Unbind.

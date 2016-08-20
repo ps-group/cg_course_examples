@@ -99,5 +99,5 @@ private:
     glm::vec4 m_ambient;
     glm::vec4 m_diffuse;
     glm::vec4 m_specular;
-    float m_shininess = 10.f;
+    float m_shininess = 0.f;
 };

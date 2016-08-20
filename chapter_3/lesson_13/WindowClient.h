@@ -1,6 +1,6 @@
 #pragma once
 #include "libchapter3.h"
-#include "Bodies.h"
+#include "RevolutionBodies.h"
 #include <vector>
 
 class CWindowClient : public CAbstractWindowClient
@@ -17,6 +17,12 @@ protected:
 private:
     void SetupView(const glm::ivec2 &size);
 
-    CIdentityCube m_cube;
+    CIdentitySphere m_sphereObj;
+    CPhongModelMaterial m_sphereMat;
     CCamera m_camera;
+    CDirectedLightSource m_sunlight;
+    CShaderProgram m_programPhong;
+    CShaderProgram m_programLambert;
+    CShaderProgram m_programFixed;
+    std::vector<CShaderProgram *> m_programQueue;
 };

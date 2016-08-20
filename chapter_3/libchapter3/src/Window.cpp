@@ -87,6 +87,7 @@ public:
         // Создаём контекст OpenGL, связанный с окном.
         m_pGLContext.reset(SDL_GL_CreateContext(m_pWindow.get()));
         InitGlewOnce();
+        CheckOpenglVersion();
     }
 
     glm::ivec2 GetWindowSize() const
@@ -217,6 +218,14 @@ private:
                 throw std::runtime_error("GLEW initialization failed");
             }
         });
+    }
+
+    void CheckOpenglVersion()
+    {
+        if (!GLEW_VERSION_3_2)
+        {
+            throw std::runtime_error("Sorry, but OpenGL 3.2 is not available");
+        }
     }
 
     IWindowClient *m_pClient = nullptr;
