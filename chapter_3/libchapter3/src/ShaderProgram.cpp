@@ -124,6 +124,8 @@ void CShaderProgram::Link()
         const auto log = GetInfoLog(m_programId, glGetProgramiv, glGetProgramInfoLog);
         throw std::runtime_error("Program linking failed: " + log);
     }
+    // Выполняем detach и delete после полного формирования программы
+    // http://gamedev.stackexchange.com/questions/47910
     FreeShaders();
 }
 
@@ -150,8 +152,6 @@ void CShaderProgram::UseFixedPipeline()
     glUseProgram(0);
 }
 
-// Выполняем detach и delete после полного формирования программы
-// http://gamedev.stackexchange.com/questions/47910
 void CShaderProgram::FreeShaders()
 {
     for (unsigned shaderId : m_shaders)
