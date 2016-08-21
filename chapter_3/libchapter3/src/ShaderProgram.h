@@ -25,8 +25,8 @@ public:
     CShaderProgram(fixed_pipeline_t);
     ~CShaderProgram();
 
-    void CompileShader(const std::string &source, ShaderType type)const;
-    void Link()const;
+    void CompileShader(const std::string &source, ShaderType type);
+    void Link();
 
     // Валидация - необязательный этап, который может сообщить
     // о проблемах производительности или предупреждениях компилятора GLSL
@@ -39,7 +39,7 @@ public:
     void DoWithProgram(TFunction && fn)const
     {
         Use();
-        // При выходе из функции надо обязательно сделать Unbind.
+        // При выходе из функции возвращаем Fixed Pipeline.
         BOOST_SCOPE_EXIT_ALL() {
             UseFixedPipeline();
         };
@@ -47,5 +47,8 @@ public:
     }
 
 private:
+    void FreeShaders();
+
     unsigned m_programId = 0;
+    std::vector<unsigned> m_shaders;
 };

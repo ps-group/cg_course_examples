@@ -89,10 +89,11 @@ CShaderProgram::CShaderProgram(fixed_pipeline_t)
 
 CShaderProgram::~CShaderProgram()
 {
+    FreeShaders();
     glDeleteProgram(m_programId);
 }
 
-void CShaderProgram::CompileShader(const std::string &source, ShaderType type)const
+void CShaderProgram::CompileShader(const std::string &source, ShaderType type)
 {
     const char *pSourceLines[] = { source.c_str() };
     const GLint pSourceLengths[] = { GLint(source.size()) };
@@ -109,10 +110,11 @@ void CShaderProgram::CompileShader(const std::string &source, ShaderType type)co
         throw std::runtime_error("Shader compiling failed: " + log);
     }
 
-    glAttachShader(m_programId, shader.Release());
+    m_shaders.emplace_back(shader.Release());
+    glAttachShader(m_programId, m_shaders.back());
 }
 
-void CShaderProgram::Link()const
+void CShaderProgram::Link()
 {
     glLinkProgram(m_programId);
     GLint linkStatus = 0;
@@ -122,6 +124,7 @@ void CShaderProgram::Link()const
         const auto log = GetInfoLog(m_programId, glGetProgramiv, glGetProgramInfoLog);
         throw std::runtime_error("Program linking failed: " + log);
     }
+    FreeShaders();
 }
 
 boost::optional<std::string> CShaderProgram::Validate()const
@@ -145,4 +148,16 @@ void CShaderProgram::Use() const
 void CShaderProgram::UseFixedPipeline()
 {
     glUseProgram(0);
+}
+
+// Выполняем detach и delete после полного формирования программы
+// http://gamedev.stackexchange.com/questions/47910
+void CShaderProgram::FreeShaders()
+{
+    for (unsigned shaderId : m_shaders)
+    {
+        glDetachShader(m_programId, shaderId);
+        glDeleteShader(shaderId);
+    }
+    m_shaders.clear();
 }
