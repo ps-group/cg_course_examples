@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "RevolutionBodies.h"
+#include "IdentitySphere.h"
 #include <algorithm>
 
 namespace

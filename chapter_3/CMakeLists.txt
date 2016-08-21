@@ -24,7 +24,7 @@ add_library(libchapter3 ${SRC_LIBCHAPTER3})
 target_include_directories(libchapter3 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/libchapter3)
 
 add_lesson(13)
-#add_lesson(14)
+add_lesson(14)
 #add_lesson(15)
 #add_lesson(16)
 #add_lesson(17)

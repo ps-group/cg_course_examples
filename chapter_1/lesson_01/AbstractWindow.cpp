@@ -10,6 +10,7 @@
 #include <glm/vec4.hpp>
 #include <chrono>
 #include <type_traits>
+#include <iostream>
 
 namespace
 {
@@ -59,6 +60,11 @@ public:
 
         // Создаём контекст OpenGL, связанный с окном.
         m_pGLContext.reset(SDL_GL_CreateContext(m_pWindow.get()));
+        if (!m_pGLContext)
+        {
+            std::cerr << "OpenGL context initialization failed" << std::endl;
+            std::abort();
+        }
     }
 
     void SetBackgroundColor(const glm::vec4 &color)

@@ -55,6 +55,11 @@ public:
 
         // Создаём контекст OpenGL, связанный с окном.
         m_pGLContext.reset(SDL_GL_CreateContext(m_pWindow.get()));
+        if (!m_pGLContext)
+        {
+            std::cerr << "OpenGL context initialization failed" << std::endl;
+            std::abort();
+        }
         InitGlewOnce();
     }
 
