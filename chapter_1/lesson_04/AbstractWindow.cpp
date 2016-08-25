@@ -44,14 +44,17 @@ public:
     void Show(glm::ivec2 const& size)
     {
         m_size = size;
+
+        // Выбираем Compatiblity Profile
+        // Установка атрибутов SDL_GL должна выполняться до создания окна,
+        // иначе на некоторых видеокартах создание контекста завершится
+        // OpenGL с ошибкой.
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
         // Специальное значение SDL_WINDOWPOS_CENTERED вместо x и y заставит SDL2
         // разместить окно в центре монитора по осям x и y.
         // Для использования OpenGL вы ДОЛЖНЫ указать флаг SDL_WINDOW_OPENGL.
         m_pWindow.reset(SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                          size.x, size.y, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE));
-
-        // Выбираем Compatiblity Profile
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 
         // Создаём контекст OpenGL, связанный с окном.
         m_pGLContext.reset(SDL_GL_CreateContext(m_pWindow.get()));

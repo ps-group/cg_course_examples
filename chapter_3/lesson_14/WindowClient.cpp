@@ -96,7 +96,7 @@ CWindowClient::CWindowClient(CWindow &window)
     m_programPicture.CompileShader(FRAGMENT_SHADER_PICTURE, ShaderType::Fragment);
     m_programPicture.Link();
 
-    m_programQueue = { &m_programCheckers, &m_programPicture };
+    m_programQueue = { &m_programPicture, &m_programCheckers };
 }
 
 void CWindowClient::OnUpdateWindow(float deltaSeconds)

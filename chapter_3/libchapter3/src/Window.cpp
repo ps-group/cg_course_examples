@@ -75,14 +75,14 @@ public:
     void Show(const std::string &title, const glm::ivec2 &size)
     {
         m_size = size;
+
+        // Выбираем Compatiblity Profile
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
         // Специальное значение SDL_WINDOWPOS_CENTERED вместо x и y заставит SDL2
         // разместить окно в центре монитора по осям x и y.
         // Для использования OpenGL вы ДОЛЖНЫ указать флаг SDL_WINDOW_OPENGL.
         m_pWindow.reset(SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                          size.x, size.y, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE));
-
-        // Выбираем Compatiblity Profile
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 
         // Создаём контекст OpenGL, связанный с окном.
         m_pGLContext.reset(SDL_GL_CreateContext(m_pWindow.get()));
