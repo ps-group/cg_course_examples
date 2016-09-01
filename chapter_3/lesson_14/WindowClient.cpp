@@ -6,70 +6,6 @@ namespace
 const glm::vec2 QUAD_TOPLEFT = { -200, -200 };
 const glm::vec2 QUAD_SIZE = { 400, 400 };
 
-const char VERTEX_SHADER[] = R"***(
-void main()
-{
-    // Transform the vertex:
-    // gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex
-    gl_Position = ftransform();
-    // Copy texture coordinates from gl_MultiTexCoord0 vertex attribute
-    // to gl_TexCoord[0] varying variable
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-}
-)***";
-
-const char FRAGMENT_SHADER_CHECKERS[] = R"***(
-void main()
-{
-    // determine whether fraction part of x and y
-    // texture coordinate is greater than 0.5
-    vec2 stepXY = step(vec2(0.5, 0.5), fract(gl_TexCoord[0].xy));
-    // determine whether the texture coordinate
-    // is within a black or white check
-    gl_FragColor = vec4((stepXY.x != stepXY.y) ? 1.0 : 0.0);
-}
-)***";
-
-const char FRAGMENT_SHADER_PICTURE[] = R"***(
-// Check if the point p is on the left side of the line p0p1
-bool PointIsOnTheLeft(vec2 p0, vec2 p1, vec2 p)
-{
-    vec2 p0p1 = p1 - p0;
-    // find the orthogonal vector to p0p1
-    vec2 n = vec2(-p0p1.y, p0p1.x);
-    // Find the dot product between n and (p - p0)
-    return dot(p - p0, n) > 0.0;
-}
-
-bool PointIsInsideTriangle(vec2 p0, vec2 p1, vec2 p2, vec2 p)
-{
-    return PointIsOnTheLeft(p0, p1, p) &&
-           PointIsOnTheLeft(p1, p2, p) &&
-           PointIsOnTheLeft(p2, p0, p);
-}
-
-void main()
-{
-    vec2 pos = gl_TexCoord[0].xy;
-    const vec2 p0 = vec2(1.0, 1.0);
-    const vec2 p1 = vec2(3.0, 2.0);
-    const vec2 p2 = vec2(2.5, 3.5);
-    if (PointIsInsideTriangle(p0, p1, p2, pos))
-    {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-    }
-    else
-    {
-        // determine whether fraction part of x and y
-        // texture coordinate is greater than 0.5
-        vec2 stepXY = step(vec2(0.5, 0.5), fract(pos));
-        // determine whether the texture coordinate
-        // is within a black or white check
-        gl_FragColor = vec4((stepXY.x != stepXY.y) ? 1.0 : 0.0);
-    }
-}
-)***";
-
 void SetupOpenGLState()
 {
     // включаем механизмы трёхмерного мира.
@@ -88,12 +24,17 @@ CWindowClient::CWindowClient(CWindow &window)
     GetWindow().SetBackgroundColor(GREEN);
     SetupOpenGLState();
 
-    m_programCheckers.CompileShader(VERTEX_SHADER, ShaderType::Vertex);
-    m_programCheckers.CompileShader(FRAGMENT_SHADER_CHECKERS, ShaderType::Fragment);
+
+    const std::string vertexShader = CFilesystemUtils::LoadFileAsString("res/checkers.vert");
+    const std::string checkersShader = CFilesystemUtils::LoadFileAsString("res/checkers.frag");
+    const std::string pictureShader = CFilesystemUtils::LoadFileAsString("res/checkers-and-triangle.frag");
+
+    m_programCheckers.CompileShader(vertexShader, ShaderType::Vertex);
+    m_programCheckers.CompileShader(checkersShader, ShaderType::Fragment);
     m_programCheckers.Link();
 
-    m_programPicture.CompileShader(VERTEX_SHADER, ShaderType::Vertex);
-    m_programPicture.CompileShader(FRAGMENT_SHADER_PICTURE, ShaderType::Fragment);
+    m_programPicture.CompileShader(vertexShader, ShaderType::Vertex);
+    m_programPicture.CompileShader(pictureShader, ShaderType::Fragment);
     m_programPicture.Link();
 
     m_programQueue = { &m_programPicture, &m_programCheckers };

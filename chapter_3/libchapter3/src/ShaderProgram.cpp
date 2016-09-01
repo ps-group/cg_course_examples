@@ -142,14 +142,24 @@ boost::optional<std::string> CShaderProgram::Validate()const
     return boost::none;
 }
 
+CProgramInfo CShaderProgram::GetProgramInfo() const
+{
+    return CProgramInfo(m_programId);
+}
+
+CProgramUniform CShaderProgram::FindUniform(const char *name) const
+{
+    int location = glGetUniformLocation(m_programId, name);
+    if (location == -1)
+    {
+        throw std::invalid_argument("Wrong shader variable name: " + std::string(name));
+    }
+    return CProgramUniform(location);
+}
+
 void CShaderProgram::Use() const
 {
     glUseProgram(m_programId);
-}
-
-void CShaderProgram::UseFixedPipeline()
-{
-    glUseProgram(0);
 }
 
 void CShaderProgram::FreeShaders()

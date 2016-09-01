@@ -8,75 +8,6 @@ const float CAMERA_INITIAL_ROTATION = 1;
 const float CAMERA_INITIAL_DISTANCE = 5;
 const int SPHERE_PRECISION = 40;
 
-const char VERTEX_SHADER[] = R"***(
-varying vec3 n;
-varying vec3 v;
-
-void main(void)
-{
-    v = vec3(gl_ModelViewMatrix * gl_Vertex);
-    n = normalize(gl_NormalMatrix * gl_Normal);
-    gl_Position = ftransform();
-}
-)***";
-
-const char FRAGMENT_SHADER_LAMBERT[] = R"***(
-varying vec3 n;
-varying vec3 v;
-
-void main(void)
-{
-    vec4 result = vec4(0.0);
-    for (int li = 0; li < gl_MaxLights; ++li)
-    {
-        vec3 delta = gl_LightSource[li].position.w * v;
-        vec3 lightDirection = normalize(gl_LightSource[li].position.xyz - delta);
-
-        vec4 Iamb = gl_FrontLightProduct[li].ambient;
-
-        float diffuseAngle = max(dot(n, lightDirection), 0.0);
-        vec4 Idiff = gl_FrontLightProduct[li].diffuse * diffuseAngle;
-        Idiff = clamp(Idiff, 0.0, 1.0);
-
-        result += Iamb + Idiff;
-    }
-
-    gl_FragColor = gl_FrontLightModelProduct.sceneColor + result;
-}
-)***";
-
-const char FRAGMENT_SHADER_PHONG[] = R"***(
-varying vec3 n;
-varying vec3 v;
-
-void main(void)
-{
-    vec4 result = vec4(0.0);
-    for (int li = 0; li < gl_MaxLights; ++li)
-    {
-        vec3 delta = gl_LightSource[li].position.w * v;
-        vec3 lightDirection = normalize(gl_LightSource[li].position.xyz - delta);
-        vec3 viewDirection = normalize(-v);
-        vec3 reflectDirection = normalize(-reflect(lightDirection, n));
-
-        vec4 Iamb = gl_FrontLightProduct[li].ambient;
-
-        float diffuseAngle = max(dot(n, lightDirection), 0.0);
-        vec4 Idiff = gl_FrontLightProduct[li].diffuse * diffuseAngle;
-        Idiff = clamp(Idiff, 0.0, 1.0);
-
-        float specularAngle = max(dot(reflectDirection, viewDirection), 0.0);
-        vec4 Ispec = gl_FrontLightProduct[li].specular
-                    * pow(specularAngle, gl_FrontMaterial.shininess / 4.0);
-        Ispec = clamp(Ispec, 0.0, 1.0);
-
-        result += Iamb + Idiff + Ispec;
-    }
-
-    gl_FragColor = gl_FrontLightModelProduct.sceneColor + result;
-}
-)***";
-
 void SetupOpenGLState()
 {
     // включаем механизмы трёхмерного мира.
@@ -115,12 +46,16 @@ CWindowClient::CWindowClient(CWindow &window)
     m_sphereMat.SetDiffuse(DARK_BLUE_RGBA);
     m_sphereMat.SetAmbient(DARK_BLUE_RGBA * AMBIENT_SCALE);
 
-    m_programLambert.CompileShader(VERTEX_SHADER, ShaderType::Vertex);
-    m_programLambert.CompileShader(FRAGMENT_SHADER_LAMBERT, ShaderType::Fragment);
+    const std::string vertexShader = CFilesystemUtils::LoadFileAsString("res/lambert-phong.vert");
+    const std::string lambertShader = CFilesystemUtils::LoadFileAsString("res/lambert.frag");
+    const std::string phongShader = CFilesystemUtils::LoadFileAsString("res/phong.frag");
+
+    m_programLambert.CompileShader(vertexShader, ShaderType::Vertex);
+    m_programLambert.CompileShader(lambertShader, ShaderType::Fragment);
     m_programLambert.Link();
 
-    m_programPhong.CompileShader(VERTEX_SHADER, ShaderType::Vertex);
-    m_programPhong.CompileShader(FRAGMENT_SHADER_PHONG, ShaderType::Fragment);
+    m_programPhong.CompileShader(vertexShader, ShaderType::Vertex);
+    m_programPhong.CompileShader(phongShader, ShaderType::Fragment);
     m_programPhong.Link();
 
     m_programQueue = { &m_programPhong, &m_programLambert, &m_programFixed };
