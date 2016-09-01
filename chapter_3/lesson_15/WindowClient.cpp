@@ -8,20 +8,12 @@ const float CAMERA_INITIAL_ROTATION = float(M_PI);
 const float CAMERA_INITIAL_DISTANCE = 10;
 const int SPHERE_PRECISION = 40;
 
-const float MIN_TWIST = -2.f;
-const float MAX_TWIST = 2.f;
-const float NEXT_TWIST_STEP = 0.2f;
-const float TWIST_CHANGE_SPEED = 0.5f;
-
 void SetupOpenGLState()
 {
     // включаем механизмы трёхмерного мира.
     glEnable(GL_DEPTH_TEST);
-//    glEnable(GL_CULL_FACE);
-//    glFrontFace(GL_CCW);
-//    glCullFace(GL_BACK);
 
-    // включаем систему освещения
+    // включаем систему освещения с режимом двустороннего освещения
     glEnable(GL_LIGHTING);
     glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 }
@@ -69,21 +61,7 @@ CWindowClient::CWindowClient(CWindow &window)
 
 void CWindowClient::OnUpdateWindow(float deltaSeconds)
 {
-    // При каждом вызове Update величина twist "догоняет" назначенное значение.
-    const float twistDiff = fabsf(m_nextTwistValue - m_currentTwistValue);
-    if (twistDiff > std::numeric_limits<float>::epsilon())
-    {
-        const float sign = (m_nextTwistValue > m_currentTwistValue) ? 1 : -1;
-        const float growth = deltaSeconds * TWIST_CHANGE_SPEED;
-        if (growth > twistDiff)
-        {
-            m_currentTwistValue = m_nextTwistValue;
-        }
-        else
-        {
-            m_currentTwistValue += sign * growth;
-        }
-    }
+    m_twistController.Update(deltaSeconds);
 
     m_camera.Update(deltaSeconds);
     SetupView(GetWindow().GetWindowSize());
@@ -98,7 +76,7 @@ void CWindowClient::OnUpdateWindow(float deltaSeconds)
     {
         m_programTwist.Use();
         CProgramUniform twist = m_programTwist.FindUniform("TWIST");
-        twist = m_currentTwistValue;
+        twist = m_twistController.GetCurrentValue();
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         m_umbrellaObj.Draw();
@@ -113,19 +91,9 @@ void CWindowClient::OnUpdateWindow(float deltaSeconds)
 
 void CWindowClient::OnKeyDown(const SDL_KeyboardEvent &event)
 {
-    if (m_camera.OnKeyDown(event))
+    if (m_camera.OnKeyDown(event) || m_twistController.OnKeyDown(event))
     {
         return;
-    }
-    switch (event.keysym.sym)
-    {
-    case SDLK_EQUALS:
-    case SDLK_PLUS:
-        m_nextTwistValue = std::min(m_nextTwistValue + NEXT_TWIST_STEP, MAX_TWIST);
-        break;
-    case SDLK_MINUS:
-        m_nextTwistValue = std::max(m_nextTwistValue - NEXT_TWIST_STEP, MIN_TWIST);
-        break;
     }
 }
 

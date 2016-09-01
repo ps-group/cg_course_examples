@@ -1,6 +1,7 @@
 #pragma once
 #include "libchapter3.h"
 #include "WhitneyUmbrella.h"
+#include "TwistValueController.h"
 #include <vector>
 
 class CWindowClient : public CAbstractWindowClient
@@ -25,6 +26,5 @@ private:
     CShaderProgram m_programTwist;
     CShaderProgram m_programFixed;
     bool m_programEnabled = true;
-    float m_currentTwistValue = 0;
-    float m_nextTwistValue = 0;
+    CTwistValueController m_twistController;
 };
