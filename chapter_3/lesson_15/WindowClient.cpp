@@ -53,6 +53,11 @@ CWindowClient::CWindowClient(CWindow &window)
     m_programTwist.CompileShader(twistShader, ShaderType::Vertex);
     m_programTwist.Link();
 
+    std::cerr << "-- TWIST program info ---" << std::endl;
+    CProgramInfo info = m_programTwist.GetProgramInfo();
+    info.PrintProgramInfo(std::cerr);
+    std::cerr << "-------------------------" << std::endl;
+
     if (auto textOpt = m_programTwist.Validate())
     {
         std::cerr << "Validate failed: " << *textOpt << std::endl;
