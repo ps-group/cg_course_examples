@@ -2,7 +2,7 @@
 
 Примеры основаны на C++14 и SDL2 и доступны под OpenSource лицензией MIT (см. LICENSE.md).
 
-По одной статье к каждому примеру вы найдёте на сайте [ps-group.github.io](http://ps-group.github.io)
+По одной статье к каждому примеру вы найдёте на сайте [ps-group.github.io](http://ps-group.github.io/opengl/)
 
 ## Сборка примеров на Windows
 
