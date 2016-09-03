@@ -13,7 +13,7 @@ endif(UNIX)
 include(../cmake/SetCompilerWarningAll.cmake)
 
 macro(add_lesson NUM)
-    aux_source_directory(lesson_${NUM} SRC_LESSON_${NUM})
+    file(GLOB SRC_LESSON_${NUM} "lesson_${NUM}/*.cpp" "lesson_${NUM}/*.h")
     add_executable(lesson_${NUM} ${SRC_LESSON_${NUM}})
     target_link_libraries(lesson_${NUM} ${PROJECT_LIBS})
 endmacro(add_lesson)

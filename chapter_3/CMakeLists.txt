@@ -14,19 +14,23 @@ include(../cmake/SetCompilerWarningAll.cmake)
 include(../cmake/cotire.cmake)
 
 macro(add_lesson NUM)
-    aux_source_directory(lesson_${NUM} SRC_LESSON_${NUM})
+    file(GLOB SRC_LESSON_${NUM} "lesson_${NUM}/*.cpp" "lesson_${NUM}/*.h")
     add_executable(lesson_${NUM} ${SRC_LESSON_${NUM}})
     target_link_libraries(lesson_${NUM} ${PROJECT_LIBS} libchapter3)
 endmacro(add_lesson)
 
-aux_source_directory(libchapter3/src SRC_LIBCHAPTER3)
+file(GLOB SRC_LIBCHAPTER3 "libchapter3/src/*.cpp"
+    "libchapter3/src/*.h"
+    "libchapter3/*.h"
+    "res/*.vert"
+    "res/*.frag")
 add_library(libchapter3 ${SRC_LIBCHAPTER3})
 target_include_directories(libchapter3 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/libchapter3)
 
 add_lesson(13)
 add_lesson(14)
 add_lesson(15)
-#add_lesson(16)
+add_lesson(16)
 #add_lesson(17)
 #add_lesson(18)
 
