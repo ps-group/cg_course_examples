@@ -5,7 +5,6 @@
 namespace
 {
 const char WINDOW_TITLE[] = "SDL2/OpenGL Demo";
-std::once_flag g_glewInitOnceFlag;
 
 // Используем unique_ptr с явно заданной функцией удаления вместо delete.
 using SDLWindowPtr = std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>;
@@ -60,7 +59,6 @@ public:
             std::cerr << "OpenGL context initialization failed" << std::endl;
             std::abort();
         }
-        InitGlewOnce();
     }
 
     glm::ivec2 GetWindowSize() const
@@ -152,19 +150,6 @@ private:
         {
             m_size = {event.data1, event.data2};
         }
-    }
-
-    void InitGlewOnce()
-    {
-        // Вызываем инициализацию GLEW только один раз за время работы приложения.
-        std::call_once(g_glewInitOnceFlag, []() {
-            glewExperimental = GL_TRUE;
-            if (GLEW_OK != glewInit())
-            {
-                std::cerr << "GLEW initialization failed, aborting." << std::endl;
-                std::abort();
-            }
-        });
     }
 
     SDLWindowPtr m_pWindow;

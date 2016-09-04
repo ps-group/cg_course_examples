@@ -4,7 +4,6 @@
 #define _USE_MATH_DEFINES
 #endif
 
-#include <GL/glew.h>
 #include <GL/gl.h>
 #define GLM_FORCE_RADIANS
 #include <glm/vec2.hpp>
