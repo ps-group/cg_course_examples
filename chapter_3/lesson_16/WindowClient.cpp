@@ -18,6 +18,7 @@ void SetupOpenGLState()
 
     // включаем систему освещения
     glEnable(GL_LIGHTING);
+    glEnable(GL_TEXTURE_2D);
 }
 }
 
@@ -30,35 +31,30 @@ CWindowClient::CWindowClient(CWindow &window)
 {
     const glm::vec3 SUNLIGHT_DIRECTION = {-1.f, 0.2f, 0.7f};
     const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
-    const glm::vec4 DARK_BLUE_RGBA = {0.2f, 0.2f, 0.6f, 1.f};
-    const float AMBIENT_SCALE = 0.2f;
 
     window.SetBackgroundColor(BLACK);
+    CheckOpenGLVersion();
     SetupOpenGLState();
+
+    std::string colormapPath = CFilesystemUtils::GetResourceAbspath("res/img/earth.bmp");
+    m_pEarthTexture = LoadTexture2DFromBMP(colormapPath);
+
+    std::string cloudsPath = CFilesystemUtils::GetResourceAbspath("res/img/earth_clouds.bmp");
+    m_pCloudTexture = LoadTexture2DFromBMP(cloudsPath);
 
     m_sunlight.SetDirection(SUNLIGHT_DIRECTION);
     m_sunlight.SetDiffuse(WHITE_RGBA);
     m_sunlight.SetAmbient(0.1f * WHITE_RGBA);
     m_sunlight.SetSpecular(WHITE_RGBA);
 
-    m_sphereMat.SetShininess(30);
-    m_sphereMat.SetSpecular(WHITE_RGBA);
-    m_sphereMat.SetDiffuse(DARK_BLUE_RGBA);
-    m_sphereMat.SetAmbient(DARK_BLUE_RGBA * AMBIENT_SCALE);
-
-    const std::string vertexShader = CFilesystemUtils::LoadFileAsString("res/lambert-phong.vert");
-    const std::string lambertShader = CFilesystemUtils::LoadFileAsString("res/lambert.frag");
-    const std::string phongShader = CFilesystemUtils::LoadFileAsString("res/phong.frag");
-
-    m_programLambert.CompileShader(vertexShader, ShaderType::Vertex);
-    m_programLambert.CompileShader(lambertShader, ShaderType::Fragment);
-    m_programLambert.Link();
+    const std::string vertexShader = CFilesystemUtils::LoadFileAsString("res/copytexture.vert");
+    const std::string phongShader = CFilesystemUtils::LoadFileAsString("res/cloud_earth.frag");
 
     m_programPhong.CompileShader(vertexShader, ShaderType::Vertex);
     m_programPhong.CompileShader(phongShader, ShaderType::Fragment);
     m_programPhong.Link();
 
-    m_programQueue = { &m_programPhong, &m_programLambert, &m_programFixed };
+    m_programQueue = { &m_programPhong, &m_programFixed };
 }
 
 void CWindowClient::OnUpdateWindow(float deltaSeconds)
@@ -67,11 +63,22 @@ void CWindowClient::OnUpdateWindow(float deltaSeconds)
     SetupView(GetWindow().GetWindowSize());
 
     m_sunlight.Setup();
-    m_sphereMat.Setup();
+
+    glActiveTexture(GL_TEXTURE0);
+    m_pEarthTexture->Bind();
+    glActiveTexture(GL_TEXTURE1);
+    m_pCloudTexture->Bind();
+    glActiveTexture(GL_TEXTURE0);
 
     // Активной будет первая программа из очереди.
-    m_programQueue.front()->Use();
-    m_sphereObj.Draw();
+    const CShaderProgram &program = *m_programQueue.front();
+    program.Use();
+    program.FindUniform("colormap") = 0; // GL_TEXTURE0
+    program.FindUniform("surfaceDataMap") = 1; // GL_TEXTURE1
+
+    m_pEarthTexture->DoWhileBinded([this]{
+        m_sphereObj.Draw();
+    });
 }
 
 void CWindowClient::OnKeyDown(const SDL_KeyboardEvent &event)
@@ -93,6 +100,17 @@ void CWindowClient::OnKeyUp(const SDL_KeyboardEvent &event)
     if (event.keysym.sym == SDLK_SPACE)
     {
         std::rotate(m_programQueue.begin(), m_programQueue.begin() + 1, m_programQueue.end());
+    }
+}
+
+void CWindowClient::CheckOpenGLVersion()
+{
+    // В OpenGL 2.0 шейдерные программы вошли в спецификацию API.
+    // Ещё в OpenGL 1.2 мультитекстурирование также вошло в спецификацию,
+    // см. http://opengl.org/registry/specs/ARB/multitexture.txt
+    if (!GLEW_VERSION_2_0)
+    {
+        throw std::runtime_error("Sorry, but OpenGL 3.2 is not available");
     }
 }
 

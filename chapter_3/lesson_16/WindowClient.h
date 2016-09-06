@@ -15,14 +15,15 @@ protected:
     void OnKeyUp(const SDL_KeyboardEvent &) override;
 
 private:
+    void CheckOpenGLVersion();
     void SetupView(const glm::ivec2 &size);
 
+    CTexture2DUniquePtr m_pEarthTexture;
+    CTexture2DUniquePtr m_pCloudTexture;
     CIdentitySphere m_sphereObj;
-    CPhongModelMaterial m_sphereMat;
     CCamera m_camera;
     CDirectedLightSource m_sunlight;
     CShaderProgram m_programPhong;
-    CShaderProgram m_programLambert;
     CShaderProgram m_programFixed;
     std::vector<CShaderProgram *> m_programQueue;
 };

@@ -34,6 +34,7 @@ CWindowClient::CWindowClient(CWindow &window)
     const float AMBIENT_SCALE = 0.2f;
 
     window.SetBackgroundColor(BLACK);
+    CheckOpenGLVersion();
     SetupOpenGLState();
 
     m_sunlight.SetDirection(SUNLIGHT_DIRECTION);
@@ -93,6 +94,15 @@ void CWindowClient::OnKeyUp(const SDL_KeyboardEvent &event)
     if (event.keysym.sym == SDLK_SPACE)
     {
         std::rotate(m_programQueue.begin(), m_programQueue.begin() + 1, m_programQueue.end());
+    }
+}
+
+void CWindowClient::CheckOpenGLVersion()
+{
+    // В OpenGL 2.0 шейдерные программы вошли в спецификацию API.
+    if (!GLEW_VERSION_2_0)
+    {
+        throw std::runtime_error("Sorry, but OpenGL 3.2 is not available");
     }
 }
 

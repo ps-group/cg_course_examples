@@ -22,10 +22,10 @@ CWindowClient::CWindowClient(CWindow &window)
 {
     const glm::vec4 GREEN = { 0.15f, 0.4f, 0.15f, 1.f };
     GetWindow().SetBackgroundColor(GREEN);
+    CheckOpenGLVersion();
     SetupOpenGLState();
 
-
-    const std::string vertexShader = CFilesystemUtils::LoadFileAsString("res/checkers.vert");
+    const std::string vertexShader = CFilesystemUtils::LoadFileAsString("res/copytexture.vert");
     const std::string checkersShader = CFilesystemUtils::LoadFileAsString("res/checkers.frag");
     const std::string pictureShader = CFilesystemUtils::LoadFileAsString("res/checkers-and-triangle.frag");
 
@@ -57,6 +57,15 @@ void CWindowClient::OnKeyUp(const SDL_KeyboardEvent &event)
     if (event.keysym.sym == SDLK_SPACE)
     {
         std::rotate(m_programQueue.begin(), m_programQueue.begin() + 1, m_programQueue.end());
+    }
+}
+
+void CWindowClient::CheckOpenGLVersion()
+{
+    // В OpenGL 2.0 шейдерные программы вошли в спецификацию API.
+    if (!GLEW_VERSION_2_0)
+    {
+        throw std::runtime_error("Sorry, but OpenGL 3.2 is not available");
     }
 }
 

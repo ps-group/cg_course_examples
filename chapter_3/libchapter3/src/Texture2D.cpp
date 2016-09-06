@@ -60,7 +60,11 @@ CTexture2DUniquePtr LoadTexture2DFromBMP(const std::string &path)
                                                 SDL_PIXELFORMAT_RGB24, 0));
         break;
     default:
-        throw std::runtime_error("Unsupported image pixel format at " + path);
+    {
+        std::string name = SDL_GetPixelFormatName(pSurface->format->format);
+        throw std::runtime_error("Unsupported image pixel format " + name
+                                 + " at " + path);
+    }
     }
 
     FlipSurfaceVertically(*pSurface);

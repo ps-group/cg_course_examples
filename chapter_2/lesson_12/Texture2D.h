@@ -17,7 +17,7 @@ public:
     void DoWhileBinded(TFunction && fn)
     {
         Bind();
-        // При выходе из функции надо обязательно сделать Unbind.
+        // При выходе из функции гарантированно выполняем Unbind.
         BOOST_SCOPE_EXIT_ALL() {
             Unbind();
         };

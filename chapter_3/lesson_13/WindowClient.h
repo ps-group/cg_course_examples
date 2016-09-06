@@ -15,6 +15,7 @@ protected:
     void OnKeyUp(const SDL_KeyboardEvent &) override;
 
 private:
+    void CheckOpenGLVersion();
     void SetupView(const glm::ivec2 &size);
 
     CIdentitySphere m_sphereObj;

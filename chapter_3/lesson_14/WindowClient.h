@@ -14,6 +14,7 @@ protected:
     void OnKeyUp(const SDL_KeyboardEvent &) override;
 
 private:
+    void CheckOpenGLVersion();
     void SetupView(const glm::ivec2 &size);
 
     CQuad m_quadObj;

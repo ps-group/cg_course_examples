@@ -6,9 +6,25 @@ namespace
 {
 std::once_flag g_glewInitOnceFlag;
 
-// Используем unique_ptr с явно заданной функцией удаления вместо delete.
-using SDLWindowPtr = std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>;
-using SDLGLContextPtr = std::unique_ptr<void, void(*)(SDL_GLContext)>;
+struct SDLWindowDeleter
+{
+    void operator()(SDL_Window *ptr)
+    {
+        SDL_DestroyWindow(ptr);
+    }
+};
+// Используем unique_ptr с явно заданным функтором удаления вместо delete.
+using SDLWindowPtr = std::unique_ptr<SDL_Window, SDLWindowDeleter>;
+
+struct SDLGLContextDeleter
+{
+    void operator()(SDL_GLContext ptr)
+    {
+        SDL_GL_DeleteContext(ptr);
+    }
+};
+// Используем unique_ptr с явно заданным функтором удаления вместо delete.
+using SDLGLContextPtr = std::unique_ptr<void, SDLGLContextDeleter>;
 
 class CChronometer
 {
@@ -66,12 +82,6 @@ void DispatchEvent(const SDL_Event &event, IWindowClient &acceptor)
 class CWindow::Impl
 {
 public:
-    Impl()
-        : m_pWindow(nullptr, SDL_DestroyWindow)
-        , m_pGLContext(nullptr, SDL_GL_DeleteContext)
-    {
-    }
-
     void Show(const std::string &title, const glm::ivec2 &size)
     {
         m_size = size;
@@ -87,7 +97,6 @@ public:
         // Создаём контекст OpenGL, связанный с окном.
         m_pGLContext.reset(SDL_GL_CreateContext(m_pWindow.get()));
         InitGlewOnce();
-        CheckOpenglVersion();
     }
 
     glm::ivec2 GetWindowSize() const
@@ -218,14 +227,6 @@ private:
                 throw std::runtime_error("GLEW initialization failed");
             }
         });
-    }
-
-    void CheckOpenglVersion()
-    {
-        if (!GLEW_VERSION_3_2)
-        {
-            throw std::runtime_error("Sorry, but OpenGL 3.2 is not available");
-        }
     }
 
     IWindowClient *m_pClient = nullptr;
