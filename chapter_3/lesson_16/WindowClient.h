@@ -22,6 +22,7 @@ private:
     CTexture2DUniquePtr m_pCloudTexture;
     CIdentitySphere m_sphereObj;
     CCamera m_camera;
+    CPhongModelMaterial m_sphereMat;
     CDirectedLightSource m_sunlight;
     CShaderProgram m_programPhong;
     CShaderProgram m_programFixed;

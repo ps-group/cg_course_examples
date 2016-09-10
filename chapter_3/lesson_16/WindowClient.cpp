@@ -42,12 +42,17 @@ CWindowClient::CWindowClient(CWindow &window)
     std::string cloudsPath = CFilesystemUtils::GetResourceAbspath("res/img/earth_clouds.bmp");
     m_pCloudTexture = LoadTexture2DFromBMP(cloudsPath);
 
+    m_sphereMat.SetDiffuse(WHITE_RGBA);
+    m_sphereMat.SetAmbient(WHITE_RGBA);
+    m_sphereMat.SetSpecular(WHITE_RGBA);
+    m_sphereMat.SetShininess(30);
+
     m_sunlight.SetDirection(SUNLIGHT_DIRECTION);
     m_sunlight.SetDiffuse(WHITE_RGBA);
-    m_sunlight.SetAmbient(0.1f * WHITE_RGBA);
+    m_sunlight.SetAmbient(0.4f * WHITE_RGBA);
     m_sunlight.SetSpecular(WHITE_RGBA);
 
-    const std::string vertexShader = CFilesystemUtils::LoadFileAsString("res/copytexture.vert");
+    const std::string vertexShader = CFilesystemUtils::LoadFileAsString("res/cloud_earth.vert");
     const std::string phongShader = CFilesystemUtils::LoadFileAsString("res/cloud_earth.frag");
 
     m_programPhong.CompileShader(vertexShader, ShaderType::Vertex);
@@ -62,13 +67,16 @@ void CWindowClient::OnUpdateWindow(float deltaSeconds)
     m_camera.Update(deltaSeconds);
     SetupView(GetWindow().GetWindowSize());
 
+    m_sphereMat.Setup();
     m_sunlight.Setup();
 
-    glActiveTexture(GL_TEXTURE0);
-    m_pEarthTexture->Bind();
+    // переключаемся на текстурный слот #1
     glActiveTexture(GL_TEXTURE1);
     m_pCloudTexture->Bind();
+    // переключаемся обратно на текстурный слот #0
+    // перед началом рендеринга активным будет именно этот слот.
     glActiveTexture(GL_TEXTURE0);
+    m_pEarthTexture->Bind();
 
     // Активной будет первая программа из очереди.
     const CShaderProgram &program = *m_programQueue.front();
