@@ -30,4 +30,4 @@ private:
 
 using CTexture2DUniquePtr = std::unique_ptr<CTexture2D>;
 
-CTexture2DUniquePtr LoadTexture2DFromBMP(const std::string &path);
+CTexture2DUniquePtr LoadTexture2D(const std::string &path);

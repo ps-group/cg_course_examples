@@ -1,5 +1,6 @@
 uniform sampler2D colormap;
 uniform sampler2D surfaceDataMap;
+uniform sampler2D nightColormap;
 
 varying vec3 normal;
 varying vec3 viewDir;
@@ -37,21 +38,21 @@ void main()
 
     // Get base color by fetching the texture
     vec4 color = texture2D(colormap, gl_TexCoord[0].st);
+    // Get night earth color by fetching the texture
+    vec4 nightColor = texture2D(nightColormap, gl_TexCoord[0].st);
     // Extract surface data where each channel has own meaning
     vec4 surfaceData = texture2D(surfaceDataMap, gl_TexCoord[0].st);
     // Red channel keeps inverted cloud luminance
-    float cloudGray = 1.0 - surfaceData.r;
+    float cloudGray = surfaceData.r;
+    // Green channel keeps 1 for water and 0 for earth.
+    float waterFactor = surfaceData.g;
 
     vec4 diffuseColor = mix(color, vec4(factors.diffuse), cloudGray);
-    vec4 diffuseIntensity = diffuseColor * factors.diffuse
+    vec4 diffuseIntensity = mix(nightColor, diffuseColor, vec4(factors.diffuse))
             * gl_FrontLightProduct[0].diffuse;
 
-    vec4 ambientColor = mix(color, vec4(1.0), cloudGray);
-    vec4 ambientIntensity = ambientColor
-            * gl_FrontLightProduct[0].ambient;
-
-    vec4 specularIntensity = factors.specular
+    vec4 specularIntensity = waterFactor * factors.specular
             * gl_FrontLightProduct[0].specular;
 
-    gl_FragColor = ambientIntensity + diffuseIntensity + specularIntensity;
+    gl_FragColor = diffuseIntensity + specularIntensity;
 }

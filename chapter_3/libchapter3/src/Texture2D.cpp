@@ -1,10 +1,17 @@
 #include "libchapter3_private.h"
 #include "Texture2D.h"
+#include <SDL2/SDL_image.h>
 #include <cstdlib>
 
+struct SDLSurfaceDeleter
+{
+    void operator()(SDL_Surface *ptr)
+    {
+        SDL_FreeSurface(ptr);
+    }
+};
 // Используем unique_ptr с явно заданной функцией удаления вместо delete.
-using SDLSurfacePtr = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>;
-using SDLPixelFormatPtr = std::unique_ptr<SDL_PixelFormat, void(*)(SDL_PixelFormat*)>;
+using SDLSurfacePtr = std::unique_ptr<SDL_Surface, SDLSurfaceDeleter>;
 
 static void FlipSurfaceVertically(SDL_Surface & surface)
 {
@@ -42,9 +49,9 @@ void CTexture2D::Unbind()
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-CTexture2DUniquePtr LoadTexture2DFromBMP(const std::string &path)
+CTexture2DUniquePtr LoadTexture2D(const std::string &path)
 {
-    SDLSurfacePtr pSurface(SDL_LoadBMP(path.c_str()), SDL_FreeSurface);
+    SDLSurfacePtr pSurface(IMG_Load(path.c_str()));
     if (!pSurface)
     {
         throw std::runtime_error("Cannot find texture at " + path);
