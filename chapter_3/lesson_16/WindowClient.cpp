@@ -3,7 +3,6 @@
 
 namespace
 {
-const glm::vec4 BLACK = {0, 0, 0, 1};
 const float CAMERA_INITIAL_ROTATION = 0.1f;
 const float CAMERA_INITIAL_DISTANCE = 3;
 const int SPHERE_PRECISION = 40;
@@ -15,10 +14,6 @@ void SetupOpenGLState()
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CCW);
     glCullFace(GL_BACK);
-
-    // включаем систему освещения
-    glEnable(GL_LIGHTING);
-    glEnable(GL_TEXTURE_2D);
 }
 
 template <class T>
@@ -28,6 +23,14 @@ void DoWithTransform(const glm::mat4 &mat, T && callback)
     glMultMatrixf(glm::value_ptr(mat));
     callback();
     glPopMatrix();
+}
+
+void SetupModelViewProjection(const glm::mat4 &modelView, const glm::mat4 &projection)
+{
+    glLoadMatrixf(glm::value_ptr(modelView));
+    glMatrixMode(GL_PROJECTION);
+    glLoadMatrixf(glm::value_ptr(projection));
+    glMatrixMode(GL_MODELVIEW);
 }
 }
 
@@ -39,8 +42,9 @@ CWindowClient::CWindowClient(CWindow &window)
 {
     const glm::vec3 SUNLIGHT_DIRECTION = {-1.f, 0.2f, 0.7f};
     const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
+    const glm::vec4 BLACK_RGBA = {0, 0, 0, 1};
 
-    window.SetBackgroundColor(BLACK);
+    window.SetBackgroundColor(BLACK_RGBA);
     CheckOpenGLVersion();
     SetupOpenGLState();
 
@@ -72,28 +76,23 @@ void CWindowClient::OnUpdateWindow(float deltaSeconds)
 
 void CWindowClient::OnKeyDown(const SDL_KeyboardEvent &event)
 {
-    if (m_camera.OnKeyDown(event))
-    {
-        return;
-    }
+    m_camera.OnKeyDown(event);
 }
 
 void CWindowClient::OnKeyUp(const SDL_KeyboardEvent &event)
 {
-    if (m_camera.OnKeyUp(event))
-    {
-        return;
-    }
+    m_camera.OnKeyUp(event);
 }
 
 void CWindowClient::CheckOpenGLVersion()
 {
+    // Мы требуем наличия OpenGL 2.0
     // В OpenGL 2.0 шейдерные программы вошли в спецификацию API.
     // Ещё в OpenGL 1.2 мультитекстурирование также вошло в спецификацию,
     // см. http://opengl.org/registry/specs/ARB/multitexture.txt
     if (!GLEW_VERSION_2_0)
     {
-        throw std::runtime_error("Sorry, but OpenGL 3.2 is not available");
+        throw std::runtime_error("Sorry, but OpenGL 2.0 is not available");
     }
 }
 
@@ -107,9 +106,7 @@ void CWindowClient::UpdateRotation(float deltaSeconds)
 
 void CWindowClient::SetupView(const glm::ivec2 &size)
 {
-    glViewport(0, 0, size.x, size.y);
     const glm::mat4 mv = m_camera.GetViewTransform();
-    glLoadMatrixf(glm::value_ptr(mv));
 
     // Матрица перспективного преобразования вычисляется функцией
     // glm::perspective, принимающей угол обзора, соотношение ширины
@@ -119,7 +116,7 @@ void CWindowClient::SetupView(const glm::ivec2 &size)
     const float zNear = 0.01f;
     const float zFar = 100.f;
     const glm::mat4 proj = glm::perspective(fieldOfView, aspect, zNear, zFar);
-    glMatrixMode(GL_PROJECTION);
-    glLoadMatrixf(glm::value_ptr(proj));
-    glMatrixMode(GL_MODELVIEW);
+
+    glViewport(0, 0, size.x, size.y);
+    SetupModelViewProjection(mv, proj);
 }

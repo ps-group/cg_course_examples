@@ -42,7 +42,7 @@ void main()
     vec4 nightColor = texture2D(nightColormap, gl_TexCoord[0].st);
     // Extract surface data where each channel has own meaning
     vec4 surfaceData = texture2D(surfaceDataMap, gl_TexCoord[0].st);
-    // Red channel keeps inverted cloud luminance
+    // Red channel keeps cloud luminance
     float cloudGray = surfaceData.r;
     // Green channel keeps 1 for water and 0 for earth.
     float waterFactor = surfaceData.g;
