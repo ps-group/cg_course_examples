@@ -97,6 +97,7 @@ public:
     ~CParticleSystem();
 
     void SetEmitter(std::unique_ptr<CParticleEmitter> && pEmitter);
+	void SetGravity(const glm::vec2 &gravity);
 
     // @param dt - разница во времени с предыдущим вызовом Advance.
     void Advance(float dt);
@@ -105,4 +106,5 @@ public:
 private:
     std::unique_ptr<CParticleEmitter> m_pEmitter;
     std::vector<std::unique_ptr<CFlowerParticle>> m_flowers;
+	glm::vec2 m_gravity;
 };

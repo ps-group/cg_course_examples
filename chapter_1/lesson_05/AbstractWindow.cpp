@@ -1,34 +1,43 @@
 #include "stdafx.h"
 #include "AbstractWindow.h"
-#include <SDL2/SDL_video.h>
+#include <SDL2/SDL.h>
+#include <thread>
 
 namespace
 {
-const char WINDOW_TITLE[] = "SDL2/OpenGL Demo";
+const char WINDOW_TITLE[] = "Particle System Demo";
 std::once_flag g_glewInitOnceFlag;
 
 // Используем unique_ptr с явно заданной функцией удаления вместо delete.
 using SDLWindowPtr = std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>;
 using SDLGLContextPtr = std::unique_ptr<void, void(*)(SDL_GLContext)>;
+using std::chrono::system_clock;
+using std::chrono::milliseconds;
 
 class CChronometer
 {
 public:
     CChronometer()
-        : m_lastTime(std::chrono::system_clock::now())
+        : m_lastTime(system_clock::now())
     {
     }
 
     float GrabDeltaTime()
     {
-        auto newTime = std::chrono::system_clock::now();
-        auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(newTime - m_lastTime);
+        auto newTime = system_clock::now();
+        auto timePassed = std::chrono::duration_cast<milliseconds>(newTime - m_lastTime);
         m_lastTime = newTime;
         return 0.001f * float(timePassed.count());
     }
 
+	void WaitNextFrameTime(const milliseconds &framePeriod)
+	{
+		system_clock::time_point nextFrameTime = m_lastTime + framePeriod;
+		std::this_thread::sleep_until(nextFrameTime);
+	}
+
 private:
-    std::chrono::system_clock::time_point m_lastTime;
+    system_clock::time_point m_lastTime;
 };
 }
 
@@ -44,6 +53,8 @@ public:
     void Show(glm::ivec2 const& size)
     {
         m_size = size;
+
+		SDL_Init(SDL_INIT_EVERYTHING);
 
         // Выбираем Compatiblity Profile
         // Установка атрибутов SDL_GL должна выполняться до создания окна,
@@ -174,7 +185,7 @@ private:
     SDLGLContextPtr m_pGLContext;
     glm::ivec2 m_size;
     glm::vec4 m_clearColor;
-    bool m_isTerminated = false;
+	bool m_isTerminated = false;
 };
 
 CAbstractWindow::CAbstractWindow()
@@ -193,6 +204,7 @@ void CAbstractWindow::Show(const glm::ivec2 &size)
 
 void CAbstractWindow::DoGameLoop()
 {
+	const milliseconds FRAME_PERIOD(16);
     SDL_Event event;
     CChronometer chronometer;
     while (true)
@@ -215,6 +227,7 @@ void CAbstractWindow::DoGameLoop()
         OnDrawWindow(m_pImpl->GetWindowSize());
         m_pImpl->DumpGLErrors();
         m_pImpl->SwapBuffers();
+		chronometer.WaitNextFrameTime(FRAME_PERIOD);
     }
 }
 
