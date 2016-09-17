@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "libchapter3.h"
 #include "Quad.h"
 

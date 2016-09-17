@@ -3,7 +3,7 @@
 
 CEarthProgramContext::CEarthProgramContext()
 {
-    std::string path = CFilesystemUtils::GetResourceAbspath("res/img/earth_colormap.jpg");
+	boost::filesystem::path path = CFilesystemUtils::GetResourceAbspath("res/img/earth_colormap.jpg");
     m_pEarthTexture = LoadTexture2D(path);
     path = CFilesystemUtils::GetResourceAbspath("res/img/earth_clouds.jpg");
     m_pCloudTexture = LoadTexture2D(path);

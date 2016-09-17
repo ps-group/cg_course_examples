@@ -1,6 +1,5 @@
 #include "libchapter3_private.h"
 #include "FilesystemUtils.h"
-#include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <fstream>
 #ifdef _WIN32
@@ -42,12 +41,12 @@ std::string GetExecutablePath()
 }
 }
 
-std::string CFilesystemUtils::GetResourceAbspath(const std::string &path)
+boost::filesystem::path CFilesystemUtils::GetResourceAbspath(const std::string &path)
 {
     const fs::path currentPath = path;
     if (currentPath.is_absolute())
     {
-        return path;
+        return currentPath;
     }
 
     const fs::path executableDir = fs::path(GetExecutablePath()).parent_path();
@@ -57,7 +56,7 @@ std::string CFilesystemUtils::GetResourceAbspath(const std::string &path)
         fs::path abspath = fs::absolute(currentPath, dir);
         if (fs::exists(abspath))
         {
-            return abspath.native();
+            return abspath;
         }
     }
     throw std::runtime_error("Resource not found: " + path);
@@ -65,11 +64,11 @@ std::string CFilesystemUtils::GetResourceAbspath(const std::string &path)
 
 std::string CFilesystemUtils::LoadFileAsString(const std::string &path)
 {
-    const std::string abspath = GetResourceAbspath(path);
-    std::ifstream input(abspath);
+    const fs::path abspath = GetResourceAbspath(path);
+    std::ifstream input(abspath.native());
     if (!input.is_open())
     {
-        throw std::runtime_error("Cannot open for reading: " + abspath);
+        throw std::runtime_error("Cannot open for reading: " + abspath.generic_string());
     }
 
     std::string text;

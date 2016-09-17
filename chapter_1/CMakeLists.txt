@@ -17,7 +17,7 @@ else(UNIX)
     link_directories(${CG_WIN32_LINKER_PATHS})
     add_definitions(-DGLEW_STATIC=1)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4201 /wd4324")
-    set(CG_GLEW_LIBRARY optimized glew32s$ debug glew32sd)
+    set(CG_GLEW_LIBRARY optimized glew32s debug glew32sd)
     set(PROJECT_LIBS SDL2main SDL2 ${CG_GLEW_LIBRARY} OpenGL32)
 endif(UNIX)
 

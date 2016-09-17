@@ -1,51 +1,10 @@
 #include "Window.h"
 #include "AbstractWindowClient.h"
+#include "Utils.h"
 #include "libchapter3_private.h"
 
 namespace
 {
-std::once_flag g_glewInitOnceFlag;
-
-struct SDLWindowDeleter
-{
-    void operator()(SDL_Window *ptr)
-    {
-        SDL_DestroyWindow(ptr);
-    }
-};
-// Используем unique_ptr с явно заданным функтором удаления вместо delete.
-using SDLWindowPtr = std::unique_ptr<SDL_Window, SDLWindowDeleter>;
-
-struct SDLGLContextDeleter
-{
-    void operator()(SDL_GLContext ptr)
-    {
-        SDL_GL_DeleteContext(ptr);
-    }
-};
-// Используем unique_ptr с явно заданным функтором удаления вместо delete.
-using SDLGLContextPtr = std::unique_ptr<void, SDLGLContextDeleter>;
-
-class CChronometer
-{
-public:
-    CChronometer()
-        : m_lastTime(std::chrono::system_clock::now())
-    {
-    }
-
-    float GrabDeltaTime()
-    {
-        auto newTime = std::chrono::system_clock::now();
-        auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(newTime - m_lastTime);
-        m_lastTime = newTime;
-        return 0.001f * float(timePassed.count());
-    }
-
-private:
-    std::chrono::system_clock::time_point m_lastTime;
-};
-
 glm::vec2 GetMousePosition(const SDL_MouseButtonEvent &event)
 {
     return { event.x, event.y };
@@ -84,10 +43,13 @@ class CWindow::Impl
 public:
     void Show(const std::string &title, const glm::ivec2 &size)
     {
-        m_size = size;
+		m_size = size;
+
+		CUtils::InitOnceSDL2();
 
         // Выбираем Compatiblity Profile
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+
         // Специальное значение SDL_WINDOWPOS_CENTERED вместо x и y заставит SDL2
         // разместить окно в центре монитора по осям x и y.
         // Для использования OpenGL вы ДОЛЖНЫ указать флаг SDL_WINDOW_OPENGL.
@@ -95,8 +57,12 @@ public:
                                          size.x, size.y, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE));
 
         // Создаём контекст OpenGL, связанный с окном.
-        m_pGLContext.reset(SDL_GL_CreateContext(m_pWindow.get()));
-        InitGlewOnce();
+		m_pGLContext.reset(SDL_GL_CreateContext(m_pWindow.get()));
+		if (!m_pGLContext)
+		{
+			CUtils::ValidateSDL2Errors();
+		}
+		CUtils::InitOnceGLEW();
     }
 
     glm::ivec2 GetWindowSize() const
@@ -110,7 +76,9 @@ public:
     }
 
     void DoMainLoop()
-    {
+	{
+		const std::chrono::milliseconds FRAME_PERIOD(16);
+
         SDL_Event event;
         CChronometer chronometer;
         while (true)
@@ -133,8 +101,9 @@ public:
                 const float deltaSeconds = chronometer.GrabDeltaTime();
                 m_pClient->OnUpdateWindow(deltaSeconds);
             }
-            DumpGLErrors();
-            SwapBuffers();
+			CUtils::ValidateOpenGLErrors();
+			SwapBuffers();
+			chronometer.WaitNextFrameTime(FRAME_PERIOD);
         }
     }
 
@@ -156,40 +125,6 @@ public:
         // При этом система отдаёт старый буфер для рисования нового кадра.
         // Обмен двух буферов вместо создания новых позволяет не тратить ресурсы впустую.
         SDL_GL_SwapWindow(m_pWindow.get());
-    }
-
-    void DumpGLErrors()
-    {
-        GLenum error = glGetError();
-        if (error != GL_NO_ERROR)
-        {
-            std::string message;
-            switch (error)
-            {
-            case GL_INVALID_ENUM:
-                message = "invalid enum passed to GL function (GL_INVALID_ENUM)";
-                break;
-            case GL_INVALID_VALUE:
-                message = "invalid parameter passed to GL function (GL_INVALID_VALUE)";
-                break;
-            case GL_INVALID_OPERATION:
-                message = "cannot execute some of GL functions in current state (GL_INVALID_OPERATION)";
-                break;
-            case GL_STACK_OVERFLOW:
-                message = "matrix stack overflow occured inside GL (GL_STACK_OVERFLOW)";
-                break;
-            case GL_STACK_UNDERFLOW:
-                message = "matrix stack underflow occured inside GL (GL_STACK_UNDERFLOW)";
-                break;
-            case GL_OUT_OF_MEMORY:
-                message = "no enough memory to execute GL function (GL_OUT_OF_MEMORY)";
-                break;
-            default:
-                message = "error in some GL extension (framebuffers, shaders, etc)";
-                break;
-            }
-            throw std::runtime_error("OpenGL error: " + message);
-        }
     }
 
     bool ConsumeEvent(const SDL_Event &event)
@@ -215,18 +150,6 @@ private:
         {
             m_size = {event.data1, event.data2};
         }
-    }
-
-    void InitGlewOnce()
-    {
-        // Вызываем инициализацию GLEW только один раз за время работы приложения.
-        std::call_once(g_glewInitOnceFlag, []() {
-            glewExperimental = GL_TRUE;
-            if (GLEW_OK != glewInit())
-            {
-                throw std::runtime_error("GLEW initialization failed");
-            }
-        });
     }
 
     IWindowClient *m_pClient = nullptr;

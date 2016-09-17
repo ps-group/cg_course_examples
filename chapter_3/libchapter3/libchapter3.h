@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/libchapter3_private.h"
+#include "src/Utils.h"
 #include "src/FilesystemUtils.h"
 #include "src/Window.h"
 #include "src/AbstractWindowClient.h"
