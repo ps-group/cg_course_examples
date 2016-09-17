@@ -65,24 +65,22 @@ boost::filesystem::path CFilesystemUtils::GetResourceAbspath(const std::string &
 std::string CFilesystemUtils::LoadFileAsString(const std::string &path)
 {
     const fs::path abspath = GetResourceAbspath(path);
-    std::ifstream input(abspath.native());
+    std::ifstream input;
+	input.open(abspath.native());
     if (!input.is_open())
     {
         throw std::runtime_error("Cannot open for reading: " + abspath.generic_string());
     }
 
-    std::string text;
-    char buffer[FILE_RESERVE_SIZE];
-    text.reserve(sizeof(buffer));
-    input.exceptions(std::ios::failbit | std::ios::badbit);
-    while (true)
+	std::string text;
+    text.reserve(FILE_RESERVE_SIZE);
+    input.exceptions(std::ios::badbit);
+
+	std::string line;
+    while (std::getline(input, line))
     {
-        std::streamsize readCount = input.readsome(buffer, sizeof(buffer));
-        if (readCount == 0)
-        {
-            break;
-        }
-        text.append(buffer, size_t(readCount));
+		text.append(line);
+		text.append("\n");
     }
 
     return text;

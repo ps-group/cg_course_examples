@@ -65,7 +65,7 @@ void CTexture2D::Unbind()
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-CTexture2DUniquePtr LoadTexture2D(boost::filesystem::path &path)
+CTexture2DUniquePtr LoadTexture2D(const boost::filesystem::path &path)
 {
 	const std::string pathUtf8 = ConvertPathToUtf8(path);
     SDLSurfacePtr pSurface(IMG_Load(pathUtf8.c_str()));
