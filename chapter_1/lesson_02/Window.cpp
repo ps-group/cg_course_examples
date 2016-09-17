@@ -1,16 +1,10 @@
+#include "stdafx.h"
 #include "Window.h"
 #include <mutex>
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <cctype>
-#include <boost/algorithm/string/replace.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/join.hpp>
-#include <boost/algorithm/string/predicate.hpp>
-#include <boost/algorithm/string/classification.hpp>
-#include <GL/glew.h>
-#include <GL/gl.h>
 
 namespace
 {

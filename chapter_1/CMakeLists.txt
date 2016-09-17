@@ -2,6 +2,7 @@ project(CG_chapter_1)
 cmake_minimum_required(VERSION 2.8)
 
 include(../cmake/SetCompilerWarningAll.cmake)
+include(../cmake/PrecompiledHeader.cmake)
 include(../cmake/win32_paths.cmake)
 
 # Disable configurations `MinSizeRel` and `RelWithDebInfo`
@@ -24,6 +25,7 @@ macro(add_lesson NUM)
     file(GLOB SRC_LESSON_${NUM} "lesson_${NUM}/*.cpp" "lesson_${NUM}/*.h")
     add_executable(lesson_${NUM} ${SRC_LESSON_${NUM}})
     target_link_libraries(lesson_${NUM} ${PROJECT_LIBS})
+    add_precompiled_header(lesson_${NUM} "stdafx.h" SOURCE_CXX "lesson_${NUM}/stdafx.cpp")
 endmacro(add_lesson)
 
 add_lesson(01)

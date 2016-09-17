@@ -1,57 +1,19 @@
+#include "stdafx.h"
 #include "AbstractWindow.h"
-#include <SDL2/SDL_video.h>
-
-#ifdef _WIN32
-#include <Windows.h>
-#endif
-#include <GL/gl.h>
-
-#include <glm/vec2.hpp>
-#include <glm/vec4.hpp>
-#include <chrono>
-#include <type_traits>
-#include <iostream>
+#include "Utils.h"
 
 namespace
 {
-const char WINDOW_TITLE[] = "SDL2/OpenGL Demo";
-
-// Используем unique_ptr с явно заданной функцией удаления вместо delete.
-using SDLWindowPtr = std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>;
-using SDLGLContextPtr = std::unique_ptr<void, void(*)(SDL_GLContext)>;
-
-class CChronometer
-{
-public:
-    CChronometer()
-        : m_lastTime(std::chrono::system_clock::now())
-    {
-    }
-
-    float GrabDeltaTime()
-    {
-        auto newTime = std::chrono::system_clock::now();
-        auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(newTime - m_lastTime);
-        m_lastTime = newTime;
-        return 0.001f * float(timePassed.count());
-    }
-
-private:
-    std::chrono::system_clock::time_point m_lastTime;
-};
+const char WINDOW_TITLE[] = "SDL2+OpenGL Demo (press R, G, B to change window color)";
 }
 
 class CAbstractWindow::Impl
 {
 public:
-    Impl()
-        : m_pWindow(nullptr, SDL_DestroyWindow)
-        , m_pGLContext(nullptr, SDL_GL_DeleteContext)
-    {
-    }
-
     void ShowFixedSize(glm::ivec2 const& size)
-    {
+	{
+		CUtils::InitOnceSDL2();
+
         // Специальное значение SDL_WINDOWPOS_CENTERED вместо x и y заставит SDL2
         // разместить окно в центре монитора по осям x и y.
         // Для использования OpenGL вы ДОЛЖНЫ указать флаг SDL_WINDOW_OPENGL.
@@ -62,8 +24,7 @@ public:
         m_pGLContext.reset(SDL_GL_CreateContext(m_pWindow.get()));
         if (!m_pGLContext)
         {
-            std::cerr << "OpenGL context initialization failed" << std::endl;
-            std::abort();
+			CUtils::ValidateSDL2Errors();
         }
     }
 

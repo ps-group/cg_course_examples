@@ -1,7 +1,5 @@
-﻿#include "Window.h"
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <glm/vec2.hpp>
+﻿#include "stdafx.h"
+#include "Window.h"
 #include <SDL2/SDL.h>
 
 // Выключаем макроподмену main на SDL_main,

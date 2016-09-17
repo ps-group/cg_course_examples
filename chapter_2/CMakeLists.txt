@@ -11,7 +11,6 @@ else(UNIX)
 endif(UNIX)
 
 include(../cmake/SetCompilerWarningAll.cmake)
-include(../cmake/cotire.cmake)
 
 macro(add_lesson NUM)
     file(GLOB SRC_LESSON_${NUM} "lesson_${NUM}/*.cpp" "lesson_${NUM}/*.h")

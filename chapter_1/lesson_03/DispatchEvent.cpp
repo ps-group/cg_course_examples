@@ -1,5 +1,5 @@
+#include "stdafx.h"
 #include "DispatchEvent.h"
-#include <glm/vec2.hpp>
 
 void sdl::DispatchEvent(const SDL_Event &event, IInputEventAcceptor &acceptor)
 {
