@@ -6,7 +6,7 @@ void CFlowerParticle::Advance(float dt, const glm::vec2 &acceleration)
 {
     m_lifetime -= dt;
     m_velocity += dt * acceleration;
-    SetPosition(m_velocity * dt + GetPosition());
+    SetPosition(dt * m_velocity + GetPosition());
 }
 
 bool CFlowerParticle::IsAlive() const

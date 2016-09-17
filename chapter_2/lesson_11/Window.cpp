@@ -9,7 +9,6 @@ namespace
 {
 const glm::vec4 BLACK = {0, 0, 0, 1};
 const float MATERIAL_SHININESS = 30.f;
-const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
 const glm::vec4 FADED_WHITE_RGBA = {0.3f, 0.3f, 0.3f, 1.f};
 const glm::vec4 YELLOW_RGBA = {1, 1, 0, 1};
 const glm::vec3 SUNLIGHT_DIRECTION = {-1.f, 0.2f, 0.7f};

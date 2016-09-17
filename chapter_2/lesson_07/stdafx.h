@@ -2,6 +2,7 @@
 
 #ifdef _WIN32
 #define _USE_MATH_DEFINES
+#include <Windows.h>
 #endif
 
 #include <GL/gl.h>
