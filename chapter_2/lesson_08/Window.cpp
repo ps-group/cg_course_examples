@@ -10,7 +10,7 @@ const glm::vec3 YELLOW = {1.f, 1.f, 0.f};
 const glm::vec3 ORANGE = {1.f, 0.5f, 0.f};
 const glm::vec3 PINK = {1.f, 0.3f, 0.3f};
 const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
-const glm::vec3 SUNLIGHT_DIRECTION = {-1.f, 0.2f, 0.7f};
+const glm::vec3 SUNLIGHT_DIRECTION = {0.7f, 0.7f, 1.f};
 const float CAMERA_INITIAL_ROTATION = 0;
 const float CAMERA_INITIAL_DISTANCE = 5.f;
 
@@ -72,13 +72,13 @@ void CWindow::OnDrawWindow(const glm::ivec2 &size)
 
     // Смещаем анимированный единичный куб в другую сторону
     glPushMatrix();
-    glTranslatef(0, -1.5f, 0);
+    glTranslatef(-1.5f, 0, 0);
     m_dynamicCube.Draw();
     glPopMatrix();
 
     // Смещаем статический единичный куб в другую сторону
     glPushMatrix();
-    glTranslatef(0, 1.5f, 0);
+    glTranslatef(1.5f, 0, 0);
     m_staticCube.Draw();
     glPopMatrix();
 }

@@ -22,15 +22,21 @@ endif(UNIX)
 macro(add_lesson NUM)
     file(GLOB SRC_LESSON_${NUM} "lesson_${NUM}/*.cpp" "lesson_${NUM}/*.h")
     add_executable(lesson_${NUM} ${SRC_LESSON_${NUM}})
-    target_link_libraries(lesson_${NUM} ${PROJECT_LIBS})
+    target_link_libraries(lesson_${NUM} ${PROJECT_LIBS} libchapter2)
     add_precompiled_header(lesson_${NUM} "stdafx.h")
 endmacro(add_lesson)
+
+file(GLOB SRC_LIBCHAPTER2 "libchapter2/src/*.cpp"
+    "libchapter2/src/*.h"
+    "libchapter2/*.h")
+add_library(libchapter2 ${SRC_LIBCHAPTER2})
+target_include_directories(libchapter2 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/libchapter2)
 
 add_lesson(07)
 add_lesson(08)
 add_lesson(09)
 add_lesson(10)
 add_lesson(11)
-add_lesson(12)
+#add_lesson(12)
 
 file(COPY res DESTINATION ${CMAKE_BINARY_DIR})

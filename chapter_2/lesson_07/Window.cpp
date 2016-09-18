@@ -44,13 +44,13 @@ void CWindow::OnDrawWindow(const glm::ivec2 &size)
 
     // Смещаем анимированный единичный куб в другую сторону
     glPushMatrix();
-    glTranslatef(0, -1.5f, 0);
+    glTranslatef(-1.5f, 0, 0);
     m_dynamicCube.Draw();
     glPopMatrix();
 
     // Смещаем статический единичный куб в другую сторону
     glPushMatrix();
-    glTranslatef(0, 1.5f, 0);
+    glTranslatef(1.5f, 0, 0);
     m_staticCube.Draw();
     glPopMatrix();
 }

@@ -48,7 +48,7 @@ const STriangleFace CUBE_FACES[] = {
 /// @param phase - Фаза анимации на отрезке [0..1]
 glm::mat4 GetRotateZTransfrom(float phase)
 {
-    // угол вращения вокруг оси Z лежит в отрезке [0...2*pi].
+    // угол вращения вокруг оси Y лежит в отрезке [0...2*pi].
     const float angle = float(2 * M_PI) * phase;
 
     return glm::rotate(glm::mat4(), angle, {0, 0, 1});

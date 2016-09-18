@@ -1,7 +1,8 @@
-﻿#include "stdafx.h"
+﻿#include "libchapter2_private.h"
 #include "Utils.h"
 #include <SDL2/SDL.h>
 #include <iostream>
+#include <thread>
 
 using namespace std::chrono;
 

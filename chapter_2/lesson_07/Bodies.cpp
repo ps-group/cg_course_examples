@@ -11,20 +11,20 @@ struct Vertex
     glm::vec3 color;
 };
 
-const glm::vec3 DARK_GREEN = {0.05f, 0.45f, 0.1f};
-const glm::vec3 LIGHT_GREEN = {0.1f, 0.8f, 0.15f};
+const glm::vec3 DARK_BLUE = {0.05f, 0.1f, 0.5f};
+const glm::vec3 LIGHT_RED = {0.8f, 0.1f, 0.15f};
 
 // Вершины куба служат материалом для формирования треугольников,
 // составляющих грани куба.
 const Vertex CUBE_VERTICIES[] = {
-    {{-1, +1, -1}, DARK_GREEN},
-    {{+1, +1, -1}, DARK_GREEN},
-    {{+1, -1, -1}, DARK_GREEN},
-    {{-1, -1, -1}, DARK_GREEN},
-    {{-1, +1, +1}, LIGHT_GREEN},
-    {{+1, +1, +1}, LIGHT_GREEN},
-    {{+1, -1, +1}, LIGHT_GREEN},
-    {{-1, -1, +1}, LIGHT_GREEN},
+    {{-1, +1, -1}, LIGHT_RED},
+    {{+1, +1, -1}, LIGHT_RED},
+    {{+1, -1, -1}, DARK_BLUE},
+    {{-1, -1, -1}, DARK_BLUE},
+    {{-1, +1, +1}, LIGHT_RED},
+    {{+1, +1, +1}, LIGHT_RED},
+    {{+1, -1, +1}, DARK_BLUE},
+    {{-1, -1, +1}, DARK_BLUE},
 };
 
 // Привыкаем использовать 16-битный unsigned short,
