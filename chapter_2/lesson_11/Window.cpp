@@ -1,19 +1,22 @@
 #include "stdafx.h"
 #include "Window.h"
 #include "Bodies.h"
-#include "Decorators.h"
+#include "RevolutionBodies.h"
 #include <boost/range/algorithm/find_if.hpp>
 #include <boost/range/adaptor/reversed.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace
 {
+const char EARTH_TEX_PATH[] = "res/daily_earth.bmp";
 const glm::vec4 BLACK = {0, 0, 0, 1};
 const float MATERIAL_SHININESS = 30.f;
 const glm::vec4 FADED_WHITE_RGBA = {0.3f, 0.3f, 0.3f, 1.f};
-const glm::vec4 YELLOW_RGBA = {1, 1, 0, 1};
 const glm::vec3 SUNLIGHT_DIRECTION = {-1.f, 0.2f, 0.7f};
 const float CAMERA_INITIAL_ROTATION = 0;
-const float CAMERA_INITIAL_DISTANCE = 5.f;
+const float CAMERA_INITIAL_DISTANCE = 4.f;
+const float EARTH_ROTATION_PERIOD_SEC = 12.f;
+const unsigned SPHERE_PRECISION = 40;
 
 void SetupOpenGLState()
 {
@@ -25,33 +28,26 @@ void SetupOpenGLState()
 
     // включаем систему освещения
     glEnable(GL_LIGHTING);
-}
 
-float GetSincFromXY(float x, float y)
-{
-    const float radius = std::hypotf(x, y);
-    if (radius < std::numeric_limits<float>::epsilon())
-    {
-        return 1;
-    }
-    return sinf(radius) / radius;
+    // включаем текстурирование в старом стиле (OpenGL 1.1)
+    glEnable(GL_TEXTURE_2D);
 }
 }
 
 CWindow::CWindow()
-    : m_surface(GetSincFromXY)
-    , m_camera(CAMERA_INITIAL_ROTATION, CAMERA_INITIAL_DISTANCE)
+    : m_camera(CAMERA_INITIAL_ROTATION, CAMERA_INITIAL_DISTANCE)
     , m_sunlight(GL_LIGHT0)
 {
     SetBackgroundColor(BLACK);
 
+    m_decoratedSphere.SetChild(std::make_unique<CIdentitySphere>(SPHERE_PRECISION, SPHERE_PRECISION));
+    m_decoratedSphere.SetPeriod(EARTH_ROTATION_PERIOD_SEC);
+
     const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
-    m_material.SetAmbient(YELLOW_RGBA);
-    m_material.SetDiffuse(YELLOW_RGBA);
+    m_material.SetAmbient(WHITE_RGBA);
+    m_material.SetDiffuse(WHITE_RGBA);
     m_material.SetSpecular(FADED_WHITE_RGBA);
     m_material.SetShininess(MATERIAL_SHININESS);
-
-    m_surface.Tesselate({-10, 10}, {-10, 10}, 0.5f);
 
     m_sunlight.SetDirection(SUNLIGHT_DIRECTION);
     m_sunlight.SetDiffuse(WHITE_RGBA);
@@ -63,12 +59,14 @@ void CWindow::OnWindowInit(const glm::ivec2 &size)
 {
     (void)size;
     SetupOpenGLState();
+
+    m_pEarthTexture = LoadTexture2DFromBMP(EARTH_TEX_PATH);
 }
 
 void CWindow::OnUpdateWindow(float deltaSeconds)
 {
     m_camera.Update(deltaSeconds);
-    m_surface.Update(deltaSeconds);
+    m_decoratedSphere.Update(deltaSeconds);
 }
 
 void CWindow::OnDrawWindow(const glm::ivec2 &size)
@@ -76,7 +74,9 @@ void CWindow::OnDrawWindow(const glm::ivec2 &size)
     SetupView(size);
     m_sunlight.Setup();
     m_material.Setup();
-    m_surface.Draw();
+    m_pEarthTexture->DoWhileBinded([&] {
+        m_decoratedSphere.Draw();
+    });
 }
 
 void CWindow::SetupView(const glm::ivec2 &size)

@@ -1,19 +1,19 @@
 #include "stdafx.h"
-#include "AbstractWindow.h"
 #include "Utils.h"
+#include "AbstractWindow.h"
 #include <SDL2/SDL_video.h>
 
 namespace
 {
-const char WINDOW_TITLE[] = "OpenGL Demo #8 (WASD camera + animation)";
+const char WINDOW_TITLE[] = "OpenGL Demo #9 (WASD camera + directed light)";
 }
 
 class CAbstractWindow::Impl
 {
 public:
     void Show(glm::ivec2 const& size)
-    {
-        m_size = size;
+	{
+		m_size = size;
 
 		CUtils::InitOnceSDL2();
 
@@ -29,7 +29,7 @@ public:
         // Создаём контекст OpenGL, связанный с окном.
         m_pGLContext.reset(SDL_GL_CreateContext(m_pWindow.get()));
         if (!m_pGLContext)
-        {
+		{
 			CUtils::ValidateSDL2Errors();
         }
     }
@@ -133,10 +133,9 @@ void CAbstractWindow::DoGameLoop()
         m_pImpl->Clear();
         const float deltaSeconds = chronometer.GrabDeltaTime();
         OnUpdateWindow(deltaSeconds);
-        OnDrawWindow(m_pImpl->GetWindowSize());
-
+		OnDrawWindow(m_pImpl->GetWindowSize());
 		CUtils::ValidateOpenGLErrors();
-        m_pImpl->SwapBuffers();
+		m_pImpl->SwapBuffers();
 		chronometer.WaitNextFrameTime(FRAME_PERIOD);
     }
 }

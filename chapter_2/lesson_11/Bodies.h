@@ -4,7 +4,6 @@
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
-#include <GL/glu.h>
 #include <boost/noncopyable.hpp>
 
 enum class CubeFace
@@ -49,43 +48,4 @@ private:
     void OutputFaces()const;
 
     glm::vec4 m_color;
-};
-
-class CSphereQuadric final
-        : public IBody
-        , private boost::noncopyable
-{
-public:
-    CSphereQuadric();
-    ~CSphereQuadric();
-
-    void Update(float) final {}
-    void Draw()const final;
-
-    void SetColor(const glm::vec3 &color);
-
-private:
-    GLUquadric *m_quadric = nullptr;
-    glm::vec3 m_color;
-};
-
-class CConoidQuadric final
-        : public IBody
-        , private boost::noncopyable
-{
-public:
-    CConoidQuadric();
-    ~CConoidQuadric();
-
-    void Update(float) final {}
-    void Draw()const final;
-
-    /// @param value - in range [0..1]
-    void SetTopRadius(double value);
-    void SetColor(const glm::vec3 &color);
-
-private:
-    GLUquadric *m_quadric = nullptr;
-    double m_topRadius = 1.;
-    glm::vec3 m_color;
 };

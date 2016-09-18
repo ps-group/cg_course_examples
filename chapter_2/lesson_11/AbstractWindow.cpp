@@ -5,7 +5,7 @@
 
 namespace
 {
-const char WINDOW_TITLE[] = "OpenGL Demo #11 (function of two variables)";
+const char WINDOW_TITLE[] = "OpenGL Demo #12 (UV-parametrized sphere)";
 }
 
 class CAbstractWindow::Impl
@@ -13,7 +13,7 @@ class CAbstractWindow::Impl
 public:
     void Show(glm::ivec2 const& size)
     {
-		m_size = size;
+        m_size = size;
 
 		CUtils::InitOnceSDL2();
 

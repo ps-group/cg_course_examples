@@ -23,7 +23,7 @@ class CIdentityCube final : public IBody
 {
 public:
     CIdentityCube();
-    void Update(float deltaTime) final;
+    void Update(float) final {}
     void Draw()const final;
 
     void SetFaceColor(CubeFace face, const glm::vec3 &color);
@@ -40,7 +40,7 @@ private:
 class CIdentityTetrahedron final : public IBody
 {
 public:
-    void Update(float deltaTime) final;
+    void Update(float) final {}
     void Draw()const final;
 
     void SetColor(const glm::vec4 &color);

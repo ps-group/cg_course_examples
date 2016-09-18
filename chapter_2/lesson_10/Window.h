@@ -3,6 +3,7 @@
 #include "IBody.h"
 #include "Camera.h"
 #include "Lights.h"
+#include "FunctionSurface.h"
 #include <vector>
 
 class CWindow : public CAbstractInputControlWindow
@@ -21,11 +22,10 @@ protected:
     void OnKeyUp(const SDL_KeyboardEvent &) override;
 
 private:
-    void InitBodies();
     void SetupView(const glm::ivec2 &size);
 
-    std::vector<IBodyUniquePtr> m_opaqueBodies;
-    std::vector<IBodyUniquePtr> m_transparentBodies;
+    CPhongModelMaterial m_material;
+    CSolidFunctionSurface m_surface;
     CCamera m_camera;
     CDirectedLightSource m_sunlight;
 };

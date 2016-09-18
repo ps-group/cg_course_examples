@@ -90,7 +90,7 @@ bool CCamera::OnKeyUp(const SDL_KeyboardEvent &event)
 
 glm::mat4 CCamera::GetViewTransform() const
 {
-    glm::vec3 direction = {0.f, 0.5f, 1.f};
+    glm::vec3 direction = {0.f, 0.f, 1.f};
     // Нормализуем вектор (приводим к единичной длине),
     // затем поворачиваем вокруг оси Z.
     // см. http://glm.g-truc.net/0.9.3/api/a00199.html

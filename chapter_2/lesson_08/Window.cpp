@@ -6,6 +6,11 @@
 namespace
 {
 const glm::vec4 BLACK = {0, 0, 0, 1};
+const glm::vec3 YELLOW = {1.f, 1.f, 0.f};
+const glm::vec3 ORANGE = {1.f, 0.5f, 0.f};
+const glm::vec3 PINK = {1.f, 0.3f, 0.3f};
+const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
+const glm::vec3 SUNLIGHT_DIRECTION = {-1.f, 0.2f, 0.7f};
 const float CAMERA_INITIAL_ROTATION = 0;
 const float CAMERA_INITIAL_DISTANCE = 5.f;
 
@@ -16,13 +21,35 @@ void SetupOpenGLState()
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CCW);
     glCullFace(GL_BACK);
+
+    // включаем систему освещения
+    glEnable(GL_LIGHTING);
+
+    // включаем применение цветов вершин как цвета материала.
+    glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 }
 }
 
 CWindow::CWindow()
     : m_camera(CAMERA_INITIAL_ROTATION, CAMERA_INITIAL_DISTANCE)
+    , m_sunlight(GL_LIGHT0)
 {
     SetBackgroundColor(BLACK);
+
+    m_staticCube.SetFaceColor(CubeFace::Top, YELLOW);
+    m_staticCube.SetFaceColor(CubeFace::Bottom, YELLOW);
+    m_staticCube.SetFaceColor(CubeFace::Left, ORANGE);
+    m_staticCube.SetFaceColor(CubeFace::Right, ORANGE);
+    m_staticCube.SetFaceColor(CubeFace::Front, PINK);
+    m_staticCube.SetFaceColor(CubeFace::Back, PINK);
+
+    m_sunlight.SetDirection(SUNLIGHT_DIRECTION);
+    m_sunlight.SetDiffuse(WHITE_RGBA);
+    m_sunlight.SetAmbient(0.1f * WHITE_RGBA);
+    // Из-за интерполяции освещения по Гуро
+    // смысл Specular компоненты для куба теряется.
+    // m_sunlight.SetSpecular(WHITE_LIGHT);
 }
 
 void CWindow::OnWindowInit(const glm::ivec2 &size)
@@ -41,6 +68,7 @@ void CWindow::OnUpdateWindow(float deltaSeconds)
 void CWindow::OnDrawWindow(const glm::ivec2 &size)
 {
     SetupView(size);
+    m_sunlight.Setup();
 
     // Смещаем анимированный единичный куб в другую сторону
     glPushMatrix();

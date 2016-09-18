@@ -34,9 +34,16 @@ public:
     void Update(float deltaTime);
     void Draw()const;
 
-    void SetPeriod(float value);
-
 private:
+    enum Animation
+    {
+        Rotating,
+        Pulse,
+        Bounce,
+    };
+
+    glm::mat4 GetAnimationTransform()const;
+
+    Animation m_animation = Rotating;
     float m_animationPhase = 0;
-    float m_period = 1;
 };

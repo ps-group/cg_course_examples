@@ -2,6 +2,7 @@
 #include "DispatchEvent.h"
 #include "Bodies.h"
 #include "Camera.h"
+#include "Lights.h"
 #include <vector>
 
 class CWindow : public CAbstractInputControlWindow
@@ -25,4 +26,5 @@ private:
     CAnimatedCube m_dynamicCube;
     CIdentityCube m_staticCube;
     CCamera m_camera;
+    CDirectedLightSource m_sunlight;
 };

@@ -1,19 +1,19 @@
 #include "stdafx.h"
-#include "Utils.h"
 #include "AbstractWindow.h"
+#include "Utils.h"
 #include <SDL2/SDL_video.h>
 
 namespace
 {
-const char WINDOW_TITLE[] = "OpenGL Demo #9 (WASD camera + directed light)";
+const char WINDOW_TITLE[] = "OpenGL Demo #10 (color blending + GLU)";
 }
 
 class CAbstractWindow::Impl
 {
 public:
     void Show(glm::ivec2 const& size)
-	{
-		m_size = size;
+    {
+        m_size = size;
 
 		CUtils::InitOnceSDL2();
 
