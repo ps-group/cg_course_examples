@@ -1,6 +1,7 @@
 #include "Window.h"
 #include "AbstractWindowClient.h"
 #include "libchapter3_private.h"
+#include <SDL2/SDL.h>
 
 namespace
 {
@@ -82,20 +83,53 @@ void DispatchEvent(const SDL_Event &event, IWindowClient &acceptor)
 class CWindow::Impl
 {
 public:
+    void SetCoreProfileEnabled(bool enabled)
+    {
+        if (m_pWindow)
+        {
+            throw std::logic_error("Cannot change OpenGL profile after window created");
+        }
+        m_isCoreProfileEnabled = enabled;
+    }
+
     void Show(const std::string &title, const glm::ivec2 &size)
     {
         m_size = size;
 
-        // Выбираем Compatiblity Profile
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+        unsigned initMask = SDL_INIT_VIDEO | SDL_INIT_EVENTS;
+        if (SDL_WasInit(initMask) != initMask)
+        {
+            SDL_Init(initMask);
+        }
+
+        // Выбираем между профилями Core и Compatibility
+//        const SDL_GLprofile profile = m_isCoreProfileEnabled
+//                ? SDL_GL_CONTEXT_PROFILE_CORE
+//                : SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+
         // Специальное значение SDL_WINDOWPOS_CENTERED вместо x и y заставит SDL2
         // разместить окно в центре монитора по осям x и y.
         // Для использования OpenGL вы ДОЛЖНЫ указать флаг SDL_WINDOW_OPENGL.
         m_pWindow.reset(SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                          size.x, size.y, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE));
+        if (!m_pWindow)
+        {
+            const std::string reason = SDL_GetError();
+            throw std::runtime_error("Cannot create window: " + reason);
+        }
 
         // Создаём контекст OpenGL, связанный с окном.
         m_pGLContext.reset(SDL_GL_CreateContext(m_pWindow.get()));
+        if (!m_pGLContext)
+        {
+            const std::string reason = SDL_GetError();
+            throw std::runtime_error("SDL2 Error: " + reason);
+        }
+
         InitGlewOnce();
     }
 
@@ -133,7 +167,7 @@ public:
                 const float deltaSeconds = chronometer.GrabDeltaTime();
                 m_pClient->OnUpdateWindow(deltaSeconds);
             }
-            DumpGLErrors();
+            ThrowOnGLError();
             SwapBuffers();
         }
     }
@@ -158,7 +192,24 @@ public:
         SDL_GL_SwapWindow(m_pWindow.get());
     }
 
-    void DumpGLErrors()
+    bool ConsumeEvent(const SDL_Event &event)
+    {
+        bool consumed = false;
+        if (event.type == SDL_QUIT)
+        {
+            m_isTerminated = true;
+            consumed = true;
+        }
+        else if (event.type == SDL_WINDOWEVENT)
+        {
+            OnWindowEvent(event.window);
+            consumed = true;
+        }
+        return consumed;
+    }
+
+private:
+    void ThrowOnGLError()
     {
         GLenum error = glGetError();
         if (error != GL_NO_ERROR)
@@ -192,23 +243,6 @@ public:
         }
     }
 
-    bool ConsumeEvent(const SDL_Event &event)
-    {
-        bool consumed = false;
-        if (event.type == SDL_QUIT)
-        {
-            m_isTerminated = true;
-            consumed = true;
-        }
-        else if (event.type == SDL_WINDOWEVENT)
-        {
-            OnWindowEvent(event.window);
-            consumed = true;
-        }
-        return consumed;
-    }
-
-private:
     void OnWindowEvent(const SDL_WindowEvent &event)
     {
         if (event.event == SDL_WINDOWEVENT_RESIZED)
@@ -222,9 +256,11 @@ private:
         // Вызываем инициализацию GLEW только один раз за время работы приложения.
         std::call_once(g_glewInitOnceFlag, []() {
             glewExperimental = GL_TRUE;
-            if (GLEW_OK != glewInit())
+            GLenum status = glewInit();
+            if (status != GLEW_OK)
             {
-                throw std::runtime_error("GLEW initialization failed");
+                std::string reason = reinterpret_cast<const char *>(glewGetErrorString(status));
+                throw std::runtime_error("GLEW initialization failed: " + reason);
             }
         });
     }
@@ -235,6 +271,7 @@ private:
     glm::ivec2 m_size;
     glm::vec4 m_clearColor;
     bool m_isTerminated = false;
+    bool m_isCoreProfileEnabled = false;
 };
 
 CWindow::CWindow()
@@ -244,6 +281,11 @@ CWindow::CWindow()
 
 CWindow::~CWindow()
 {
+}
+
+void CWindow::SetCoreProfileEnabled(bool enabled)
+{
+    m_pImpl->SetCoreProfileEnabled(enabled);
 }
 
 void CWindow::Show(const std::string &title, const glm::ivec2 &size)

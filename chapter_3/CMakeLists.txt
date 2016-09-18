@@ -31,7 +31,7 @@ add_lesson(13)
 add_lesson(14)
 add_lesson(15)
 add_lesson(16)
-#add_lesson(17)
+add_lesson(17)
 #add_lesson(18)
 
 file(COPY res DESTINATION ${CMAKE_BINARY_DIR})

@@ -13,6 +13,8 @@ public:
     CWindow();
     virtual ~CWindow();
 
+    void SetCoreProfileEnabled(bool enabled);
+
     void Show(const std::string &title, const glm::ivec2 &size);
     void SetBackgroundColor(glm::vec4 const& color);
     void SetClient(IWindowClient *pClient);
