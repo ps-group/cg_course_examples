@@ -3,15 +3,10 @@
 #include "Utils.h"
 #include <SDL2/SDL_video.h>
 
-namespace
-{
-const char WINDOW_TITLE[] = "OpenGL Demo #8 (WASD camera + animation)";
-}
-
 class CAbstractWindow::Impl
 {
 public:
-    void Show(glm::ivec2 const& size)
+    void Show(const std::string &title, const glm::ivec2 &size)
     {
         m_size = size;
 
@@ -20,10 +15,14 @@ public:
         // Выбираем Compatiblity Profile
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 
+        // Включаем режим сглаживания с помощью субпиксельного рендеринга.
+        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+
         // Специальное значение SDL_WINDOWPOS_CENTERED вместо x и y заставит SDL2
         // разместить окно в центре монитора по осям x и y.
         // Для использования OpenGL вы ДОЛЖНЫ указать флаг SDL_WINDOW_OPENGL.
-        m_pWindow.reset(SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        m_pWindow.reset(SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                          size.x, size.y, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE));
 
         // Создаём контекст OpenGL, связанный с окном.
@@ -105,9 +104,9 @@ CAbstractWindow::~CAbstractWindow()
 {
 }
 
-void CAbstractWindow::Show(const glm::ivec2 &size)
+void CAbstractWindow::Show(const std::string &title, const glm::ivec2 &size)
 {
-    m_pImpl->Show(size);
+    m_pImpl->Show(title, size);
     OnWindowInit(size);
 }
 

@@ -5,8 +5,8 @@
 
 namespace
 {
-const glm::vec4 BLACK = {0, 0, 0, 1};
 const glm::vec3 YELLOW = {1.f, 1.f, 0.f};
+const glm::vec4 LIGHT_YELLOW_RGBA = {1.f, 1.f, 0.5f, 1.f};
 const glm::vec3 ORANGE = {1.f, 0.5f, 0.f};
 const glm::vec3 PINK = {1.f, 0.3f, 0.3f};
 const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
@@ -35,7 +35,9 @@ CWindow::CWindow()
     : m_camera(CAMERA_INITIAL_ROTATION, CAMERA_INITIAL_DISTANCE)
     , m_sunlight(GL_LIGHT0)
 {
-    SetBackgroundColor(BLACK);
+    // цвет меняем на цвет тумана, потому что OpenGL
+    // не накладывает туман на фон кадра
+    SetBackgroundColor(LIGHT_YELLOW_RGBA);
 
     m_staticCube.SetFaceColor(CubeFace::Top, YELLOW);
     m_staticCube.SetFaceColor(CubeFace::Bottom, YELLOW);
@@ -68,6 +70,8 @@ void CWindow::OnUpdateWindow(float deltaSeconds)
 void CWindow::OnDrawWindow(const glm::ivec2 &size)
 {
     SetupView(size);
+    SetupFog();
+
     m_sunlight.Setup();
 
     // Смещаем анимированный единичный куб в другую сторону
@@ -104,9 +108,32 @@ void CWindow::SetupView(const glm::ivec2 &size)
     glMatrixMode(GL_MODELVIEW);
 }
 
+void CWindow::SetupFog()
+{
+    if (m_isFogEnabled)
+    {
+        const float density = 0.2f;
+        glEnable(GL_FOG);
+        glFogi(GL_FOG_MODE, GL_EXP2);
+        glFogfv(GL_FOG_COLOR, glm::value_ptr(LIGHT_YELLOW_RGBA));
+        glFogf(GL_FOG_DENSITY, density);
+    }
+    else
+    {
+        glDisable(GL_FOG);
+    }
+}
+
 void CWindow::OnKeyDown(const SDL_KeyboardEvent &event)
 {
-    m_camera.OnKeyDown(event);
+    if (m_camera.OnKeyDown(event))
+    {
+        return;
+    }
+    if (event.keysym.sym == SDLK_f)
+    {
+        m_isFogEnabled = !m_isFogEnabled;
+    }
 }
 
 void CWindow::OnKeyUp(const SDL_KeyboardEvent &event)

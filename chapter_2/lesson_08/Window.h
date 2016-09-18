@@ -21,9 +21,11 @@ protected:
 
 private:
     void SetupView(const glm::ivec2 &size);
+    void SetupFog();
 
     CAnimatedCube m_dynamicCube;
     CIdentityCube m_staticCube;
     CCamera m_camera;
     CDirectedLightSource m_sunlight;
+    bool m_isFogEnabled = true;
 };

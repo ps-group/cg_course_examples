@@ -50,6 +50,10 @@ public:
         // Выбираем Compatiblity Profile
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 
+        // Включаем режим сглаживания с помощью субпиксельного рендеринга.
+        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+
         // Специальное значение SDL_WINDOWPOS_CENTERED вместо x и y заставит SDL2
         // разместить окно в центре монитора по осям x и y.
         // Для использования OpenGL вы ДОЛЖНЫ указать флаг SDL_WINDOW_OPENGL.

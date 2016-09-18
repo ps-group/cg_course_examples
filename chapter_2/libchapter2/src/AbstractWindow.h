@@ -11,7 +11,7 @@ public:
     CAbstractWindow();
     virtual ~CAbstractWindow();
 
-    void Show(glm::ivec2 const& size);
+    void Show(const std::string &title, glm::ivec2 const& size);
     void DoGameLoop();
 
 protected:
