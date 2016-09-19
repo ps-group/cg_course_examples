@@ -1,19 +1,11 @@
 #pragma once
 
 #include "IBody.h"
-#include <functional>
+#include "MeshP3NT2.h"
 #include <vector>
 #include <glm/fwd.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
-
-// Вершина с трёхмерной позицией, нормалью и 2D координатами текстуры.
-struct SVertexP3NT2
-{
-    glm::vec3 position;
-    glm::vec2 texCoord;
-    glm::vec3 normal;
-};
 
 class CIdentitySphere final : public IBody
 {

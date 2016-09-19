@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "RevolutionBodies.h"
+#include "IdentitySphere.h"
 #include <algorithm>
 
 namespace
@@ -33,31 +33,6 @@ void CalculateTriangleStripIndicies(std::vector<uint32_t> &indicies,
             }
         }
     }
-}
-
-/// Привязывает вершины к состоянию OpenGL,
-/// затем вызывает 'callback'.
-template <class T>
-void DoWithBindedArrays(const std::vector<SVertexP3NT2> &vertices, T && callback)
-{
-    // Включаем режим vertex array и normal array.
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_NORMAL_ARRAY);
-
-    // Выполняем привязку vertex array и normal array
-    const size_t stride = sizeof(SVertexP3NT2);
-    glNormalPointer(GL_FLOAT, stride, glm::value_ptr(vertices[0].normal));
-    glVertexPointer(3, GL_FLOAT, stride, glm::value_ptr(vertices[0].position));
-    glTexCoordPointer(2, GL_FLOAT, stride, glm::value_ptr(vertices[0].texCoord));
-
-    // Выполняем внешнюю функцию.
-    callback();
-
-    // Выключаем режим vertex array и normal array.
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glDisableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_NORMAL_ARRAY);
 }
 
 glm::vec3 GetPositionOnSphere(float u, float v)
