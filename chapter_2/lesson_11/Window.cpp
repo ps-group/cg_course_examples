@@ -76,7 +76,6 @@ void CWindow::OnUpdateWindow(float deltaSeconds)
 void CWindow::OnDrawWindow(const glm::ivec2 &size)
 {
     SetupView(size);
-    SetupFog();
 
     m_sunlight.Setup();
     m_material.Setup();
