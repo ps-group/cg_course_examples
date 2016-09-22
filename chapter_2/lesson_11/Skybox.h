@@ -9,10 +9,10 @@ class CSkybox final : public IBody
 {
 public:
     CSkybox();
-    void Update(float) final {}
+    void Update(float dt) final;
     void Draw()const final;
 
 private:
     CIdentityCube m_cube;
-    CTexture2DUniquePtr m_pTexture;
+    CTexture2DAtlas m_atlas;
 };

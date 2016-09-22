@@ -18,6 +18,5 @@ public:
 private:
     void Tesselate(unsigned slices, unsigned stacks);
 
-    std::vector<SVertexP3NT2> m_vertices;
-    std::vector<uint32_t> m_indicies;
+    SMeshP3NT2 m_mesh;
 };

@@ -20,8 +20,6 @@ enum class CubeFace
 class CIdentityCube : public IBody
 {
 public:
-    CIdentityCube();
-
     void Update(float) final;
     void Draw()const final;
 

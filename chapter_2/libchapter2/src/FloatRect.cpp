@@ -26,3 +26,26 @@ glm::vec2 CFloatRect::GetBottomRight() const
 {
     return m_bottomRight;
 }
+
+glm::vec2 CFloatRect::GetSize() const
+{
+    return m_bottomRight - m_topLeft;
+}
+
+CFloatRect CFloatRect::GetScaled(const glm::vec2 &factors) const
+{
+    CFloatRect copy(*this);
+
+    // Домножаем для масштабирования.
+    copy.m_topLeft *= factors;
+    copy.m_bottomRight *= factors;
+
+    return copy;
+}
+
+void CFloatRect::MoveTo(const glm::vec2 &topLeft)
+{
+    const glm::vec2 size = GetSize();
+    m_topLeft = topLeft;
+    m_bottomRight = topLeft + size;
+}

@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Window.h"
-#include "Bodies.h"
 #include "IdentitySphere.h"
 #include <boost/range/algorithm/find_if.hpp>
 #include <boost/range/adaptor/reversed.hpp>
@@ -8,13 +7,13 @@
 
 namespace
 {
-const char EARTH_TEX_PATH[] = "res/daily_earth.bmp";
+const char EARTH_TEX_PATH[] = "res/daily_earth.jpg";
 const glm::vec4 BLACK = {0, 0, 0, 1};
 const float MATERIAL_SHININESS = 30.f;
 const glm::vec4 FADED_WHITE_RGBA = {0.3f, 0.3f, 0.3f, 1.f};
 const glm::vec3 SUNLIGHT_DIRECTION = {-1.f, 0.2f, 0.7f};
 const float CAMERA_INITIAL_ROTATION = 0;
-const float CAMERA_INITIAL_DISTANCE = 4.f;
+const float CAMERA_INITIAL_DISTANCE = 3.f;
 const float EARTH_ROTATION_PERIOD_SEC = 12.f;
 const unsigned SPHERE_PRECISION = 40;
 
@@ -60,20 +59,28 @@ void CWindow::OnWindowInit(const glm::ivec2 &size)
     (void)size;
     SetupOpenGLState();
 
-    m_pEarthTexture = LoadTexture2DFromBMP(EARTH_TEX_PATH);
+    m_pSkybox = std::make_unique<CSkybox>();
+
+    CTexture2DLoader loader;
+    loader.SetWrapMode(TextureWrapMode::REPEAT);
+    m_pEarthTexture = loader.Load(EARTH_TEX_PATH);
 }
 
 void CWindow::OnUpdateWindow(float deltaSeconds)
 {
     m_camera.Update(deltaSeconds);
     m_decoratedSphere.Update(deltaSeconds);
+    m_pSkybox->Update(deltaSeconds);
 }
 
 void CWindow::OnDrawWindow(const glm::ivec2 &size)
 {
     SetupView(size);
+    SetupFog();
+
     m_sunlight.Setup();
     m_material.Setup();
+    m_pSkybox->Draw();
     m_pEarthTexture->DoWhileBinded([&] {
         m_decoratedSphere.Draw();
     });

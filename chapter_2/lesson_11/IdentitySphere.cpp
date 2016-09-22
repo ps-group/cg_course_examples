@@ -55,16 +55,15 @@ CIdentitySphere::CIdentitySphere(unsigned slices, unsigned stacks)
 
 void CIdentitySphere::Draw() const
 {
-    DoWithBindedArrays(m_vertices, [this] {
-        glDrawElements(GL_TRIANGLE_STRIP, GLsizei(m_indicies.size()),
-                       GL_UNSIGNED_INT, m_indicies.data());
-    });
+    m_mesh.Draw();
 }
 
 void CIdentitySphere::Tesselate(unsigned slices, unsigned stacks)
 {
     assert((slices >= MIN_PRECISION) && (stacks >= MIN_PRECISION));
-    m_vertices.reserve(slices * stacks);
+
+    m_mesh.Clear(MeshType::TriangleStrip);
+    m_mesh.m_vertices.reserve(slices * stacks);
     // вычисляем позиции вершин.
     for (unsigned ci = 0; ci < slices; ++ci)
     {
@@ -87,9 +86,9 @@ void CIdentitySphere::Tesselate(unsigned slices, unsigned stacks)
             // При UV-параметризации текстурными координатами будут u и v.
             vertex.texCoord = {1.f - u, v};
 
-            m_vertices.push_back(vertex);
+            m_mesh.m_vertices.push_back(vertex);
         }
     }
 
-    CalculateTriangleStripIndicies(m_indicies, slices, stacks);
+    CalculateTriangleStripIndicies(m_mesh.m_indicies, slices, stacks);
 }

@@ -44,6 +44,7 @@ void CIdentityCube::Update(float)
     if (m_isDirty)
     {
         Triangulate();
+        m_isDirty = false;
     }
 }
 
@@ -56,6 +57,7 @@ void CIdentityCube::SetFaceTextureRect(CubeFace face, const CFloatRect &rect)
 {
     const size_t index = static_cast<size_t>(face);
     m_textureRects[index] = rect;
+    m_isDirty = true;
 }
 
 void CIdentityCube::Triangulate()

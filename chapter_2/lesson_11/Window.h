@@ -2,8 +2,8 @@
 #include "libchapter2.h"
 #include "IBody.h"
 #include "Lights.h"
+#include "Skybox.h"
 #include "Decorators.h"
-#include "Texture2D.h"
 #include <vector>
 
 class CWindow : public CAbstractInputControlWindow
@@ -27,6 +27,7 @@ private:
     CPhongModelMaterial m_material;
     CTexture2DUniquePtr m_pEarthTexture;
     CAnimatedDecorator m_decoratedSphere;
+    std::unique_ptr<CSkybox> m_pSkybox;
     CCamera m_camera;
     CDirectedLightSource m_sunlight;
 };

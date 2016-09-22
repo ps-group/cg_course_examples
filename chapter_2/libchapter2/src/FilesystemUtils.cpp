@@ -41,9 +41,8 @@ std::string GetExecutablePath()
 }
 }
 
-boost::filesystem::path CFilesystemUtils::GetResourceAbspath(const std::string &path)
+boost::filesystem::path CFilesystemUtils::GetResourceAbspath(const boost::filesystem::path &currentPath)
 {
-    const fs::path currentPath = path;
     if (currentPath.is_absolute())
     {
         return currentPath;
@@ -59,17 +58,13 @@ boost::filesystem::path CFilesystemUtils::GetResourceAbspath(const std::string &
             return abspath;
         }
     }
-    throw std::runtime_error("Resource not found: " + path);
-}
-
-std::string CFilesystemUtils::LoadFileAsString(const std::string &path)
-{
-    const fs::path abspath = GetResourceAbspath(path);
-    return LoadFileAsString(abspath);
+    throw std::runtime_error("Resource not found: " + currentPath.generic_string());
 }
 
 std::string CFilesystemUtils::LoadFileAsString(const boost::filesystem::path &path)
 {
+    const fs::path abspath = GetResourceAbspath(path);
+
     std::ifstream input;
     input.open(path.native());
     if (!input.is_open())

@@ -11,13 +11,22 @@
 class CTexture2D;
 using CTexture2DUniquePtr = std::unique_ptr<CTexture2D>;
 
+enum class TextureWrapMode
+{
+    CLAMP_TO_EDGE,
+    CLAMP_TO_BORDER,
+    REPEAT,
+    MIRRORED_REPEAT,
+};
+
+/// Класс владеет текстурой типа GL_TEXTURE_2D,
+///    у которой есть две координаты "s" и "t",
+///    и позволяет привязывать её к контексту OpenGL
 class CTexture2D : private boost::noncopyable
 {
 public:
     CTexture2D();
     ~CTexture2D();
-
-    static CTexture2DUniquePtr Load(const boost::filesystem::path &path);
 
     void Bind()const;
     static void Unbind();
@@ -37,10 +46,33 @@ private:
     unsigned m_textureId = 0;
 };
 
+/// Класс загружает текстуру типа GL_TEXTURE_2D,
+///    из изображений *.bmp, *.jpg, *.png и любых других форматов,
+///    с которыми работает модуль SDL_image.
+class CTexture2DLoader
+{
+public:
+    CTexture2DUniquePtr Load(const boost::filesystem::path &path);
+
+    void SetWrapMode(TextureWrapMode wrap);
+    void SetWrapMode(TextureWrapMode wrapS, TextureWrapMode wrapT);
+
+private:
+    TextureWrapMode m_wrapS = TextureWrapMode::CLAMP_TO_BORDER;
+    TextureWrapMode m_wrapT = TextureWrapMode::CLAMP_TO_BORDER;
+};
+
+/// Класс хранит атлас текстур,
+///    который представляет из себя склеенную из нескольких текстур
+///    единую текстуру, а также хранит данные для разделения этой
+///    текстуры на прямоугольники с помощью текстурных координат.
+/// Формат текстур совместим с cocos2d-x, и может быть создан
+///    с помощью github.com/sergey-shambir/Cheetah-Texture-Packer
 class CTexture2DAtlas : private boost::noncopyable
 {
 public:
-    CTexture2DAtlas(const boost::filesystem::path &xmlPath);
+    CTexture2DAtlas(const boost::filesystem::path &xmlPath,
+                    CTexture2DLoader loader = CTexture2DLoader());
 
     const CTexture2D &GetTexture()const;
     CFloatRect GetFrameRect(const std::string &frameName)const;
