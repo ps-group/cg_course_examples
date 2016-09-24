@@ -46,7 +46,7 @@ glm::mat4 GetBounceTransform(float phase)
         offset = -offset;
     }
 
-    return glm::translate(glm::mat4(), {offset, 0.f, 0.f});
+    return glm::translate(glm::mat4(), {0.f, 0.f, offset});
 }
 }
 
