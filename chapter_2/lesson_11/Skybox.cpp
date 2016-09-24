@@ -14,6 +14,9 @@ const std::pair<CubeFace, const char *> FRAME_MAPPING[] = {
     { CubeFace::Right, "galaxy_right.png" },
 };
 
+// Устанавливает трансформацию так, чтобы рисование происходило
+// в локальных координатах камеры, с сохранением вращения и
+// масштабирования системы координат камеры.
 template<class T>
 void DoAtCameraPosition(T && callback)
 {

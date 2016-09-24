@@ -30,12 +30,12 @@ const glm::vec3 CUBE_VERTICIES[] = {
 // Привыкаем использовать 16-битный unsigned short,
 // чтобы экономить память на фигурах с тысячами вершин.
 const SCubeFace CUBE_FACES[] = {
-    {1, 2, 3, 0, static_cast<uint16_t>(CubeFace::Back)},
-    {2, 1, 5, 6, static_cast<uint16_t>(CubeFace::Right)},
-    {3, 2, 6, 7, static_cast<uint16_t>(CubeFace::Bottom)},
-    {0, 3, 7, 4, static_cast<uint16_t>(CubeFace::Left)},
+    {2, 3, 0, 1, static_cast<uint16_t>(CubeFace::Front)},
+    {6, 2, 1, 5, static_cast<uint16_t>(CubeFace::Left)},
+    {6, 7, 3, 2, static_cast<uint16_t>(CubeFace::Bottom)},
+    {3, 7, 4, 0, static_cast<uint16_t>(CubeFace::Right)},
     {1, 0, 4, 5, static_cast<uint16_t>(CubeFace::Top)},
-    {6, 5, 4, 7, static_cast<uint16_t>(CubeFace::Front)},
+    {5, 4, 7, 6, static_cast<uint16_t>(CubeFace::Back)},
 };
 }
 
@@ -74,9 +74,9 @@ void CIdentityCube::Triangulate()
                     glm::cross(coord2 - coord1, coord3 - coord1));
 
         const SVertexP3NT2 v1 = { coord1, texRect.GetTopLeft(), normal};
-        const SVertexP3NT2 v2 = { coord2, texRect.GetBottomLeft(), normal};
+        const SVertexP3NT2 v2 = { coord2, texRect.GetTopRight(), normal};
         const SVertexP3NT2 v3 = { coord3, texRect.GetBottomRight(), normal};
-        const SVertexP3NT2 v4 = { coord4, texRect.GetTopRight(), normal};
+        const SVertexP3NT2 v4 = { coord4, texRect.GetBottomLeft(), normal};
 
         const uint32_t fromIndex = uint32_t(m_mesh.m_vertices.size());
         m_mesh.m_vertices.push_back(v1);
