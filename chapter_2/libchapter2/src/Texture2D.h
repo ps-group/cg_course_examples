@@ -13,10 +13,11 @@ using CTexture2DUniquePtr = std::unique_ptr<CTexture2D>;
 
 enum class TextureWrapMode
 {
-    CLAMP_TO_EDGE,
-    CLAMP_TO_BORDER,
-    REPEAT,
-    MIRRORED_REPEAT,
+	REPEAT,
+	CLAMP_TO_EDGE,
+
+	// Значение по умолчанию в OpenGL - GL_REPEAT.
+	DEFAULT_VALUE = REPEAT,
 };
 
 /// Класс владеет текстурой типа GL_TEXTURE_2D,
@@ -58,8 +59,8 @@ public:
     void SetWrapMode(TextureWrapMode wrapS, TextureWrapMode wrapT);
 
 private:
-    TextureWrapMode m_wrapS = TextureWrapMode::CLAMP_TO_BORDER;
-    TextureWrapMode m_wrapT = TextureWrapMode::CLAMP_TO_BORDER;
+    TextureWrapMode m_wrapS = TextureWrapMode::DEFAULT_VALUE;
+    TextureWrapMode m_wrapT = TextureWrapMode::DEFAULT_VALUE;
 };
 
 /// Класс хранит атлас текстур,

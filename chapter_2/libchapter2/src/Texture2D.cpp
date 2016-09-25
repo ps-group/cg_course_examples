@@ -12,7 +12,7 @@
 #include <SDL2/SDL_image.h>
 
 
-using namespace tinyxml2;
+namespace xml = tinyxml2;
 using boost::filesystem::path;
 
 
@@ -57,11 +57,13 @@ void FlipSurfaceVertically(SDL_Surface & surface)
 
 GLenum ConvertEnum(TextureWrapMode mode)
 {
+	// Значение константы взято от GL_CLAMP_TO_EDGE_EXT библиотеки GLEW.
+#if defined(_WIN32) && !defined(GL_CLAMP_TO_EDGE)
+#define GL_CLAMP_TO_EDGE 0x812F
+#endif
     static const std::map<TextureWrapMode, GLenum> MAPPING = {
         { TextureWrapMode::CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE },
-        { TextureWrapMode::CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER },
         { TextureWrapMode::REPEAT, GL_REPEAT },
-        { TextureWrapMode::MIRRORED_REPEAT, GL_MIRRORED_REPEAT },
     };
     return MAPPING.at(mode);
 }
@@ -90,7 +92,7 @@ public:
     void Parse()
     {
         const std::string xml = CFilesystemUtils::LoadFileAsString(m_xmlPath);
-        XMLDocument document;
+		xml::XMLDocument document;
         m_error = document.Parse(xml.c_str(), xml.length());
         CheckError();
 
@@ -101,7 +103,7 @@ public:
     }
 
 private:
-    const XMLElement *FindChild(const XMLNode *parent, const std::string &name)
+    const xml::XMLElement *FindChild(const xml::XMLNode *parent, const std::string &name)
     {
         const auto *child = parent->FirstChildElement(name.c_str());
         if (!child)
@@ -112,7 +114,7 @@ private:
         return child;
     }
 
-    const XMLElement *GetNextSibling(const XMLElement *node)
+    const xml::XMLElement *GetNextSibling(const xml::XMLElement *node)
     {
         const auto *sibling = node->NextSiblingElement();
         if (!sibling)
@@ -124,7 +126,7 @@ private:
         return sibling;
     }
 
-    const XMLElement *GetValueNode(const XMLElement *dict, boost::string_ref key)
+    const xml::XMLElement *GetValueNode(const xml::XMLElement *dict, boost::string_ref key)
     {
         const auto *pKey = dict->FirstChildElement("key");
         while (pKey)
@@ -141,7 +143,7 @@ private:
                                + m_xmlPath + "'");
     }
 
-    void ParseMetadata(const XMLElement *metadata)
+    void ParseMetadata(const xml::XMLElement *metadata)
     {
         const auto *pString = GetValueNode(metadata, "textureFileName");
         const std::string filename = pString->GetText();
@@ -158,7 +160,7 @@ private:
         m_onParsedTextureMeta(filename, size);
     }
 
-    void ParseFrames(const XMLElement *frames)
+    void ParseFrames(const xml::XMLElement *frames)
     {
         const auto *pKey = frames->FirstChildElement("key");
         while (pKey)
@@ -171,7 +173,7 @@ private:
         }
     }
 
-    CFloatRect ParseFrameRect(const XMLElement *dict)
+    CFloatRect ParseFrameRect(const xml::XMLElement *dict)
     {
         const auto *nodeX = GetValueNode(dict, "x");
         const auto *nodeY = GetValueNode(dict, "y");
@@ -189,7 +191,7 @@ private:
 
     void CheckError()
     {
-        if (m_error != XML_SUCCESS)
+        if (m_error != xml::XML_SUCCESS)
         {
             const std::string errorCode = std::to_string(unsigned(m_error));
             throw std::runtime_error("Failed to load plist file '" + m_xmlPath
@@ -200,7 +202,7 @@ private:
     MetaHandler m_onParsedTextureMeta;
     FrameHandler m_onParsedFrame;
     std::string m_xmlPath;
-    XMLError m_error = XML_SUCCESS;
+	xml::XMLError m_error = xml::XML_SUCCESS;
 };
 }
 

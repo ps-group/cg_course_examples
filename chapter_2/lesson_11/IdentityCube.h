@@ -4,6 +4,7 @@
 #include "MeshP3NT2.h"
 #include "libchapter2.h"
 #include <vector>
+#include <array>
 
 enum class CubeFace
 {
