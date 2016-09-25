@@ -14,7 +14,7 @@ namespace
 const size_t FILE_RESERVE_SIZE = 4096;
 const size_t MAX_PATH_SIZE = 4096;
 
-// Возвращает путь к исполняемому файлу,
+// Возвращает путь к текущему исполняемому файлу,
 // .exe на Windows, ELF на Linux, MachO на MacOSX
 std::string GetExecutablePath()
 {
