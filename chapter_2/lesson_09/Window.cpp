@@ -69,11 +69,11 @@ void CWindow::OnWindowInit(const glm::ivec2 &size)
 void CWindow::OnUpdateWindow(float deltaSeconds)
 {
     m_camera.Update(deltaSeconds);
-    for (const IBodyUniquePtr &pBody : m_opaqueBodies)
+    for (const auto &pBody : m_opaqueBodies)
     {
         pBody->Update(deltaSeconds);
     }
-    for (const IBodyUniquePtr &pBody : m_transparentBodies)
+    for (const auto &pBody : m_transparentBodies)
     {
         pBody->Update(deltaSeconds);
     }
@@ -83,12 +83,12 @@ void CWindow::OnDrawWindow(const glm::ivec2 &size)
 {
     SetupView(size);
     m_sunlight.Setup();
-    for (const IBodyUniquePtr &pBody : m_opaqueBodies)
+    for (const auto &pBody : m_opaqueBodies)
     {
         pBody->Draw();
     }
     enableBlending();
-    for (const IBodyUniquePtr &pBody : m_transparentBodies)
+    for (const auto &pBody : m_transparentBodies)
     {
         pBody->Draw();
     }

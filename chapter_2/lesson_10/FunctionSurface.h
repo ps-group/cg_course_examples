@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IBody.h"
+#include "libchapter2.h"
 #include <functional>
 #include <vector>
 #include <glm/fwd.hpp>
@@ -21,7 +21,7 @@ struct SVertexP3N
     }
 };
 
-class CDottedFunctionSurface final : public IBody
+class CDottedFunctionSurface final : public ISceneObject
 {
 public:
     CDottedFunctionSurface(const Function2D &fn);
@@ -40,7 +40,7 @@ private:
     std::vector<SVertexP3N> m_vertices;
 };
 
-class CSolidFunctionSurface final : public IBody
+class CSolidFunctionSurface final : public ISceneObject
 {
 public:
     CSolidFunctionSurface(const Function2D &fn);

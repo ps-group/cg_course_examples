@@ -1,13 +1,9 @@
 #pragma once
 
-#include "IBody.h"
 #include "MeshP3NT2.h"
-#include <vector>
-#include <glm/fwd.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
+#include "libchapter2.h"
 
-class CIdentitySphere final : public IBody
+class CIdentitySphere final : public ISceneObject
 {
 public:
     CIdentitySphere(unsigned slices, unsigned stacks);

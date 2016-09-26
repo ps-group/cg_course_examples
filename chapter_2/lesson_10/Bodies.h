@@ -1,9 +1,6 @@
 #pragma once
 
-#include "IBody.h"
-#include <glm/fwd.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
+#include "libchapter2.h"
 #include <GL/glu.h>
 #include <boost/noncopyable.hpp>
 
@@ -19,7 +16,7 @@ enum class CubeFace
     NumFaces
 };
 
-class CIdentityCube final : public IBody
+class CIdentityCube final : public ISceneObject
 {
 public:
     CIdentityCube();
@@ -37,7 +34,7 @@ private:
     float m_alpha;
 };
 
-class CIdentityTetrahedron final : public IBody
+class CIdentityTetrahedron final : public ISceneObject
 {
 public:
     void Update(float) final {}
@@ -52,7 +49,7 @@ private:
 };
 
 class CSphereQuadric final
-        : public IBody
+        : public ISceneObject
         , private boost::noncopyable
 {
 public:
@@ -70,7 +67,7 @@ private:
 };
 
 class CConoidQuadric final
-        : public IBody
+        : public ISceneObject
         , private boost::noncopyable
 {
 public:

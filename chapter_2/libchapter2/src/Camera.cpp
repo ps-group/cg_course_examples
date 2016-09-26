@@ -59,6 +59,7 @@ CCamera::CCamera(float rotationRadians, float distance)
     : m_rotationRadians(rotationRadians)
     , m_distance(distance)
 {
+    SetDirection({0.f, 0.5f, 1.f});
 }
 
 void CCamera::Update(float deltaSec)
@@ -88,13 +89,17 @@ bool CCamera::OnKeyUp(const SDL_KeyboardEvent &event)
     return false;
 }
 
+void CCamera::SetDirection(const glm::vec3 &direction)
+{
+    // Дополнительно нормализуем вектор (приводим к единичной длине).
+    m_direction = glm::normalize(direction);
+}
+
 glm::mat4 CCamera::GetViewTransform() const
 {
-    glm::vec3 direction = {0.f, 0.5f, 1.f};
-    // Нормализуем вектор (приводим к единичной длине),
-    // затем поворачиваем вокруг оси Y.
+    // Поворачиваем вектор направления камеры вокруг оси Y.
     // см. http://glm.g-truc.net/0.9.3/api/a00199.html
-    direction = glm::rotateY(glm::normalize(direction), m_rotationRadians);
+    glm::vec3 direction = glm::rotateY(m_direction, m_rotationRadians);
 
     const glm::vec3 eye = direction * m_distance;
     const glm::vec3 center = {0, 0, 0};

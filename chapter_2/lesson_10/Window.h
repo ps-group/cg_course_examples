@@ -1,6 +1,5 @@
 #pragma once
 #include "libchapter2.h"
-#include "IBody.h"
 #include "Lights.h"
 #include "FunctionSurface.h"
 #include <vector>

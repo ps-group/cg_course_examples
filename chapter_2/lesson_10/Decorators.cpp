@@ -50,7 +50,7 @@ glm::mat4 GetBounceTransform(float phase)
 }
 }
 
-void CAbstractDecorator::SetChild(IBodyUniquePtr &&pChild)
+void CAbstractDecorator::SetChild(ISceneObjectUniquePtr &&pChild)
 {
     m_pChild = std::move(pChild);
 }

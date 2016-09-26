@@ -1,6 +1,7 @@
 #pragma once
 #include "libchapter2.h"
 #include "Lights.h"
+#include "MemoryField.h"
 #include <vector>
 
 class CWindow : public CAbstractInputControlWindow
@@ -19,11 +20,9 @@ protected:
     void OnKeyUp(const SDL_KeyboardEvent &) override;
 
 private:
-    void InitBodies();
     void SetupView(const glm::ivec2 &size);
 
-    std::vector<ISceneObjectUniquePtr> m_opaqueBodies;
-    std::vector<ISceneObjectUniquePtr> m_transparentBodies;
+    std::unique_ptr<CMemoryField> m_pField;
     CCamera m_camera;
     CDirectedLightSource m_sunlight;
 };

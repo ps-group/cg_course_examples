@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/libchapter2_private.h"
+#include "src/ISceneObject.h"
 #include "src/Utils.h"
 #include "src/FilesystemUtils.h"
 #include "src/FloatRect.h"

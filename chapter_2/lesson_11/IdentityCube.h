@@ -1,6 +1,5 @@
 #pragma once
 
-#include "IBody.h"
 #include "MeshP3NT2.h"
 #include "libchapter2.h"
 #include <vector>
@@ -18,7 +17,7 @@ enum class CubeFace
     NumFaces
 };
 
-class CIdentityCube : public IBody
+class CIdentityCube : public ISceneObject
 {
 public:
     void Update(float) final;

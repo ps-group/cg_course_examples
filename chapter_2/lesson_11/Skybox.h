@@ -1,11 +1,10 @@
 #pragma once
 
-#include "IBody.h"
 #include "IdentityCube.h"
 #include "libchapter2.h"
 #include <boost/noncopyable.hpp>
 
-class CSkybox final : public IBody
+class CSkybox final : public ISceneObject
 {
 public:
     CSkybox();
