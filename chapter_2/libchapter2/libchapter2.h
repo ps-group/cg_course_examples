@@ -5,6 +5,7 @@
 #include "src/Utils.h"
 #include "src/FilesystemUtils.h"
 #include "src/FloatRect.h"
+#include "src/Ray.h"
 #include "src/AbstractWindow.h"
 #include "src/DispatchEvent.h"
 #include "src/Camera.h"

@@ -16,6 +16,7 @@ public:
 
 protected:
     void SetBackgroundColor(glm::vec4 const& color);
+    glm::ivec2 GetWindowSize()const;
 
     virtual void OnWindowInit(glm::ivec2 const& size) = 0;
     virtual void OnWindowEvent(const SDL_Event &event) = 0;

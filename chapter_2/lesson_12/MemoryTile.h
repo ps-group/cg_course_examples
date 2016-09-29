@@ -34,12 +34,13 @@ class CMemoryTile : public CTwoSideQuad
 public:
     CMemoryTile(const glm::vec2 &leftTop, const glm::vec2 &size);
 
-    void SetFrontFaced(bool value);
+    bool Activate(const glm::vec2 &point);
 
     void Update(float dt) override;
     void Draw()const override;
 
 private:
+    CFloatRect m_bounds;
     bool m_isFrontFaced = false;
     float m_rotation = 0;
 };

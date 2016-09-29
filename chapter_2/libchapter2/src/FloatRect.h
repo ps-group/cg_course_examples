@@ -14,6 +14,7 @@ public:
     glm::vec2 GetBottomRight()const;
     glm::vec2 GetSize()const;
 
+    bool Contains(const glm::vec2 &point)const;
     CFloatRect GetScaled(const glm::vec2 &factors)const;
 
     void MoveTo(const glm::vec2 &topLeft);

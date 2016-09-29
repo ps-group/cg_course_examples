@@ -18,9 +18,11 @@ protected:
     // IInputEventAcceptor interface
     void OnKeyDown(const SDL_KeyboardEvent &) override;
     void OnKeyUp(const SDL_KeyboardEvent &) override;
+    void OnDragEnd(const glm::vec2 &pos) override;
 
 private:
     void SetupView(const glm::ivec2 &size);
+    glm::mat4 GetProjectionMatrix(const glm::ivec2 &size);
 
     std::unique_ptr<CMemoryField> m_pField;
     CCamera m_camera;

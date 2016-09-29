@@ -144,3 +144,8 @@ void CAbstractWindow::SetBackgroundColor(const glm::vec4 &color)
 {
     m_pImpl->SetBackgroundColor(color);
 }
+
+glm::ivec2 CAbstractWindow::GetWindowSize() const
+{
+    return m_pImpl->GetWindowSize();
+}

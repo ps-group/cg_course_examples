@@ -4,7 +4,8 @@
 namespace
 {
 // Скорость вращения, радианов в секунду.
-const float TILE_ROTATION_SPEED = 1.f;
+const float ROTATE_TIME = 0.3f;
+const float TILE_ROTATION_SPEED = float(M_PI) / ROTATE_TIME;
 
 /// Привязывает вершины к состоянию OpenGL,
 /// затем вызывает 'callback'.
@@ -31,6 +32,7 @@ void DoWithBindedArrays(const std::vector<SVertexP3NT2> &vertices, T && callback
     glDisableClientState(GL_VERTEX_ARRAY);
 }
 
+// Тайлы лежат в плоскости Oxz, нормаль сонаправлена с осью Oy.
 SVertexP3NT2 MakeVertex(const glm::vec2 &xz, float normalY)
 {
     SVertexP3NT2 vertex;
@@ -83,13 +85,19 @@ void CTwoSideQuad::SetBackTextureRect(const CFloatRect &rect)
 }
 
 CMemoryTile::CMemoryTile(const glm::vec2 &leftTop, const glm::vec2 &size)
-    : CTwoSideQuad(leftTop, size)
+    : CTwoSideQuad(-0.5f * size, size)
+    , m_bounds(leftTop, leftTop + size)
 {
 }
 
-void CMemoryTile::SetFrontFaced(bool value)
+bool CMemoryTile::Activate(const glm::vec2 &point)
 {
-    m_isFrontFaced = value;
+    if (m_bounds.Contains(point))
+    {
+        m_isFrontFaced = !m_isFrontFaced;
+        return true;
+    }
+    return false;
 }
 
 void CMemoryTile::Update(float dt)
@@ -113,8 +121,11 @@ void CMemoryTile::Update(float dt)
 
 void CMemoryTile::Draw() const
 {
+    const glm::vec2 offset = m_bounds.GetTopLeft() + 0.5f * m_bounds.GetSize();
     const glm::vec3 zAxis = {0, 0, 1};
-    const glm::mat4 transform = glm::rotate(glm::mat4(), m_rotation, zAxis);
+    glm::mat4 transform;
+    transform = glm::translate(transform, {offset.x, 0.f, offset.y});
+    transform = glm::rotate(transform, m_rotation, zAxis);
 
     glPushMatrix();
     glMultMatrixf(glm::value_ptr(transform));

@@ -1,10 +1,20 @@
 #include "libchapter2_private.h"
 #include "FloatRect.h"
 
+namespace
+{
+bool IsGreater(const glm::vec2 &a, const glm::vec2 &b)
+{
+    return (a.x > b.x) && (a.y > b.y);
+}
+}
+
 CFloatRect::CFloatRect(const glm::vec2 &topLeft, const glm::vec2 &bottomRight)
     : m_topLeft(topLeft)
     , m_bottomRight(bottomRight)
 {
+    assert(m_bottomRight.x >= m_topLeft.x
+           && m_bottomRight.y >= m_topLeft.y);
 }
 
 glm::vec2 CFloatRect::GetTopLeft() const
@@ -30,6 +40,12 @@ glm::vec2 CFloatRect::GetBottomRight() const
 glm::vec2 CFloatRect::GetSize() const
 {
     return m_bottomRight - m_topLeft;
+}
+
+bool CFloatRect::Contains(const glm::vec2 &point) const
+{
+    return (m_topLeft.x <= point.x && point.x <= m_bottomRight.x
+         && m_topLeft.y <= point.y && point.y <= m_bottomRight.y);
 }
 
 CFloatRect CFloatRect::GetScaled(const glm::vec2 &factors) const

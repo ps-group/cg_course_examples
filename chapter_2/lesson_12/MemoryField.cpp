@@ -48,6 +48,53 @@ void CMemoryField::Draw() const
             tile.Draw();
         }
     });
+
+    // В целях отладки можно рисовать все точки, в которых было
+    //  пересечение
+#if ENABLE_DEBUG_MEMORY_FIELD_HITS
+    glPointSize(10.f);
+    glBegin(GL_POINTS);
+    for (const glm::vec3 &point : m_hits)
+    {
+        glVertex3fv(glm::value_ptr(point));
+    }
+    glEnd();
+#endif
+}
+
+void CMemoryField::Activate(const CRay &ray)
+{
+    // Опираемся на соглашение, по которому
+    //  все спрайты лежат в плоскости Oxz.
+    CPlane plane({1, 0, 1}, {1, 0, 0}, {0, 0, 1});
+    SRayIntersection intersection;
+    if (!plane.Hit(ray, intersection))
+    {
+        return;
+    }
+
+    const glm::vec3 hitPoint3D = intersection.m_point;
+    const glm::vec2 hitPoint(hitPoint3D.x, hitPoint3D.z);
+
+#if ENABLE_DEBUG_MEMORY_FIELD_HITS
+    std::cerr << "Hit at point"
+              << " (" << hitPoint3D.x
+              << ", " << hitPoint3D.y
+              << ", " << hitPoint3D.z
+              << ")" << std::endl;
+    m_hits.push_back(hitPoint3D);
+#endif
+
+    for (CMemoryTile &tile : m_tiles)
+    {
+        if (tile.Activate(hitPoint))
+        {
+#if ENABLE_DEBUG_MEMORY_FIELD_HITS
+            std::cerr << "Tile activated!" << std::endl;
+#endif
+            break;
+        }
+    }
 }
 
 void CMemoryField::GenerateTiles()
