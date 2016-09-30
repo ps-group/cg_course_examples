@@ -260,7 +260,14 @@ const CTexture2D &CTexture2DAtlas::GetTexture() const
 
 CFloatRect CTexture2DAtlas::GetFrameRect(const std::string &frameName) const
 {
-    return m_frames.at(frameName);
+    try
+    {
+        return m_frames.at(frameName);
+    }
+    catch (...)
+    {
+        throw std::runtime_error("Frame not found: " + frameName);
+    }
 }
 
 CTexture2DUniquePtr CTexture2DLoader::Load(const path &path)

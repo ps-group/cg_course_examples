@@ -29,18 +29,58 @@ private:
     std::vector<uint8_t> m_indicies;
 };
 
+enum class TileImage
+{
+    FLY = 0,
+    EXIT_SIGN,
+    HEART,
+    KEY,
+    MUSHROOM,
+    SNAIL,
+    SPRINGBOARD,
+    FISH,
+    BOMB,
+
+    NUM_TILE_IMAGES,
+};
+
+class IMemoryTileController
+{
+public:
+    virtual ~IMemoryTileController() = default;
+    virtual void OnTileAnimationStarted() = 0;
+    virtual void OnTileAnimationEnded() = 0;
+};
+
 class CMemoryTile : public CTwoSideQuad
 {
 public:
-    CMemoryTile(const glm::vec2 &leftTop, const glm::vec2 &size);
+    using VoidHandler = std::function<void()>;
 
-    bool Activate(const glm::vec2 &point);
+    CMemoryTile(IMemoryTileController &controller, TileImage tileImage,
+                const glm::vec2 &leftTop, const glm::vec2 &size);
+
+    TileImage GetTileImage() const;
+    void SetTileImage(TileImage GetTileImage);
+
+    bool IsFrontFaced()const;
+    bool IsAlive()const;
+
+    bool MaybeActivate(const glm::vec2 &point);
+    void Deactivate();
+    void Kill();
 
     void Update(float dt) override;
     void Draw()const override;
 
 private:
+    void SetAnimationActive(bool value);
+
+    std::reference_wrapper<IMemoryTileController> m_controllerRef;
+    TileImage m_tileImage = TileImage::FLY;
     CFloatRect m_bounds;
     bool m_isFrontFaced = false;
     float m_rotation = 0;
+    bool m_isAnimationActive = false;
+    bool m_isAlive = true;
 };

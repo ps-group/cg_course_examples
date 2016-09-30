@@ -84,20 +84,56 @@ void CTwoSideQuad::SetBackTextureRect(const CFloatRect &rect)
     m_vertices[7].texCoord = rect.GetBottomRight();
 }
 
-CMemoryTile::CMemoryTile(const glm::vec2 &leftTop, const glm::vec2 &size)
+CMemoryTile::CMemoryTile(IMemoryTileController &controller, TileImage tileImage,
+                         const glm::vec2 &leftTop, const glm::vec2 &size)
     : CTwoSideQuad(-0.5f * size, size)
+    , m_controllerRef(controller)
+    , m_tileImage(tileImage)
     , m_bounds(leftTop, leftTop + size)
 {
 }
 
-bool CMemoryTile::Activate(const glm::vec2 &point)
+TileImage CMemoryTile::GetTileImage() const
 {
-    if (m_bounds.Contains(point))
+    return m_tileImage;
+}
+
+void CMemoryTile::SetTileImage(TileImage tileImage)
+{
+    m_tileImage = tileImage;
+}
+
+bool CMemoryTile::IsFrontFaced() const
+{
+    return m_isFrontFaced;
+}
+
+bool CMemoryTile::IsAlive() const
+{
+    return m_isAlive;
+}
+
+bool CMemoryTile::MaybeActivate(const glm::vec2 &point)
+{
+    if (!m_isFrontFaced && m_bounds.Contains(point))
     {
-        m_isFrontFaced = !m_isFrontFaced;
+        m_isFrontFaced = true;
+        SetAnimationActive(true);
         return true;
     }
     return false;
+}
+
+void CMemoryTile::Deactivate()
+{
+    assert(m_isFrontFaced);
+    m_isFrontFaced = false;
+    SetAnimationActive(true);
+}
+
+void CMemoryTile::Kill()
+{
+    m_isAlive = false;
 }
 
 void CMemoryTile::Update(float dt)
@@ -107,6 +143,7 @@ void CMemoryTile::Update(float dt)
 
     if ((fabs(m_rotation - expectedRotation) < rotationDelta))
     {
+        SetAnimationActive(false);
         m_rotation = expectedRotation;
     }
     else if (m_rotation < expectedRotation)
@@ -131,4 +168,22 @@ void CMemoryTile::Draw() const
     glMultMatrixf(glm::value_ptr(transform));
     CTwoSideQuad::Draw();
     glPopMatrix();
+}
+
+void CMemoryTile::SetAnimationActive(bool value)
+{
+    if (m_isAnimationActive == value)
+    {
+        return;
+    }
+
+    m_isAnimationActive = value;
+    if (m_isAnimationActive)
+    {
+        m_controllerRef.get().OnTileAnimationStarted();
+    }
+    else
+    {
+        m_controllerRef.get().OnTileAnimationEnded();
+    }
 }

@@ -5,7 +5,7 @@
 namespace
 {
 const glm::ivec2 WINDOW_SIZE = {800, 600};
-const char WINDOW_TITLE[] = "OpenGL Demo #12 (memory trainer game)";
+const char WINDOW_TITLE[] = "Memory Trainer 3D";
 const char ERROR_TITLE[] = "Fatal Error";
 }
 
