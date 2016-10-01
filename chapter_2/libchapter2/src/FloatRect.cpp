@@ -1,13 +1,6 @@
 #include "libchapter2_private.h"
 #include "FloatRect.h"
 
-namespace
-{
-bool IsGreater(const glm::vec2 &a, const glm::vec2 &b)
-{
-    return (a.x > b.x) && (a.y > b.y);
-}
-}
 
 CFloatRect::CFloatRect(const glm::vec2 &topLeft, const glm::vec2 &bottomRight)
     : m_topLeft(topLeft)

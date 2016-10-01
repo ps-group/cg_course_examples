@@ -39,6 +39,18 @@ std::string GetExecutablePath()
 #endif
     return std::string(buffer, size_t(size));
 }
+
+// Функция преобразует путь в родном для системы формате в UTF-8.
+//  Библиотека SDL2 принимает пути в UTF-8 на всех платформах.
+std::string ConvertPathToUtf8(const boost::filesystem::path &path)
+{
+#ifdef _WIN32
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    return converter.to_bytes(path.native());
+#else // unix-платформы.
+    return path.native();
+#endif
+}
 }
 
 boost::filesystem::path CFilesystemUtils::GetResourceAbspath(const boost::filesystem::path &currentPath)
@@ -84,4 +96,16 @@ std::string CFilesystemUtils::LoadFileAsString(const boost::filesystem::path &pa
     }
 
     return text;
+}
+
+SDLSurfacePtr CFilesystemUtils::LoadImage(const boost::filesystem::path &path)
+{
+    const std::string pathUtf8 = ConvertPathToUtf8(path);
+    SDLSurfacePtr pSurface(IMG_Load(pathUtf8.c_str()));
+    if (!pSurface)
+    {
+        throw std::runtime_error("Cannot find texture at " + path.generic_string());
+    }
+
+    return pSurface;
 }

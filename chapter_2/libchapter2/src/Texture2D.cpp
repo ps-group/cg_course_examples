@@ -1,15 +1,12 @@
 #include "libchapter2_private.h"
 #include "Texture2D.h"
-#include "tinyxml2.h"
+#include "../3rd_party/tinyxml2.h"
 #include "FilesystemUtils.h"
+#include "Utils.h"
 #include <codecvt>
 #include <cstdlib>
 #include <boost/utility/string_ref.hpp>
 #include <map>
-
-// Did you install SDL_image development files?
-// see http://www.libsdl.org/projects/SDL_image/
-#include <SDL2/SDL_image.h>
 
 
 namespace xml = tinyxml2;
@@ -18,43 +15,6 @@ using boost::filesystem::path;
 
 namespace
 {
-struct SDLSurfaceDeleter
-{
-	void operator()(SDL_Surface *ptr)
-	{
-		SDL_FreeSurface(ptr);
-	}
-};
-// Используем unique_ptr с явно заданной функцией удаления вместо delete.
-using SDLSurfacePtr = std::unique_ptr<SDL_Surface, SDLSurfaceDeleter>;
-
-// Convert path to UTF-8 string, acceptable by SDL_image.
-std::string ConvertPathToUtf8(const path &path)
-{
-#ifdef _WIN32
-	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-	return converter.to_bytes(path.native());
-#else
-	return path.native();
-#endif
-}
-
-void FlipSurfaceVertically(SDL_Surface & surface)
-{
-	const auto rowSize = size_t(surface.w * surface.format->BytesPerPixel);
-	std::vector<uint8_t> row(rowSize);
-
-	for (size_t y = 0, height = size_t(surface.h); y < height / 2; ++y)
-	{
-		auto *pixels = reinterpret_cast<uint8_t*>(surface.pixels);
-		auto *upperRow = pixels + rowSize * y;
-		auto *lowerRow = pixels + rowSize * (height - y - 1);
-		std::memcpy(row.data(), upperRow, rowSize);
-		std::memcpy(upperRow, lowerRow, rowSize);
-		std::memcpy(lowerRow, row.data(), rowSize);
-	}
-}
-
 GLenum ConvertEnum(TextureWrapMode mode)
 {
 	// Значение константы взято от GL_CLAMP_TO_EDGE_EXT библиотеки GLEW.
@@ -272,25 +232,23 @@ CFloatRect CTexture2DAtlas::GetFrameRect(const std::string &frameName) const
 
 CTexture2DUniquePtr CTexture2DLoader::Load(const path &path)
 {
-    const std::string pathUtf8 = ConvertPathToUtf8(path);
-    SDLSurfacePtr pSurface(IMG_Load(pathUtf8.c_str()));
-    if (!pSurface)
-    {
-        throw std::runtime_error("Cannot find texture at " + path.generic_string());
-    }
+    SDLSurfacePtr pSurface = CFilesystemUtils::LoadImage(path);
 
+    // Все изображения будем конвертировать в RGB или RGBA,
+    //  в зависимости от наличия альфа-канала в исходном изображении.
     const bool hasAlpha = SDL_ISPIXELFORMAT_ALPHA(pSurface->format->format);
     const GLenum pixelFormat = hasAlpha ? GL_RGBA : GL_RGB;
     const uint32_t requiredFormat = hasAlpha
             ? SDL_PIXELFORMAT_ABGR8888
             : SDL_PIXELFORMAT_RGB24;
-
     if (pSurface->format->format != requiredFormat)
     {
         pSurface.reset(SDL_ConvertSurfaceFormat(pSurface.get(), requiredFormat, 0));
     }
 
-    FlipSurfaceVertically(*pSurface);
+    // В системе координат OpenGL отсчёт идёт с нижней левой точки,
+    //  а не с верхней левой, поэтому переворачиваем изображение.
+    CUtils::FlipSurfaceVertically(*pSurface);
 
     auto pTexture = std::make_unique<CTexture2D>();
     pTexture->DoWhileBinded([&] {

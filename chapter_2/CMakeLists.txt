@@ -11,12 +11,12 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
 if(UNIX)
     set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra")
-    set(PROJECT_LIBS SDL2 SDL2_image GL GLU boost_filesystem boost_system)
+    set(PROJECT_LIBS SDL2 SDL2_image SDL2_ttf GL GLU boost_filesystem boost_system)
 else(UNIX)
     include_directories(${CG_WIN32_INCLUDE_PATHS})
     link_directories(${CG_WIN32_LINKER_PATHS})
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4201 /wd4324")
-    set(PROJECT_LIBS SDL2main SDL2 SDL2_image GLU32 OpenGL32)
+    set(PROJECT_LIBS SDL2main SDL2 SDL2_image SDL2_ttf GLU32 OpenGL32)
 endif(UNIX)
 
 macro(add_lesson NUM)
@@ -28,6 +28,8 @@ endmacro(add_lesson)
 
 file(GLOB SRC_LIBCHAPTER2 "libchapter2/src/*.cpp"
     "libchapter2/src/*.h"
+    "libchapter2/3rd_party/*.cpp"
+    "libchapter2/3rd_party/*.h"
     "libchapter2/*.h")
 add_library(libchapter2 ${SRC_LIBCHAPTER2})
 target_include_directories(libchapter2 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/libchapter2)
