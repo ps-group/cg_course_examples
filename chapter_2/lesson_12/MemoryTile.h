@@ -39,7 +39,6 @@ enum class TileImage
     SNAIL,
     SPRINGBOARD,
     FISH,
-    BOMB,
 
     NUM_TILE_IMAGES,
 };

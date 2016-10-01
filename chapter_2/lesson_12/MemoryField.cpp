@@ -208,8 +208,6 @@ CFloatRect CMemoryField::GetImageFrameRect(TileImage image) const
 {
     switch (image)
     {
-    case TileImage::BOMB:
-        return m_atlas.GetFrameRect("bomb.png");
     case TileImage::EXIT_SIGN:
         return m_atlas.GetFrameRect("signExit.png");
     case TileImage::FISH:
@@ -230,7 +228,6 @@ CFloatRect CMemoryField::GetImageFrameRect(TileImage image) const
         throw std::runtime_error("Unexpected tile image");
     }
 }
-
 
 void CMemoryField::OnTileAnimationStarted()
 {
