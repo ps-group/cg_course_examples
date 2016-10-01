@@ -6,5 +6,5 @@ class CHeadUpDisplay
 public:
 
 private:
-    TtfFontUniquePtr m_font;
+	TTFFontPtr m_pFont;
 };
