@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 #include <iostream>
 #include <thread>
+#include <cstdlib> // для std::memcpy
 
 using namespace std::chrono;
 

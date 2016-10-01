@@ -2,6 +2,7 @@
 #include "FilesystemUtils.h"
 #include <boost/filesystem/operations.hpp>
 #include <fstream>
+#include <codecvt>
 #ifdef _WIN32
 #include <sdkddkver.h>
 #include <Windows.h>
@@ -107,5 +108,5 @@ SDLSurfacePtr CFilesystemUtils::LoadImage(const boost::filesystem::path &path)
         throw std::runtime_error("Cannot find texture at " + path.generic_string());
     }
 
-    return pSurface;
+	return pSurface;
 }

@@ -22,6 +22,8 @@ void DoAtCameraPosition(T && callback)
 {
     glm::mat4 modelView;
     glGetFloatv(GL_MODELVIEW_MATRIX, glm::value_ptr(modelView));
+
+	// Обнуляем перемещение в матрице афинного преобразования
     modelView[3][0] = 0.f;
     modelView[3][1] = 0.f;
     modelView[3][2] = 0.f;
