@@ -101,12 +101,24 @@ std::string CFilesystemUtils::LoadFileAsString(const boost::filesystem::path &pa
 
 SDLSurfacePtr CFilesystemUtils::LoadImage(const boost::filesystem::path &path)
 {
-    const std::string pathUtf8 = ConvertPathToUtf8(path);
+    const std::string pathUtf8 = ConvertPathToUtf8(GetResourceAbspath(path));
     SDLSurfacePtr pSurface(IMG_Load(pathUtf8.c_str()));
     if (!pSurface)
     {
         throw std::runtime_error("Cannot find texture at " + path.generic_string());
     }
 
-	return pSurface;
+    return pSurface;
+}
+
+TTFFontPtr CFilesystemUtils::LoadFixedSizeFont(const boost::filesystem::path &path, int pointSize)
+{
+    const std::string pathUtf8 = ConvertPathToUtf8(GetResourceAbspath(path));
+    TTFFontPtr pFont(TTF_OpenFont(pathUtf8.c_str(), pointSize));
+    if (!pFont)
+    {
+        throw std::runtime_error("Cannot find font at " + path.generic_string());
+    }
+
+    return pFont;
 }

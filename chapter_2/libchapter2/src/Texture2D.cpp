@@ -167,7 +167,9 @@ private:
 }
 
 
-CTexture2D::CTexture2D()
+CTexture2D::CTexture2D(const glm::ivec2 &size, bool hasAlpha)
+    : m_size(size)
+    , m_hasAlpha(hasAlpha)
 {
     glGenTextures(1, &m_textureId);
 }
@@ -175,6 +177,16 @@ CTexture2D::CTexture2D()
 CTexture2D::~CTexture2D()
 {
     glDeleteTextures(1, &m_textureId);
+}
+
+glm::ivec2 CTexture2D::GetSize() const
+{
+    return m_size;
+}
+
+bool CTexture2D::HasAlpha() const
+{
+    return m_hasAlpha;
 }
 
 void CTexture2D::Bind() const
@@ -189,35 +201,36 @@ void CTexture2D::Unbind()
 
 CTexture2DUniquePtr CTexture2DLoader::Load(const path &path)
 {
-	SDLSurfacePtr pSurface = CFilesystemUtils::LoadImage(path);
+    SDLSurfacePtr pSurface = CFilesystemUtils::LoadImage(path);
+    const glm::ivec2 surfaceSize = { pSurface->w, pSurface->h };
+    const bool hasAlpha = SDL_ISPIXELFORMAT_ALPHA(pSurface->format->format);
 
-	// Все изображения будем конвертировать в RGB или RGBA,
-	//  в зависимости от наличия альфа-канала в исходном изображении.
-	const bool hasAlpha = SDL_ISPIXELFORMAT_ALPHA(pSurface->format->format);
-	const GLenum pixelFormat = hasAlpha ? GL_RGBA : GL_RGB;
-	const uint32_t requiredFormat = hasAlpha
-		? SDL_PIXELFORMAT_ABGR8888
-		: SDL_PIXELFORMAT_RGB24;
-	if (pSurface->format->format != requiredFormat)
-	{
-		pSurface.reset(SDL_ConvertSurfaceFormat(pSurface.get(), requiredFormat, 0));
-	}
+    // Все изображения будем конвертировать в RGB или RGBA,
+    //  в зависимости от наличия альфа-канала в исходном изображении.
+    const GLenum pixelFormat = hasAlpha ? GL_RGBA : GL_RGB;
+    const uint32_t requiredFormat = hasAlpha
+        ? SDL_PIXELFORMAT_ABGR8888
+        : SDL_PIXELFORMAT_RGB24;
+    if (pSurface->format->format != requiredFormat)
+    {
+        pSurface.reset(SDL_ConvertSurfaceFormat(pSurface.get(), requiredFormat, 0));
+    }
 
-	// В системе координат OpenGL отсчёт идёт с нижней левой точки,
-	//  а не с верхней левой, поэтому переворачиваем изображение.
-	CUtils::FlipSurfaceVertically(*pSurface);
+    // В системе координат OpenGL отсчёт идёт с нижней левой точки,
+    //  а не с верхней левой, поэтому переворачиваем изображение.
+    CUtils::FlipSurfaceVertically(*pSurface);
 
-	auto pTexture = std::make_unique<CTexture2D>();
-	pTexture->DoWhileBinded([&] {
-		glTexImage2D(GL_TEXTURE_2D, 0, GLint(pixelFormat), pSurface->w, pSurface->h,
-			0, pixelFormat, GL_UNSIGNED_BYTE, pSurface->pixels);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GLint(ConvertEnum(m_wrapS)));
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GLint(ConvertEnum(m_wrapT)));
-	});
+    auto pTexture = std::make_unique<CTexture2D>(surfaceSize, hasAlpha);
+    pTexture->DoWhileBinded([&] {
+        glTexImage2D(GL_TEXTURE_2D, 0, GLint(pixelFormat), pSurface->w, pSurface->h,
+            0, pixelFormat, GL_UNSIGNED_BYTE, pSurface->pixels);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GLint(ConvertEnum(m_wrapS)));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GLint(ConvertEnum(m_wrapT)));
+    });
 
-	return pTexture;
+    return pTexture;
 }
 
 void CTexture2DLoader::SetWrapMode(TextureWrapMode wrap)

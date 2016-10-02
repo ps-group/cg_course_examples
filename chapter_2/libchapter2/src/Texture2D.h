@@ -7,6 +7,7 @@
 #include <memory>
 #include <unordered_map>
 #include "FloatRect.h"
+#include "Utils.h"
 
 class CTexture2D;
 using CTexture2DUniquePtr = std::unique_ptr<CTexture2D>;
@@ -26,8 +27,11 @@ enum class TextureWrapMode
 class CTexture2D : private boost::noncopyable
 {
 public:
-    CTexture2D();
+    CTexture2D(const glm::ivec2 &size, bool hasAlpha);
     ~CTexture2D();
+
+    glm::ivec2 GetSize()const;
+    bool HasAlpha()const;
 
     void Bind()const;
     static void Unbind();
@@ -45,6 +49,8 @@ public:
 
 private:
     unsigned m_textureId = 0;
+    glm::ivec2 m_size;
+    bool m_hasAlpha = false;
 };
 
 /// Класс загружает текстуру типа GL_TEXTURE_2D,

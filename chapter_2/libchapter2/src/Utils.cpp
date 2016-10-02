@@ -99,10 +99,13 @@ void CUtils::FlipSurfaceVertically(SDL_Surface &surface)
 
 SDLSurfacePtr CUtils::RenderUtf8Text(TTF_Font &font, const std::string &text, const glm::vec3 &color)
 {
+    using namespace glm;
+
+    const vec3 scaledColor = 255.f * clamp(color, vec3(0.f), vec3(1.f));
     SDL_Color rgbaColor;
-    rgbaColor.r = Uint8(color.r * 255.f);
-    rgbaColor.g = Uint8(color.g * 255.f);
-    rgbaColor.b = Uint8(color.b * 255.f);
+    rgbaColor.r = Uint8(scaledColor.r);
+    rgbaColor.g = Uint8(scaledColor.g);
+    rgbaColor.b = Uint8(scaledColor.b);
     rgbaColor.a = 255;
 
     return SDLSurfacePtr(TTF_RenderUTF8_Blended(&font, text.c_str(), rgbaColor));

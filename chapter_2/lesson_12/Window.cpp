@@ -54,13 +54,17 @@ void CWindow::OnWindowInit(const glm::ivec2 &size)
     (void)size;
     SetupOpenGLState();
 
+    auto getWindowSize = std::bind(&CWindow::GetWindowSize, this);
+
     m_pField = std::make_unique<CMemoryField>();
+    m_pHud = std::make_unique<CHeadUpDisplay>(getWindowSize);
 }
 
 void CWindow::OnUpdateWindow(float deltaSeconds)
 {
     m_camera.Update(deltaSeconds);
     m_pField->Update(deltaSeconds);
+    m_pHud->Update(deltaSeconds);
 }
 
 void CWindow::OnDrawWindow(const glm::ivec2 &size)
@@ -69,6 +73,7 @@ void CWindow::OnDrawWindow(const glm::ivec2 &size)
 
     m_sunlight.Setup();
     m_pField->Draw();
+    m_pHud->Draw();
 }
 
 void CWindow::SetupView(const glm::ivec2 &size)

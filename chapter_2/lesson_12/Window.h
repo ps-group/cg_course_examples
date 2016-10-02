@@ -2,6 +2,7 @@
 #include "libchapter2.h"
 #include "Lights.h"
 #include "MemoryField.h"
+#include "HeadUpDisplay.h"
 #include <vector>
 
 class CWindow : public CAbstractInputControlWindow
@@ -25,6 +26,7 @@ private:
     glm::mat4 GetProjectionMatrix(const glm::ivec2 &size);
 
     std::unique_ptr<CMemoryField> m_pField;
+    std::unique_ptr<CHeadUpDisplay> m_pHud;
     CCamera m_camera;
     CDirectedLightSource m_sunlight;
 };

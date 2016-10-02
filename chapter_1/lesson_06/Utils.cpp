@@ -1,5 +1,6 @@
 ﻿#include "stdafx.h"
 #include "Utils.h"
+#include <thread>
 #include <SDL2/SDL.h>
 #include <iostream>
 
