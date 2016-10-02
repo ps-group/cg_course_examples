@@ -183,22 +183,14 @@ CHeadUpDisplay::CHeadUpDisplay(const CHeadUpDisplay::GetWindowSizeFn &getWindowS
     m_pFont = CFilesystemUtils::LoadFixedSizeFont(FONT_RESOURCE_PATH, FONT_POINTS_SIZE);
 }
 
-void CHeadUpDisplay::SetScore(int value)
+void CHeadUpDisplay::SetScore(unsigned value)
 {
-    if (m_score.value != value)
-    {
-        m_score.value = value;
-        m_score.didRasterize = false;
-    }
+    SetIndicatorValue(m_score, value);
 }
 
-void CHeadUpDisplay::SetTilesLeft(int value)
+void CHeadUpDisplay::SetTilesLeft(unsigned value)
 {
-    if (m_tilesLeft.value != value)
-    {
-        m_tilesLeft.value = value;
-        m_tilesLeft.didRasterize = false;
-    }
+    SetIndicatorValue(m_tilesLeft, value);
 }
 
 void CHeadUpDisplay::Update(float dt)
@@ -252,7 +244,7 @@ CTexture2DUniquePtr CHeadUpDisplay::RasterizeText(const std::string &text)const
     return pTexture;
 }
 
-void CHeadUpDisplay::UpdateIndicator(CHeadUpDisplay::SIntegerIndicator &indicator,
+void CHeadUpDisplay::UpdateIndicator(CHeadUpDisplay::SUnsignedIndicator &indicator,
                                      const char *textPrefix) const
 {
     if (!indicator.didRasterize)
@@ -262,5 +254,14 @@ void CHeadUpDisplay::UpdateIndicator(CHeadUpDisplay::SIntegerIndicator &indicato
         indicator.sprite.SetSize(vec2(pTexture->GetSize()));
         indicator.sprite.SetTexture(std::move(pTexture));
         indicator.didRasterize = true;
+    }
+}
+
+void CHeadUpDisplay::SetIndicatorValue(CHeadUpDisplay::SUnsignedIndicator &indicator, unsigned value) const
+{
+    if (indicator.value != value)
+    {
+        indicator.value = value;
+        indicator.didRasterize = false;
     }
 }

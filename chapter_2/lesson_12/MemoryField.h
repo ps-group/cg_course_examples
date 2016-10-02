@@ -11,18 +11,18 @@ public:
     CMemoryField();
 
     // ISceneObject interface
-public:
     void Update(float dt) final;
     void Draw() const final;
 
     void Activate(const CRay &ray);
+    unsigned GetTileCount()const;
+    unsigned GetTotalScore()const;
 
     // IMemoryTileController interface
 private:
     void OnTileAnimationStarted() final;
     void OnTileAnimationEnded() final;
 
-private:
     void GenerateTiles();
     void CheckTilesPair(std::pair<size_t, size_t> indicies);
     CFloatRect GetImageFrameRect(TileImage image)const;
@@ -31,6 +31,7 @@ private:
     CTexture2DAtlas m_atlas;
     std::vector<CMemoryTile> m_tiles;
     bool m_isActivateDisabled = false;
+    unsigned m_totalScore = 0;
 
 #if ENABLE_DEBUG_MEMORY_FIELD_HITS
     std::vector<glm::vec3> m_hits;

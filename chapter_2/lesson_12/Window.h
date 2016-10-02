@@ -24,6 +24,7 @@ protected:
 private:
     void SetupView(const glm::ivec2 &size);
     glm::mat4 GetProjectionMatrix(const glm::ivec2 &size);
+    void ShowGameOverMessage();
 
     std::unique_ptr<CMemoryField> m_pField;
     std::unique_ptr<CHeadUpDisplay> m_pHud;

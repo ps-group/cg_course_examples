@@ -157,6 +157,16 @@ void CMemoryField::Activate(const CRay &ray)
     }
 }
 
+unsigned CMemoryField::GetTileCount() const
+{
+    return unsigned(m_tiles.size());
+}
+
+unsigned CMemoryField::GetTotalScore() const
+{
+    return m_totalScore;
+}
+
 void CMemoryField::GenerateTiles()
 {
     std::vector<TileImage> images;
@@ -189,6 +199,8 @@ void CMemoryField::GenerateTiles()
 
 void CMemoryField::CheckTilesPair(std::pair<size_t, size_t> indicies)
 {
+    const int KILL_SCORE_BONUS = 50;
+    const int DEACTIVATE_SCORE_FANE = 10;
     CMemoryTile &first = m_tiles[indicies.first];
     CMemoryTile &second = m_tiles[indicies.second];
 
@@ -196,11 +208,20 @@ void CMemoryField::CheckTilesPair(std::pair<size_t, size_t> indicies)
     {
         first.Kill();
         second.Kill();
+        m_totalScore += KILL_SCORE_BONUS;
     }
     else
     {
         first.Deactivate();
         second.Deactivate();
+        if (m_totalScore <= DEACTIVATE_SCORE_FANE)
+        {
+            m_totalScore = 0;
+        }
+        else
+        {
+            m_totalScore -= DEACTIVATE_SCORE_FANE;
+        }
     }
 }
 

@@ -64,7 +64,14 @@ void CWindow::OnUpdateWindow(float deltaSeconds)
 {
     m_camera.Update(deltaSeconds);
     m_pField->Update(deltaSeconds);
+    m_pHud->SetTilesLeft(m_pField->GetTileCount());
+    m_pHud->SetScore(m_pField->GetTotalScore());
     m_pHud->Update(deltaSeconds);
+
+    if (m_pField->GetTileCount() == 0)
+    {
+        ShowGameOverMessage();
+    }
 }
 
 void CWindow::OnDrawWindow(const glm::ivec2 &size)
@@ -103,6 +110,24 @@ glm::mat4 CWindow::GetProjectionMatrix(const glm::ivec2 &size)
     const float zFar = 100.f;
 
     return glm::perspective(fieldOfView, aspect, zNear, zFar);
+}
+
+void CWindow::ShowGameOverMessage()
+{
+    // Показываем диалог с поздравлением.
+    const unsigned totalScore = m_pField->GetTotalScore();
+    const char title[] = "You won!";
+    const std::string message =
+            "Congratuations, you won the game!"
+            "\nTotal score: " + std::to_string(totalScore);
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, title,
+                             message.c_str(), nullptr);
+
+    // Добавляем событие завершения программы.
+    SDL_Event quitEvent;
+    quitEvent.type = SDL_QUIT;
+    quitEvent.quit.timestamp = SDL_GetTicks();
+    SDL_PushEvent(&quitEvent);
 }
 
 void CWindow::OnKeyDown(const SDL_KeyboardEvent &event)

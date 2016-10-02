@@ -48,25 +48,26 @@ public:
 
     CHeadUpDisplay(const GetWindowSizeFn &getWindowSize);
 
-    void SetScore(int value);
-    void SetTilesLeft(int value);
+    void SetScore(unsigned value);
+    void SetTilesLeft(unsigned value);
 
     void Update(float dt)final;
     void Draw()const final;
 
 private:
-    struct SIntegerIndicator
+    struct SUnsignedIndicator
     {
         CSprite sprite;
-        int value = 0;
+        unsigned value = 0;
         bool didRasterize = false;
     };
 
     CTexture2DUniquePtr RasterizeText(const std::string &text) const;
-    void UpdateIndicator(SIntegerIndicator &indicator, const char *textPrefix)const;
+    void UpdateIndicator(SUnsignedIndicator &indicator, const char *textPrefix)const;
+    void SetIndicatorValue(SUnsignedIndicator &indicator, unsigned value)const;
 
     GetWindowSizeFn m_getWindowSize;
     TTFFontPtr m_pFont;
-    SIntegerIndicator m_score;
-    SIntegerIndicator m_tilesLeft;
+    SUnsignedIndicator m_score;
+    SUnsignedIndicator m_tilesLeft;
 };
