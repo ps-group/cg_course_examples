@@ -11,7 +11,6 @@ namespace
 const char FONT_RESOURCE_PATH[] = "res/memory-trainer/Ubuntu-R.ttf";
 const int FONT_POINTS_SIZE = 24;
 const vec3 WHITE_RGB = {1, 1, 1};
-const vec3 BLACK_RGB = {0, 0, 0};
 const float LABEL_MARGIN_X = 15;
 const float LABEL_MARGIN_Y = 2;
 

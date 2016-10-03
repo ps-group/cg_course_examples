@@ -2,7 +2,7 @@
 #include "libchapter2.h"
 #include <vector>
 
-// Вершина с двумерной позицией, нормалью и 2D координатами текстуры.
+// Вершина с трёхмерной позицией, нормалью и 2D координатами текстуры.
 struct SVertexP3NT2
 {
     glm::vec3 position;
@@ -54,8 +54,6 @@ public:
 class CMemoryTile : public CTwoSideQuad
 {
 public:
-    using VoidHandler = std::function<void()>;
-
     CMemoryTile(IMemoryTileController &controller, TileImage tileImage,
                 const glm::vec2 &leftTop, const glm::vec2 &size);
 
