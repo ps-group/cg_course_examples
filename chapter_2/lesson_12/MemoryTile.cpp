@@ -84,16 +84,6 @@ void CTwoSideQuad::SetBackTextureRect(const CFloatRect &rect)
     m_vertices[7].texCoord = rect.GetBottomRight();
 }
 
-CMemoryTile::CMemoryTile(TileImage tileImage,
-                         const glm::vec2 &leftTop, const glm::vec2 &size)
-    : CTwoSideQuad(-0.5f * size, size)
-    , m_tileImage(tileImage)
-    , m_bounds(leftTop, leftTop + size)
-    , m_animationCounter(ANIMATION_SPEED)
-{
-    m_animationCounter.Restart();
-}
-
 CAnimationCounter::CAnimationCounter(float changeSpeed)
     : m_phase(1.f)
     , m_changeSpeed(changeSpeed)
@@ -133,6 +123,16 @@ void CAnimationCounter::Update(float deltaSeconds)
     {
         m_phase += delta;
     }
+}
+
+CMemoryTile::CMemoryTile(TileImage tileImage,
+                         const glm::vec2 &leftTop, const glm::vec2 &size)
+    : CTwoSideQuad(-0.5f * size, size)
+    , m_tileImage(tileImage)
+    , m_bounds(leftTop, leftTop + size)
+    , m_animationCounter(ANIMATION_SPEED)
+{
+    m_animationCounter.Restart();
 }
 
 TileImage CMemoryTile::GetTileImage() const
