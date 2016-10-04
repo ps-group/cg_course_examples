@@ -5,7 +5,7 @@
 
 #define ENABLE_DEBUG_MEMORY_FIELD_HITS 0
 
-class CMemoryField : public ISceneObject, public IMemoryTileController
+class CMemoryField : public ISceneObject
 {
 public:
     CMemoryField();
@@ -18,11 +18,7 @@ public:
     unsigned GetTileCount()const;
     unsigned GetTotalScore()const;
 
-    // IMemoryTileController interface
 private:
-    void OnTileAnimationStarted() final;
-    void OnTileAnimationEnded() final;
-
     void GenerateTiles();
     void CheckTilesPair(std::pair<size_t, size_t> indicies);
     CFloatRect GetImageFrameRect(TileImage image)const;
@@ -30,7 +26,6 @@ private:
     CPhongModelMaterial m_material;
     CTexture2DAtlas m_atlas;
     std::vector<CMemoryTile> m_tiles;
-    bool m_isActivateDisabled = false;
     unsigned m_totalScore = 0;
 
 #if ENABLE_DEBUG_MEMORY_FIELD_HITS

@@ -43,18 +43,31 @@ enum class TileImage
     NUM_TILE_IMAGES,
 };
 
-class IMemoryTileController
+class CAnimationCounter
 {
 public:
-    virtual ~IMemoryTileController() = default;
-    virtual void OnTileAnimationStarted() = 0;
-    virtual void OnTileAnimationEnded() = 0;
+    CAnimationCounter(float changeSpeed);
+
+    float GetPhase()const;
+    bool IsActive()const;
+
+    // Перезапускает изменение фазы анимации.
+    void Restart();
+
+    // Продолжает прирост фазы либо делает анимацию
+    //  неактивной, если фаза достигла 1.
+    void Update(float deltaSeconds);
+
+private:
+    bool m_isActive = false;
+    float m_phase = 1.f;
+    float m_changeSpeed = 0;
 };
 
 class CMemoryTile : public CTwoSideQuad
 {
 public:
-    CMemoryTile(IMemoryTileController &controller, TileImage tileImage,
+    CMemoryTile(TileImage tileImage,
                 const glm::vec2 &leftTop, const glm::vec2 &size);
 
     TileImage GetTileImage() const;
@@ -71,13 +84,16 @@ public:
     void Draw()const override;
 
 private:
-    void SetAnimationActive(bool value);
+    enum class State
+    {
+        FacedFront,
+        Teasing,
+        FacedBack,
+        Dead,
+    };
 
-    std::reference_wrapper<IMemoryTileController> m_controllerRef;
     TileImage m_tileImage = TileImage::FLY;
+    State m_state = State::FacedBack;
     CFloatRect m_bounds;
-    bool m_isFrontFaced = false;
-    float m_rotation = 0;
-    bool m_isAnimationActive = false;
-    bool m_isAlive = true;
+    CAnimationCounter m_animationCounter;
 };

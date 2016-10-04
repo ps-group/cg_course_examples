@@ -3,9 +3,9 @@
 
 namespace
 {
-// Скорость вращения, радианов в секунду.
-const float ROTATE_TIME = 0.3f;
-const float TILE_ROTATION_SPEED = float(M_PI) / ROTATE_TIME;
+// Время проигрывания анимации, секунд.
+const float ANIMATION_TIME = 0.3f;
+const float ANIMATION_SPEED = 1.f / ANIMATION_TIME;
 
 /// Привязывает вершины к состоянию OpenGL,
 /// затем вызывает 'callback'.
@@ -84,13 +84,55 @@ void CTwoSideQuad::SetBackTextureRect(const CFloatRect &rect)
     m_vertices[7].texCoord = rect.GetBottomRight();
 }
 
-CMemoryTile::CMemoryTile(IMemoryTileController &controller, TileImage tileImage,
+CMemoryTile::CMemoryTile(TileImage tileImage,
                          const glm::vec2 &leftTop, const glm::vec2 &size)
     : CTwoSideQuad(-0.5f * size, size)
-    , m_controllerRef(controller)
     , m_tileImage(tileImage)
     , m_bounds(leftTop, leftTop + size)
+    , m_animationCounter(ANIMATION_SPEED)
 {
+    m_animationCounter.Restart();
+}
+
+CAnimationCounter::CAnimationCounter(float changeSpeed)
+    : m_phase(1.f)
+    , m_changeSpeed(changeSpeed)
+{
+}
+
+float CAnimationCounter::GetPhase() const
+{
+    return m_phase;
+}
+
+bool CAnimationCounter::IsActive() const
+{
+    return m_isActive;
+}
+
+void CAnimationCounter::Restart()
+{
+    m_phase = 0;
+    m_isActive = true;
+}
+
+void CAnimationCounter::Update(float deltaSeconds)
+{
+    if (!m_isActive)
+    {
+        return;
+    }
+    const float maxPhase = 1.f;
+    const float delta = m_changeSpeed * deltaSeconds;
+    if ((maxPhase - m_phase) < delta)
+    {
+        m_phase = maxPhase;
+        m_isActive = false;
+    }
+    else
+    {
+        m_phase += delta;
+    }
 }
 
 TileImage CMemoryTile::GetTileImage() const
@@ -105,20 +147,25 @@ void CMemoryTile::SetTileImage(TileImage tileImage)
 
 bool CMemoryTile::IsFrontFaced() const
 {
-    return m_isFrontFaced;
+    return (m_state == State::FacedFront) && !m_animationCounter.IsActive();
 }
 
 bool CMemoryTile::IsAlive() const
 {
-    return m_isAlive;
+    return (m_state != State::Dead) || m_animationCounter.IsActive();
 }
 
 bool CMemoryTile::MaybeActivate(const glm::vec2 &point)
 {
-    if (!m_isFrontFaced && m_bounds.Contains(point))
+    if (m_animationCounter.IsActive() || !m_bounds.Contains(point))
     {
-        m_isFrontFaced = true;
-        SetAnimationActive(true);
+        return false;
+    }
+
+    if (m_state == State::FacedBack)
+    {
+        m_state = State::FacedFront;
+        m_animationCounter.Restart();
         return true;
     }
     return false;
@@ -126,33 +173,30 @@ bool CMemoryTile::MaybeActivate(const glm::vec2 &point)
 
 void CMemoryTile::Deactivate()
 {
-    assert(m_isFrontFaced);
-    m_isFrontFaced = false;
-    SetAnimationActive(true);
+    assert(m_state == State::FacedFront);
+    m_state = State::Teasing;
+    m_animationCounter.Restart();
 }
 
 void CMemoryTile::Kill()
 {
-    m_isAlive = false;
+    if (m_state != State::Dead && !m_animationCounter.IsActive())
+    {
+        m_state = State::Dead;
+        m_animationCounter.Restart();
+    }
 }
 
 void CMemoryTile::Update(float dt)
 {
-    const float expectedRotation = m_isFrontFaced ? float(M_PI) : 0.f;
-    const float rotationDelta = TILE_ROTATION_SPEED * dt;
+    m_animationCounter.Update(dt);
 
-    if ((fabs(m_rotation - expectedRotation) < rotationDelta))
+    // После завершения анимации переключаем состояние Teasing
+    //  на FacedBack, перезапуская анимацию переворота.
+    if (m_state == State::Teasing && !m_animationCounter.IsActive())
     {
-        SetAnimationActive(false);
-        m_rotation = expectedRotation;
-    }
-    else if (m_rotation < expectedRotation)
-    {
-        m_rotation += rotationDelta;
-    }
-    else
-    {
-        m_rotation += -rotationDelta;
+        m_state = State::FacedBack;
+        m_animationCounter.Restart();
     }
 }
 
@@ -160,30 +204,34 @@ void CMemoryTile::Draw() const
 {
     const glm::vec2 offset = m_bounds.GetTopLeft() + 0.5f * m_bounds.GetSize();
     const glm::vec3 zAxis = {0, 0, 1};
+    const glm::vec3 yAxis = {0, 1, 0};
     glm::mat4 transform;
     transform = glm::translate(transform, {offset.x, 0.f, offset.y});
-    transform = glm::rotate(transform, m_rotation, zAxis);
+
+    const float phase = m_animationCounter.GetPhase();
+
+    switch (m_state)
+    {
+    case State::FacedBack:
+        transform = glm::rotate(transform, (phase + 1.f) * float(M_PI), zAxis);
+        break;
+    case State::FacedFront:
+        transform = glm::rotate(transform, phase * float(M_PI), zAxis);
+        break;
+    case State::Teasing:
+    {
+        const float deviation = 0.1f - 0.2f * fabsf(0.5f - phase);
+        transform = glm::rotate(transform, float(M_PI), zAxis);
+        transform = glm::rotate(transform, deviation * float(M_PI), yAxis);
+        break;
+    }
+    case State::Dead:
+        transform = glm::scale(transform, glm::vec3(1.f - phase));
+        break;
+    }
 
     glPushMatrix();
     glMultMatrixf(glm::value_ptr(transform));
     CTwoSideQuad::Draw();
     glPopMatrix();
-}
-
-void CMemoryTile::SetAnimationActive(bool value)
-{
-    if (m_isAnimationActive == value)
-    {
-        return;
-    }
-
-    m_isAnimationActive = value;
-    if (m_isAnimationActive)
-    {
-        m_controllerRef.get().OnTileAnimationStarted();
-    }
-    else
-    {
-        m_controllerRef.get().OnTileAnimationEnded();
-    }
 }

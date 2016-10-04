@@ -86,6 +86,24 @@ void CMemoryField::Update(float dt)
         tile.Update(dt);
     }
 
+    // Ищем индексы плиток, повёрнутых лицевой частью.
+    std::vector<size_t> indicies;
+    indicies.reserve(2);
+    for (size_t i = 0; i < m_tiles.size(); ++i)
+    {
+        if (m_tiles[i].IsFrontFaced())
+        {
+            indicies.push_back(i);
+        }
+    }
+
+    // Если повернуты ровно две плитки,
+    //  проверяем их по правилам игры.
+    if (indicies.size() == 2)
+    {
+        CheckTilesPair({ indicies.front(), indicies.back() });
+    }
+
     // Применяем идиому "remove-erase", чтобы удалить отмершие плитки.
     auto newEnd = std::remove_if(m_tiles.begin(), m_tiles.end(), [](const auto &tile) {
         return !tile.IsAlive();
@@ -118,12 +136,6 @@ void CMemoryField::Draw() const
 
 void CMemoryField::Activate(const CRay &ray)
 {
-    // Блокируем активацию плиток на время анимации.
-    if (m_isActivateDisabled)
-    {
-        return;
-    }
-
     // Опираемся на соглашение, по которому
     //  все спрайты лежат в плоскости Oxz.
     CPlane plane({1, 0, 1}, {1, 0, 0}, {0, 0, 1});
@@ -185,7 +197,7 @@ void CMemoryField::GenerateTiles()
         {
             size_t index = row * FIELD_WIDTH + column;
             const float left = float(leftmostX + column * step);
-            m_tiles.emplace_back(*this, images.at(index),
+            m_tiles.emplace_back(images.at(index),
                                  glm::vec2{left, top},
                                  glm::vec2{TILE_SIZE, TILE_SIZE});
 
@@ -247,33 +259,5 @@ CFloatRect CMemoryField::GetImageFrameRect(TileImage image) const
         return m_atlas.GetFrameRect("springboardUp.png");
     default:
         throw std::runtime_error("Unexpected tile image");
-    }
-}
-
-void CMemoryField::OnTileAnimationStarted()
-{
-    m_isActivateDisabled = true;
-}
-
-void CMemoryField::OnTileAnimationEnded()
-{
-    m_isActivateDisabled = false;
-
-    // Ищем индексы плиток, повёрнутых лицевой частью.
-    std::vector<size_t> indicies;
-    indicies.reserve(2);
-    for (size_t i = 0; i < m_tiles.size(); ++i)
-    {
-        if (m_tiles[i].IsFrontFaced())
-        {
-            indicies.push_back(i);
-        }
-    }
-
-    // Если повернуты ровно две плитки,
-    //  проверяем их по правилам игры.
-    if (indicies.size() == 2)
-    {
-        CheckTilesPair({ indicies.front(), indicies.back() });
     }
 }
