@@ -4,8 +4,15 @@
 
 namespace
 {
-
 typedef glm::vec3 Vertex;
+
+struct STriangleFace
+{
+    uint16_t vertexIndex1;
+    uint16_t vertexIndex2;
+    uint16_t vertexIndex3;
+    uint16_t colorIndex;
+};
 
 // Вершины куба служат материалом для формирования треугольников,
 // составляющих грани куба.
@@ -20,12 +27,13 @@ const Vertex CUBE_VERTICIES[] = {
     {-1, -1, +1},
 };
 
-struct STriangleFace
-{
-    uint16_t vertexIndex1;
-    uint16_t vertexIndex2;
-    uint16_t vertexIndex3;
-    uint16_t colorIndex;
+// Сторона тетраэдра равна √3,
+// расстояние от центра грани до вершины равно 1.
+const Vertex TETRAHEDRON_VERTICES[] = {
+    {0.f, 0.f, -1.0f},
+    {sqrtf(1.5f), 0.f, 0.5f},
+    {-sqrtf(1.5f), 0.f, 0.5f},
+    {0.f, sqrtf(2.f), 0.f},
 };
 
 // Привыкаем использовать 16-битный unsigned short,
@@ -45,53 +53,16 @@ const STriangleFace CUBE_FACES[] = {
     {6, 4, 7, static_cast<uint16_t>(CubeFace::Front)},
 };
 
-/// @param phase - Фаза анимации на отрезке [0..1]
-glm::mat4 GetRotateZTransfrom(float phase)
-{
-    // угол вращения вокруг оси Z лежит в отрезке [0...2*pi].
-    const float angle = float(2 * M_PI) * phase;
-
-    return glm::rotate(glm::mat4(), angle, {0, 0, 1});
-}
-
-/// @param phase - Фаза анимации на отрезке [0..1]
-glm::mat4 GetScalingPulseTransform(float phase)
-{
-    // число пульсаций размера - произвольная константа.
-    const int pulseCount = 4;
-    float scale = fabsf(cosf(float(pulseCount * M_PI) * phase));
-
-    return glm::scale(glm::mat4(), {scale, scale, scale});
-}
-
-/// @param phase - Фаза анимации на отрезке [0..1]
-glm::mat4 GetBounceTransform(float phase)
-{
-    // начальная скорость и число отскоков - произвольные константы.
-    const int bounceCount = 4;
-    const float startSpeed = 15.f;
-    // "время" пробегает bounceCount раз по отрезку [0...1/bounceCount].
-    const float time = fmodf(phase, 1.f / float(bounceCount));
-    // ускорение подбирается так, чтобы на 0.25с скорость стала
-    // противоположна начальной.
-    const float acceleration = - (startSpeed * 2.f * float(bounceCount));
-    // расстояние - результат интегрирования функции скорости:
-    //  speed = startSpeed + acceleration * time;
-    float offset = time * (startSpeed + 0.5f * acceleration * time);
-
-    // для отскоков с нечётным номером меняем знак.
-    const int bounceNo = int(phase * bounceCount);
-    if (bounceNo % 2)
-    {
-        offset = -offset;
-    }
-
-    return glm::translate(glm::mat4(), {offset, 0.f, 0.f});
-}
-
+const STriangleFace TETRAHEDRON_FACES[] = {
+    {0, 1, 2, 0},
+    {0, 3, 1, 0},
+    {2, 1, 3, 0},
+    {0, 2, 3, 0},
+};
 }
 
 CIdentityCube::CIdentityCube()
+    : m_alpha(1)
 {
     // Используем белый цвет по умолчанию.
     for (glm::vec3 &color : m_colors)
@@ -109,6 +80,29 @@ void CIdentityCube::Update(float deltaTime)
 
 void CIdentityCube::Draw() const
 {
+    if (m_alpha < 0.99f)
+    {
+        glFrontFace(GL_CW);
+        OutputFaces();
+        glFrontFace(GL_CCW);
+    }
+    OutputFaces();
+}
+
+void CIdentityCube::SetFaceColor(CubeFace face, const glm::vec3 &color)
+{
+    const size_t index = static_cast<size_t>(face);
+    assert(index < COLORS_COUNT);
+    m_colors[index] = color;
+}
+
+void CIdentityCube::SetAlpha(float alpha)
+{
+    m_alpha = alpha;
+}
+
+void CIdentityCube::OutputFaces() const
+{
     // менее оптимальный способ рисования: прямая отправка данных
     // могла бы работать быстрее, чем множество вызовов glColor/glVertex.
     glBegin(GL_TRIANGLES);
@@ -119,8 +113,9 @@ void CIdentityCube::Draw() const
         const Vertex &v2 = CUBE_VERTICIES[face.vertexIndex2];
         const Vertex &v3 = CUBE_VERTICIES[face.vertexIndex3];
         glm::vec3 normal = glm::normalize(glm::cross(v2 - v1, v3 - v1));
+        glm::vec3 color = m_colors[face.colorIndex];
 
-        glColor3fv(glm::value_ptr(m_colors[face.colorIndex]));
+        glColor4f(color.x, color.y, color.z, m_alpha);
         glNormal3fv(glm::value_ptr(normal));
         glVertex3fv(glm::value_ptr(v1));
         glVertex3fv(glm::value_ptr(v2));
@@ -129,59 +124,111 @@ void CIdentityCube::Draw() const
     glEnd();
 }
 
-void CIdentityCube::SetFaceColor(CubeFace face, const glm::vec3 &color)
+void CIdentityTetrahedron::Update(float deltaTime)
 {
-    const size_t index = static_cast<size_t>(face);
-    assert(index < COLORS_COUNT);
-    m_colors[index] = color;
+    (void)deltaTime;
 }
 
-const float CAnimatedCube::ANIMATION_STEP_SECONDS = 2.f;
-
-void CAnimatedCube::Update(float deltaTime)
+void CIdentityTetrahedron::Draw() const
 {
-    // Вычисляем фазу анимации по времени на отрезке [0..1].
-    m_animationPhase += (deltaTime / ANIMATION_STEP_SECONDS);
-    if (m_animationPhase >= 1)
+    if (m_color.a < 0.99f)
     {
-        m_animationPhase = 0;
-        switch (m_animation)
-        {
-        case Rotating:
-            m_animation = Pulse;
-            break;
-        case Pulse:
-            m_animation = Bounce;
-            break;
-        case Bounce:
-            m_animation = Rotating;
-            break;
-        }
+        glFrontFace(GL_CW);
+        OutputFaces();
+        glFrontFace(GL_CCW);
     }
+    OutputFaces();
 }
 
-void CAnimatedCube::Draw() const
+void CIdentityTetrahedron::SetColor(const glm::vec4 &color)
 {
-    const glm::mat4 matrix = GetAnimationTransform();
+    m_color = color;
+}
+
+void CIdentityTetrahedron::OutputFaces() const
+{
+    // менее оптимальный способ рисования: прямая отправка данных
+    // могла бы работать быстрее, чем множество вызовов glColor/glVertex.
+    glBegin(GL_TRIANGLES);
+
+    for (const STriangleFace &face : TETRAHEDRON_FACES)
+    {
+        const Vertex &v1 = TETRAHEDRON_VERTICES[face.vertexIndex1];
+        const Vertex &v2 = TETRAHEDRON_VERTICES[face.vertexIndex2];
+        const Vertex &v3 = TETRAHEDRON_VERTICES[face.vertexIndex3];
+        glm::vec3 normal = glm::normalize(glm::cross(v2 - v1, v3 - v1));
+
+        glColor4fv(glm::value_ptr(m_color));
+        glNormal3fv(glm::value_ptr(normal));
+        glVertex3fv(glm::value_ptr(v1));
+        glVertex3fv(glm::value_ptr(v2));
+        glVertex3fv(glm::value_ptr(v3));
+    }
+    glEnd();
+}
+
+CSphereQuadric::CSphereQuadric()
+    : m_quadric(gluNewQuadric())
+    , m_color({1, 1, 1})
+{
+}
+
+CSphereQuadric::~CSphereQuadric()
+{
+    gluDeleteQuadric(m_quadric);
+}
+
+void CSphereQuadric::Draw() const
+{
+    const double radius = 1;
+    const int slices = 20;
+    const int stacks = 20;
+    glColor3fv(glm::value_ptr(m_color));
+    gluSphere(m_quadric, radius, slices, stacks);
+}
+
+void CSphereQuadric::SetColor(const glm::vec3 &color)
+{
+    m_color = color;
+}
+
+CConoidQuadric::CConoidQuadric()
+    : m_quadric(gluNewQuadric())
+    , m_color({1, 1, 1})
+{
+}
+
+CConoidQuadric::~CConoidQuadric()
+{
+    gluDeleteQuadric(m_quadric);
+}
+
+// Рисует усечённый конус высотой 2,
+// с радиусом основания 1 и радиусом верхнего торца m_topRadius.
+void CConoidQuadric::Draw() const
+{
+    const double baseRadius = 1;
+    const double height = 2;
+    const int slices = 20;
+    const int stacks = 1;
+    glColor3fv(glm::value_ptr(m_color));
     glPushMatrix();
-    glMultMatrixf(glm::value_ptr(matrix));
-    CIdentityCube::Draw();
+    glTranslatef(0, 0, -1);
+    gluCylinder(m_quadric, baseRadius, m_topRadius, height, slices, stacks);
+    glFrontFace(GL_CW);
+    gluDisk(m_quadric, 0, baseRadius, slices, stacks);
+    glFrontFace(GL_CCW);
+    glTranslatef(0, 0, 2);
+    gluDisk(m_quadric, 0, baseRadius, slices, stacks);
     glPopMatrix();
 }
 
-// Документация по функциям для модификации матриц:
-// http://glm.g-truc.net/0.9.2/api/a00245.html
-glm::mat4 CAnimatedCube::GetAnimationTransform() const
+void CConoidQuadric::SetTopRadius(double value)
 {
-    switch (m_animation)
-    {
-    case Rotating:
-        return GetRotateZTransfrom(m_animationPhase);
-    case Pulse:
-        return GetScalingPulseTransform(m_animationPhase);
-    case Bounce:
-        return GetBounceTransform(m_animationPhase);
-    }
-    // Недостижимый код - вернём единичную матрицу.
-    return glm::mat4();
+    m_topRadius = glm::clamp(value, 0.0, 1.0);
+}
+
+void CConoidQuadric::SetColor(const glm::vec3 &color)
+{
+    m_color = color;
 }

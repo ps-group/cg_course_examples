@@ -2,16 +2,11 @@
 #include "ParticleSystem.h"
 #include <limits>
 
-namespace
-{
-const glm::vec2 GRAVITY = {0.f, 9.8f};
-}
-
 void CFlowerParticle::Advance(float dt, const glm::vec2 &acceleration)
 {
     m_lifetime -= dt;
     m_velocity += dt * acceleration;
-    SetPosition(m_velocity + GetPosition());
+    SetPosition(dt * m_velocity + GetPosition());
 }
 
 bool CFlowerParticle::IsAlive() const
@@ -121,6 +116,11 @@ void CParticleSystem::SetEmitter(std::unique_ptr<CParticleEmitter> &&pEmitter)
     m_pEmitter = std::move(pEmitter);
 }
 
+void CParticleSystem::SetGravity(const glm::vec2 &gravity)
+{
+	m_gravity = gravity;
+}
+
 void CParticleSystem::Advance(float dt)
 {
     // Генерируем новые частицы
@@ -133,7 +133,7 @@ void CParticleSystem::Advance(float dt)
     // Продвигаем время жизни всех цветов.
     for (const auto &pFlower : m_flowers)
     {
-        pFlower->Advance(dt, GRAVITY);
+        pFlower->Advance(dt, m_gravity);
     }
     // Удаляем "умершие" цветы.
     auto newEnd = std::remove_if(m_flowers.begin(), m_flowers.end(), [](const auto &pFlower) {

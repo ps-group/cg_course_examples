@@ -2,19 +2,25 @@
 #include "Window.h"
 #include <SDL2/SDL.h>
 
+namespace
+{
+const glm::ivec2 WINDOW_SIZE = {800, 600};
+const char WINDOW_TITLE[] = "Memory Trainer 3D";
+const char ERROR_TITLE[] = "Fatal Error";
+}
+
 int main(int, char *[])
 {
     try
     {
         CWindow window;
-        window.Show({800, 600});
+        window.Show(WINDOW_TITLE, WINDOW_SIZE);
         window.DoGameLoop();
     }
     catch (const std::exception &ex)
     {
-        const char *title = "Fatal Error";
-        const char *message = ex.what();
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, message, nullptr);
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, ERROR_TITLE,
+                                 ex.what(), nullptr);
     }
 
     return 0;

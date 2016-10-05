@@ -2,11 +2,26 @@
 #include "Window.h"
 #include <SDL2/SDL.h>
 
+namespace
+{
+const glm::ivec2 WINDOW_SIZE = {800, 600};
+const char WINDOW_TITLE[] = "OpenGL Demo #11 (skybox + earth)";
+const char ERROR_TITLE[] = "Fatal Error";
+}
+
 int main(int, char *[])
 {
-    CWindow window;
-    window.Show({800, 600});
-    window.DoGameLoop();
+    try
+    {
+        CWindow window;
+        window.Show(WINDOW_TITLE, WINDOW_SIZE);
+        window.DoGameLoop();
+    }
+    catch (const std::exception &ex)
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, ERROR_TITLE,
+                                 ex.what(), nullptr);
+    }
 
     return 0;
 }

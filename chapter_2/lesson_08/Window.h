@@ -1,7 +1,7 @@
 #pragma once
-#include "DispatchEvent.h"
+#include "libchapter2.h"
 #include "Bodies.h"
-#include "Camera.h"
+#include "Lights.h"
 #include <vector>
 
 class CWindow : public CAbstractInputControlWindow
@@ -21,8 +21,11 @@ protected:
 
 private:
     void SetupView(const glm::ivec2 &size);
+    void SetupFog();
 
     CAnimatedCube m_dynamicCube;
     CIdentityCube m_staticCube;
     CCamera m_camera;
+    CDirectedLightSource m_sunlight;
+    bool m_isFogEnabled = true;
 };

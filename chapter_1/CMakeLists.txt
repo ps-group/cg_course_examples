@@ -1,21 +1,31 @@
 project(CG_chapter_1)
 cmake_minimum_required(VERSION 2.8)
 
+include(../cmake/SetCompilerWarningAll.cmake)
+include(../cmake/PrecompiledHeader.cmake)
+include(../cmake/win32_paths.cmake)
+
+# Disable configurations `MinSizeRel` and `RelWithDebInfo`
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
+
 if(UNIX)
     set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra")
     set(PROJECT_LIBS SDL2 GL GLEW GLU)
 else(UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4201")
-    set(PROJECT_LIBS SDL2main SDL2 glew32 OpenGL32)
+    include_directories(${CG_WIN32_INCLUDE_PATHS})
+    link_directories(${CG_WIN32_LINKER_PATHS})
+    add_definitions(-DGLEW_STATIC=1)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4201 /wd4324")
+    set(CG_GLEW_LIBRARY optimized glew32s debug glew32sd)
+    set(PROJECT_LIBS SDL2main SDL2 ${CG_GLEW_LIBRARY} OpenGL32)
 endif(UNIX)
-
-include(../cmake/SetCompilerWarningAll.cmake)
 
 macro(add_lesson NUM)
     file(GLOB SRC_LESSON_${NUM} "lesson_${NUM}/*.cpp" "lesson_${NUM}/*.h")
     add_executable(lesson_${NUM} ${SRC_LESSON_${NUM}})
     target_link_libraries(lesson_${NUM} ${PROJECT_LIBS})
+    add_precompiled_header(lesson_${NUM} "stdafx.h")
 endmacro(add_lesson)
 
 add_lesson(01)

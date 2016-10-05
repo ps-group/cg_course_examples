@@ -15,7 +15,7 @@ void CTwistValueController::Update(float deltaSeconds)
     const float twistDiff = fabsf(m_nextTwistValue - m_currentTwistValue);
     if (twistDiff > std::numeric_limits<float>::epsilon())
     {
-        const float sign = (m_nextTwistValue > m_currentTwistValue) ? 1 : -1;
+        const float sign = (m_nextTwistValue > m_currentTwistValue) ? 1.f : -1.f;
         const float growth = deltaSeconds * TWIST_CHANGE_SPEED;
         if (growth > twistDiff)
         {

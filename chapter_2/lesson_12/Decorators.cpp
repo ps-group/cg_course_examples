@@ -13,7 +13,7 @@ glm::mat4 GetRotateYTransfrom(float phase)
 }
 }
 
-void CAbstractDecorator::SetChild(IBodyUniquePtr &&pChild)
+void CAbstractDecorator::SetChild(ISceneObjectUniquePtr &&pChild)
 {
     m_pChild = std::move(pChild);
 }

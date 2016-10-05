@@ -1,19 +1,17 @@
 #pragma once
-#include "IBody.h"
-#include <glm/fwd.hpp>
-#include <glm/mat4x4.hpp>
+#include "libchapter2.h"
 
-class CAbstractDecorator : public IBody
+class CAbstractDecorator : public ISceneObject
 {
 public:
-    void SetChild(IBodyUniquePtr && pChild);
+    void SetChild(ISceneObjectUniquePtr && pChild);
 
 protected:
     void UpdateChild(float deltaTime);
     void DrawChild()const;
 
 private:
-    IBodyUniquePtr m_pChild;
+    ISceneObjectUniquePtr m_pChild;
 };
 
 class CTransformDecorator : public CAbstractDecorator

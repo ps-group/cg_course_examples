@@ -4,6 +4,7 @@
 #include <boost/noncopyable.hpp>
 #include <glm/fwd.hpp>
 #include <glm/vec2.hpp>
+#include <string>
 
 class IWindowClient;
 

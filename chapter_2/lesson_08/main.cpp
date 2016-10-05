@@ -2,10 +2,16 @@
 #include "Window.h"
 #include <SDL2/SDL.h>
 
+namespace
+{
+const glm::ivec2 WINDOW_SIZE = {800, 600};
+const char WINDOW_TITLE[] = "OpenGL Demo #8 (press F to disable fog)";
+}
+
 int main(int, char *[])
 {
     CWindow window;
-    window.Show({800, 600});
+    window.Show(WINDOW_TITLE, WINDOW_SIZE);
     window.DoGameLoop();
 
     return 0;

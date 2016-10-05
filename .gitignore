@@ -77,3 +77,10 @@ Makefile*
 *.qmlproject.user
 *.qmlproject.user.*
 *.tlog
+
+# Possible build catalogs
+/build_1/
+/build_2/
+/build_3/
+/build_4/
+/build_5/

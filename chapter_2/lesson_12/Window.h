@@ -1,10 +1,8 @@
 #pragma once
-#include "DispatchEvent.h"
-#include "IBody.h"
-#include "Camera.h"
+#include "libchapter2.h"
 #include "Lights.h"
-#include "Decorators.h"
-#include "Texture2D.h"
+#include "MemoryField.h"
+#include "HeadUpDisplay.h"
 #include <vector>
 
 class CWindow : public CAbstractInputControlWindow
@@ -21,13 +19,15 @@ protected:
     // IInputEventAcceptor interface
     void OnKeyDown(const SDL_KeyboardEvent &) override;
     void OnKeyUp(const SDL_KeyboardEvent &) override;
+    void OnDragEnd(const glm::vec2 &pos) override;
 
 private:
     void SetupView(const glm::ivec2 &size);
+    glm::mat4 GetProjectionMatrix(const glm::ivec2 &size);
+    void ShowGameOverMessage();
 
-    CPhongModelMaterial m_material;
-    CTexture2DUniquePtr m_pEarthTexture;
-    CAnimatedDecorator m_decoratedSphere;
+    std::unique_ptr<CMemoryField> m_pField;
+    std::unique_ptr<CHeadUpDisplay> m_pHud;
     CCamera m_camera;
     CDirectedLightSource m_sunlight;
 };

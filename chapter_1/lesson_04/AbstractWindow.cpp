@@ -1,55 +1,28 @@
 #include "stdafx.h"
 #include "AbstractWindow.h"
+#include "Utils.h"
 #include <SDL2/SDL_video.h>
 
 namespace
 {
-const char WINDOW_TITLE[] = "SDL2/OpenGL Demo";
-std::once_flag g_glewInitOnceFlag;
-
-// Используем unique_ptr с явно заданной функцией удаления вместо delete.
-using SDLWindowPtr = std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>;
-using SDLGLContextPtr = std::unique_ptr<void, void(*)(SDL_GLContext)>;
-
-class CChronometer
-{
-public:
-    CChronometer()
-        : m_lastTime(std::chrono::system_clock::now())
-    {
-    }
-
-    float GrabDeltaTime()
-    {
-        auto newTime = std::chrono::system_clock::now();
-        auto timePassed = std::chrono::duration_cast<std::chrono::milliseconds>(newTime - m_lastTime);
-        m_lastTime = newTime;
-        return 0.001f * float(timePassed.count());
-    }
-
-private:
-    std::chrono::system_clock::time_point m_lastTime;
-};
+const char WINDOW_TITLE[] = "You can Drag&drop these flowers";
 }
 
 class CAbstractWindow::Impl
 {
 public:
-    Impl()
-        : m_pWindow(nullptr, SDL_DestroyWindow)
-        , m_pGLContext(nullptr, SDL_GL_DeleteContext)
-    {
-    }
-
     void Show(glm::ivec2 const& size)
     {
         m_size = size;
+
+		CUtils::InitOnceSDL2();
 
         // Выбираем Compatiblity Profile
         // Установка атрибутов SDL_GL должна выполняться до создания окна,
         // иначе на некоторых видеокартах создание контекста завершится
         // OpenGL с ошибкой.
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+
         // Специальное значение SDL_WINDOWPOS_CENTERED вместо x и y заставит SDL2
         // разместить окно в центре монитора по осям x и y.
         // Для использования OpenGL вы ДОЛЖНЫ указать флаг SDL_WINDOW_OPENGL.
@@ -60,10 +33,9 @@ public:
         m_pGLContext.reset(SDL_GL_CreateContext(m_pWindow.get()));
         if (!m_pGLContext)
         {
-            std::cerr << "OpenGL context initialization failed" << std::endl;
-            std::abort();
+			CUtils::ValidateSDL2Errors();
         }
-        InitGlewOnce();
+		CUtils::InitOnceGLEW();
     }
 
     glm::ivec2 GetWindowSize() const
@@ -96,42 +68,6 @@ public:
         SDL_GL_SwapWindow(m_pWindow.get());
     }
 
-    void DumpGLErrors()
-    {
-        for (GLenum error = glGetError(); error != GL_NO_ERROR; error = glGetError())
-        {
-            std::string message;
-            switch (error)
-            {
-            case GL_INVALID_ENUM:
-                message = "invalid enum passed to GL function (GL_INVALID_ENUM)";
-                break;
-            case GL_INVALID_VALUE:
-                message = "invalid parameter passed to GL function (GL_INVALID_VALUE)";
-                break;
-            case GL_INVALID_OPERATION:
-                message = "cannot execute some of GL functions in current state (GL_INVALID_OPERATION)";
-                break;
-            case GL_STACK_OVERFLOW:
-                message = "matrix stack overflow occured inside GL (GL_STACK_OVERFLOW)";
-                break;
-            case GL_STACK_UNDERFLOW:
-                message = "matrix stack underflow occured inside GL (GL_STACK_UNDERFLOW)";
-                break;
-            case GL_OUT_OF_MEMORY:
-                message = "no enough memory to execute GL function (GL_OUT_OF_MEMORY)";
-                break;
-            default:
-                message = "error in some GL extension (framebuffers, shaders, etc)";
-                break;
-            }
-            std::cerr << "OpenGL error: " << message << std::endl;
-#ifdef _WIN32
-            __debugbreak();
-#endif
-        }
-    }
-
     bool ConsumeEvent(const SDL_Event &event)
     {
         bool consumed = false;
@@ -155,19 +91,6 @@ private:
         {
             m_size = {event.data1, event.data2};
         }
-    }
-
-    void InitGlewOnce()
-    {
-        // Вызываем инициализацию GLEW только один раз за время работы приложения.
-        std::call_once(g_glewInitOnceFlag, []() {
-            glewExperimental = GL_TRUE;
-            if (GLEW_OK != glewInit())
-            {
-                std::cerr << "GLEW initialization failed, aborting." << std::endl;
-                std::abort();
-            }
-        });
     }
 
     SDLWindowPtr m_pWindow;
@@ -213,7 +136,7 @@ void CAbstractWindow::DoGameLoop()
         const float deltaSeconds = chronometer.GrabDeltaTime();
         OnUpdateWindow(deltaSeconds);
         OnDrawWindow(m_pImpl->GetWindowSize());
-        m_pImpl->DumpGLErrors();
+		CUtils::ValidateOpenGLErrors();
         m_pImpl->SwapBuffers();
     }
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <boost/noncopyable.hpp>
 #include <boost/scope_exit.hpp>
+#include <boost/filesystem/path.hpp>
 #include <string>
 #include <memory>
 
@@ -18,7 +19,7 @@ public:
     {
         Bind();
         // При выходе из функции гарантированно выполняем Unbind.
-        BOOST_SCOPE_EXIT_ALL() {
+        BOOST_SCOPE_EXIT_ALL(&) {
             Unbind();
         };
         fn();
@@ -30,4 +31,4 @@ private:
 
 using CTexture2DUniquePtr = std::unique_ptr<CTexture2D>;
 
-CTexture2DUniquePtr LoadTexture2D(const std::string &path);
+CTexture2DUniquePtr LoadTexture2D(const boost::filesystem::path &path);

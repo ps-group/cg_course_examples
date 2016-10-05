@@ -1,19 +1,17 @@
 #pragma once
-#include "IBody.h"
-#include <glm/fwd.hpp>
-#include <glm/mat4x4.hpp>
+#include "libchapter2.h"
 
-class CAbstractDecorator : public IBody
+class CAbstractDecorator : public ISceneObject
 {
 public:
-    void SetChild(IBodyUniquePtr && pChild);
+    void SetChild(ISceneObjectUniquePtr && pChild);
 
 protected:
     void UpdateChild(float deltaTime);
     void DrawChild()const;
 
 private:
-    IBodyUniquePtr m_pChild;
+    ISceneObjectUniquePtr m_pChild;
 };
 
 class CTransformDecorator : public CAbstractDecorator
@@ -34,16 +32,9 @@ public:
     void Update(float deltaTime);
     void Draw()const;
 
+    void SetPeriod(float value);
+
 private:
-    enum Animation
-    {
-        Rotating,
-        Pulse,
-        Bounce,
-    };
-
-    glm::mat4 GetAnimationTransform()const;
-
-    Animation m_animation = Rotating;
     float m_animationPhase = 0;
+    float m_period = 1;
 };

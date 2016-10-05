@@ -1,6 +1,5 @@
-﻿#include "AbstractWindow.h"
-#include <glm/vec2.hpp>
-#include <glm/vec4.hpp>
+﻿#include "stdafx.h"
+#include "AbstractWindow.h"
 #include <SDL2/SDL.h>
 
 // Выключаем макроподмену main на SDL_main,

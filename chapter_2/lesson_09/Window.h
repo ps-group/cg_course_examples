@@ -1,7 +1,5 @@
 #pragma once
-#include "DispatchEvent.h"
-#include "Bodies.h"
-#include "Camera.h"
+#include "libchapter2.h"
 #include "Lights.h"
 #include <vector>
 
@@ -21,10 +19,11 @@ protected:
     void OnKeyUp(const SDL_KeyboardEvent &) override;
 
 private:
+    void InitBodies();
     void SetupView(const glm::ivec2 &size);
 
-    CAnimatedCube m_dynamicCube;
-    CIdentityCube m_staticCube;
+    std::vector<ISceneObjectUniquePtr> m_opaqueBodies;
+    std::vector<ISceneObjectUniquePtr> m_transparentBodies;
     CCamera m_camera;
     CDirectedLightSource m_sunlight;
 };

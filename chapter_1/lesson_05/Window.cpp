@@ -10,13 +10,14 @@ CWindow::CWindow()
 {
     auto pEmitter = std::make_unique<CParticleEmitter>();
     pEmitter->SetPosition({0, 600});
-    pEmitter->SetAngleRange(0.7f * float(M_PI), 0.9f * float(M_PI));
-    pEmitter->SetEmitIntervalRange(0.04f, 0.12f);
+	pEmitter->SetAngleRange(glm::radians(110.f), glm::radians(160.f));
+    pEmitter->SetEmitIntervalRange(0.15f, 0.25f);
     pEmitter->SetLifetimeRange(10.f, 20.f);
     pEmitter->SetPetalsCountRangle(5, 9);
     pEmitter->SetRadiusRange(40.f, 75.f);
-    pEmitter->SetSpeedRange(8.f, 15.f);
-    m_system.SetEmitter(std::move(pEmitter));
+    pEmitter->SetSpeedRange(200.f, 400.f);
+	m_system.SetEmitter(std::move(pEmitter));
+	m_system.SetGravity({0, 98});
 
     SetBackgroundColor(QUIET_GREEN);
 }

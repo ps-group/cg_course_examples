@@ -5,49 +5,50 @@
 namespace
 {
 
-struct Vertex
-{
-    glm::vec3 pos;
-    glm::vec3 color;
-};
-
-const glm::vec3 DARK_GREEN = {0.05f, 0.45f, 0.1f};
-const glm::vec3 LIGHT_GREEN = {0.1f, 0.8f, 0.15f};
+typedef glm::vec3 Vertex;
 
 // Вершины куба служат материалом для формирования треугольников,
 // составляющих грани куба.
 const Vertex CUBE_VERTICIES[] = {
-    {{-1, +1, -1}, DARK_GREEN},
-    {{+1, +1, -1}, DARK_GREEN},
-    {{+1, -1, -1}, DARK_GREEN},
-    {{-1, -1, -1}, DARK_GREEN},
-    {{-1, +1, +1}, LIGHT_GREEN},
-    {{+1, +1, +1}, LIGHT_GREEN},
-    {{+1, -1, +1}, LIGHT_GREEN},
-    {{-1, -1, +1}, LIGHT_GREEN},
+    {-1, +1, -1},
+    {+1, +1, -1},
+    {+1, -1, -1},
+    {-1, -1, -1},
+    {-1, +1, +1},
+    {+1, +1, +1},
+    {+1, -1, +1},
+    {-1, -1, +1},
+};
+
+struct STriangleFace
+{
+    uint16_t vertexIndex1;
+    uint16_t vertexIndex2;
+    uint16_t vertexIndex3;
+    uint16_t colorIndex;
 };
 
 // Привыкаем использовать 16-битный unsigned short,
 // чтобы экономить память на фигурах с тысячами вершин.
-const uint16_t CUBE_FACES[] = {
-    0, 1, 2,
-    0, 2, 3,
-    2, 1, 5,
-    2, 5, 6,
-    3, 2, 6,
-    3, 6, 7,
-    0, 3, 7,
-    0, 7, 4,
-    1, 0, 4,
-    1, 4, 5,
-    6, 5, 4,
-    6, 4, 7,
+const STriangleFace CUBE_FACES[] = {
+    {0, 1, 2, static_cast<uint16_t>(CubeFace::Back)},
+    {0, 2, 3, static_cast<uint16_t>(CubeFace::Back)},
+    {2, 1, 5, static_cast<uint16_t>(CubeFace::Right)},
+    {2, 5, 6, static_cast<uint16_t>(CubeFace::Right)},
+    {3, 2, 6, static_cast<uint16_t>(CubeFace::Bottom)},
+    {3, 6, 7, static_cast<uint16_t>(CubeFace::Bottom)},
+    {0, 3, 7, static_cast<uint16_t>(CubeFace::Left)},
+    {0, 7, 4, static_cast<uint16_t>(CubeFace::Left)},
+    {1, 0, 4, static_cast<uint16_t>(CubeFace::Top)},
+    {1, 4, 5, static_cast<uint16_t>(CubeFace::Top)},
+    {6, 5, 4, static_cast<uint16_t>(CubeFace::Front)},
+    {6, 4, 7, static_cast<uint16_t>(CubeFace::Front)},
 };
 
 /// @param phase - Фаза анимации на отрезке [0..1]
 glm::mat4 GetRotateZTransfrom(float phase)
 {
-    // угол вращения вокруг оси Z лежит в отрезке [0...2*pi].
+    // угол вращения вокруг оси Y лежит в отрезке [0...2*pi].
     const float angle = float(2 * M_PI) * phase;
 
     return glm::rotate(glm::mat4(), angle, {0, 0, 1});
@@ -90,6 +91,17 @@ glm::mat4 GetBounceTransform(float phase)
 
 }
 
+CIdentityCube::CIdentityCube()
+{
+    // Используем белый цвет по умолчанию.
+    for (glm::vec3 &color : m_colors)
+    {
+        color.x = 1;
+        color.y = 1;
+        color.z = 1;
+    }
+}
+
 void CIdentityCube::Update(float deltaTime)
 {
     (void)deltaTime;
@@ -100,13 +112,28 @@ void CIdentityCube::Draw() const
     // менее оптимальный способ рисования: прямая отправка данных
     // могла бы работать быстрее, чем множество вызовов glColor/glVertex.
     glBegin(GL_TRIANGLES);
-    for (uint16_t i : CUBE_FACES)
+
+    for (const STriangleFace &face : CUBE_FACES)
     {
-        const Vertex &v = CUBE_VERTICIES[i];
-        glColor3f(v.color.x, v.color.y, v.color.z);
-        glVertex3f(v.pos.x, v.pos.y, v.pos.z);
+        const Vertex &v1 = CUBE_VERTICIES[face.vertexIndex1];
+        const Vertex &v2 = CUBE_VERTICIES[face.vertexIndex2];
+        const Vertex &v3 = CUBE_VERTICIES[face.vertexIndex3];
+        glm::vec3 normal = glm::normalize(glm::cross(v2 - v1, v3 - v1));
+
+        glColor3fv(glm::value_ptr(m_colors[face.colorIndex]));
+        glNormal3fv(glm::value_ptr(normal));
+        glVertex3fv(glm::value_ptr(v1));
+        glVertex3fv(glm::value_ptr(v2));
+        glVertex3fv(glm::value_ptr(v3));
     }
     glEnd();
+}
+
+void CIdentityCube::SetFaceColor(CubeFace face, const glm::vec3 &color)
+{
+    const size_t index = static_cast<size_t>(face);
+    assert(index < COLORS_COUNT);
+    m_colors[index] = color;
 }
 
 const float CAnimatedCube::ANIMATION_STEP_SECONDS = 2.f;

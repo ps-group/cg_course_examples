@@ -73,11 +73,6 @@ CIdentityCube::CIdentityCube()
     }
 }
 
-void CIdentityCube::Update(float deltaTime)
-{
-    (void)deltaTime;
-}
-
 void CIdentityCube::Draw() const
 {
     if (m_alpha < 0.99f)
@@ -122,11 +117,6 @@ void CIdentityCube::OutputFaces() const
         glVertex3fv(glm::value_ptr(v3));
     }
     glEnd();
-}
-
-void CIdentityTetrahedron::Update(float deltaTime)
-{
-    (void)deltaTime;
 }
 
 void CIdentityTetrahedron::Draw() const
@@ -212,15 +202,14 @@ void CConoidQuadric::Draw() const
     const int slices = 20;
     const int stacks = 1;
     glColor3fv(glm::value_ptr(m_color));
-    glPushMatrix();
-    glTranslatef(0, 0, -1);
+    glTranslatef(0, 0, 1);
     gluCylinder(m_quadric, baseRadius, m_topRadius, height, slices, stacks);
     glFrontFace(GL_CW);
     gluDisk(m_quadric, 0, baseRadius, slices, stacks);
     glFrontFace(GL_CCW);
     glTranslatef(0, 0, 2);
     gluDisk(m_quadric, 0, baseRadius, slices, stacks);
-    glPopMatrix();
+    glTranslatef(0, 0, -1);
 }
 
 void CConoidQuadric::SetTopRadius(double value)
