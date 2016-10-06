@@ -6,8 +6,7 @@ int main(int, char *[])
 {
     try
     {
-        CWindow window;
-        window.SetCoreProfileEnabled(true);
+        CWindow window(ContextProfile::RobustOpenGL_3_2, ContextMode::Debug);
         window.Show("Demo #17", {800, 600});
         CWindowClient client(window);
         window.DoMainLoop();

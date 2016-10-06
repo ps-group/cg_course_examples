@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 #include <iostream>
 #include <thread>
+#include <cstdlib> // для std::memcpy
 
 using namespace std::chrono;
 
@@ -30,8 +31,9 @@ void CUtils::InitOnceGLEW()
 		GLenum status = glewInit();
 		if (status != GLEW_OK)
 		{
-			std::cerr << "GLEW initialization failed: " << glewGetErrorString(status) << std::endl;
-			std::abort();
+            const std::string errorStr = reinterpret_cast<const char *>(glewGetErrorString(status));
+            throw std::runtime_error("GLEW initialization failed: "
+                                     + errorStr);
 		}
 	}
 }
@@ -40,9 +42,8 @@ void CUtils::ValidateSDL2Errors()
 {
 	std::string message = SDL_GetError();
 	if (!message.empty())
-	{
-		std::cerr << "SDL2 error: " << message << std::endl;
-		std::abort();
+    {
+        throw std::runtime_error("SDL2 error: " + message);
 	}
 }
 
@@ -76,9 +77,41 @@ void CUtils::ValidateOpenGLErrors()
 			message = "error in some GL extension (framebuffers, shaders, etc)";
 			break;
 		}
-		std::cerr << "OpenGL error: " << message << std::endl;
-		std::abort();
+        throw std::runtime_error("OpenGL error: " + message);
 	}
+}
+
+void CUtils::FlipSurfaceVertically(SDL_Surface &surface)
+{
+    const auto rowSize = size_t(surface.w * surface.format->BytesPerPixel);
+    std::vector<uint8_t> row(rowSize);
+
+    // Зеркально отражаем пиксели по оси Y,
+    //  если число строк пикселей в изображении нечётное,
+    //  центральная строка остаётся нетронутой.
+    for (size_t y = 0, height = size_t(surface.h); y < height / 2; ++y)
+    {
+        auto *pixels = reinterpret_cast<uint8_t*>(surface.pixels);
+        auto *upperRow = pixels + rowSize * y;
+        auto *lowerRow = pixels + rowSize * (height - y - 1);
+        std::memcpy(row.data(), upperRow, rowSize);
+        std::memcpy(upperRow, lowerRow, rowSize);
+        std::memcpy(lowerRow, row.data(), rowSize);
+    }
+}
+
+SDLSurfacePtr CUtils::RenderUtf8Text(TTF_Font &font, const std::string &text, const glm::vec3 &color)
+{
+    using namespace glm;
+
+    const vec3 scaledColor = 255.f * clamp(color, vec3(0.f), vec3(1.f));
+    SDL_Color rgbaColor;
+    rgbaColor.r = Uint8(scaledColor.r);
+    rgbaColor.g = Uint8(scaledColor.g);
+    rgbaColor.b = Uint8(scaledColor.b);
+    rgbaColor.a = 255;
+
+    return SDLSurfacePtr(TTF_RenderUTF8_Blended(&font, text.c_str(), rgbaColor));
 }
 
 CChronometer::CChronometer()

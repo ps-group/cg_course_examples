@@ -17,6 +17,15 @@
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_video.h>
 
+// Did you install SDL_image development files?
+// see http://www.libsdl.org/projects/SDL_image/
+#include <SDL2/SDL_image.h>
+
+// Did you install SDL_ttf development files?
+// see http://www.libsdl.org/projects/SDL_ttf/
+#include <SDL2/SDL_ttf.h>
+
+
 #include <stdint.h>
 #include <chrono>
 #include <type_traits>

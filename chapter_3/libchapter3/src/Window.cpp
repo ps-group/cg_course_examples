@@ -37,18 +37,102 @@ void DispatchEvent(const SDL_Event &event, IWindowClient &acceptor)
         break;
     }
 }
+
+void SetupProfileAttributes(ContextProfile profile, ContextMode mode)
+{
+    // Включаем режим сглаживания с помощью субпиксельного рендеринга.
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+
+    // Выбираем версию и параметры совместимости контекста
+    bool makeRobust = true;
+    switch (profile)
+    {
+    case ContextProfile::Compatibility:
+        makeRobust = false;
+        break;
+    case ContextProfile::RobustOpenGL_3_1:
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+        break;
+    case ContextProfile::RobustOpenGL_3_2:
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+        break;
+    case ContextProfile::RobustOpenGL_4_0:
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+        break;
+    }
+
+    unsigned flags = 0;
+    if (mode == ContextMode::Debug)
+    {
+        // Включаем поддержку отладочных средств
+        //  в создаваемом контексте OpenGL.
+        flags |= SDL_GL_CONTEXT_DEBUG_FLAG;
+    }
+    if (makeRobust)
+    {
+        // Отключаем поддержку старых средств из старых версий OpenGL
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        flags |= SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
+    }
+    else
+    {
+        // Включаем поддержку расширений для обратной совместимости
+        // со старыми версиями OpenGL.
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+    }
+}
+
+void DebugOutputCallback(GLenum /*source*/,
+                         GLenum type,
+                         GLuint id,
+                         GLenum /*severity*/,
+                         GLsizei /*length*/,
+                         const GLchar* message,
+                         const void* /*userParam*/)
+{
+    // Отсекаем все сообщения, кроме ошибок
+    if (type != GL_DEBUG_TYPE_ERROR)
+    {
+        return;
+    }
+    std::string formatted = "OpenGL error #" + std::to_string(id) + ": " + message;
+    std::cerr << formatted << std::endl;
+}
+
+void SetupDebugOutputCallback()
+{
+    if (!GLEW_ARB_debug_output)
+    {
+        throw std::runtime_error("Cannot use debug output:"
+                                 " it isn't supported by videodriver");
+    }
+
+    glEnable(GL_DEBUG_OUTPUT);
+
+    // Синхронный режим позволяет узнать в отладчике контекст,
+    //  в котором произошла ошибка.
+    // Режим может понизить производительность, но на фоне
+    //  других потерь Debug-сборки это несущественно.
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+    glDebugMessageCallback(DebugOutputCallback, nullptr);
+    // Указываем видеодрайверу выдать только один тип сообщений,
+    //  GL_DEBUG_TYPE_ERROR.
+    glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_ERROR, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+}
 }
 
 class CWindow::Impl
 {
 public:
-    void SetCoreProfileEnabled(bool enabled)
+    Impl(ContextProfile profile, ContextMode mode)
+        : m_profile(profile)
+        , m_contextMode(mode)
     {
-        if (m_pWindow)
-        {
-            throw std::logic_error("Cannot change OpenGL profile after window created");
-        }
-        m_isCoreProfileEnabled = enabled;
     }
 
     void Show(const std::string &title, const glm::ivec2 &size)
@@ -57,14 +141,8 @@ public:
 
 		CUtils::InitOnceSDL2();
 
-        // Выбираем между профилями Core и Compatibility
-//        const SDL_GLprofile profile = m_isCoreProfileEnabled
-//                ? SDL_GL_CONTEXT_PROFILE_CORE
-//                : SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+        // Выбираем версию и параметры совместимости OpenGL.
+        SetupProfileAttributes(m_profile, m_contextMode);
 
         // Специальное значение SDL_WINDOWPOS_CENTERED вместо x и y заставит SDL2
         // разместить окно в центре монитора по осям x и y.
@@ -84,6 +162,12 @@ public:
 			CUtils::ValidateSDL2Errors();
 		}
 		CUtils::InitOnceGLEW();
+
+        // Устанавливаем функцию обработки отладочных сообщений.
+        if (m_contextMode == ContextMode::Debug)
+        {
+            SetupDebugOutputCallback();
+        }
     }
 
     glm::ivec2 GetWindowSize() const
@@ -173,27 +257,23 @@ private:
         }
     }
 
+    bool m_isTerminated = false;
+    ContextProfile m_profile;
+    ContextMode m_contextMode;
     IWindowClient *m_pClient = nullptr;
     SDLWindowPtr m_pWindow;
     SDLGLContextPtr m_pGLContext;
     glm::ivec2 m_size;
     glm::vec4 m_clearColor;
-    bool m_isTerminated = false;
-    bool m_isCoreProfileEnabled = false;
 };
 
-CWindow::CWindow()
-    : m_pImpl(new Impl)
+CWindow::CWindow(ContextProfile profile, ContextMode mode)
+    : m_pImpl(new Impl(profile, mode))
 {
 }
 
 CWindow::~CWindow()
 {
-}
-
-void CWindow::SetCoreProfileEnabled(bool enabled)
-{
-    m_pImpl->SetCoreProfileEnabled(enabled);
 }
 
 void CWindow::Show(const std::string &title, const glm::ivec2 &size)

@@ -3,12 +3,11 @@
 
 CEarthProgramContext::CEarthProgramContext()
 {
-	boost::filesystem::path path = CFilesystemUtils::GetResourceAbspath("res/img/earth_colormap.jpg");
-    m_pEarthTexture = LoadTexture2D(path);
-    path = CFilesystemUtils::GetResourceAbspath("res/img/earth_clouds.jpg");
-    m_pCloudTexture = LoadTexture2D(path);
-    path = CFilesystemUtils::GetResourceAbspath("res/img/earth_at_night.jpg");
-    m_pNightTexture = LoadTexture2D(path);
+    CTexture2DLoader loader;
+
+    m_pEarthTexture = loader.Load("res/img/earth_colormap.jpg");
+    m_pCloudTexture = loader.Load("res/img/earth_clouds.jpg");
+    m_pNightTexture = loader.Load("res/img/earth_at_night.jpg");
 
     const std::string vertShader = CFilesystemUtils::LoadFileAsString("res/cloud_earth.vert");
     const std::string fragShader = CFilesystemUtils::LoadFileAsString("res/cloud_earth.frag");

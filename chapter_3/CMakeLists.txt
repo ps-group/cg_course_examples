@@ -8,14 +8,14 @@ include(../cmake/win32_paths.cmake)
 if(UNIX)
     set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra")
-    set(PROJECT_LIBS SDL2 SDL2_image GL GLEW GLU boost_filesystem boost_system)
+    set(PROJECT_LIBS SDL2 SDL2_image SDL2_ttf GL GLEW GLU boost_filesystem boost_system)
 else(UNIX)
     include_directories(${CG_WIN32_INCLUDE_PATHS})
     link_directories(${CG_WIN32_LINKER_PATHS})
     add_definitions(-DGLEW_STATIC=1)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4201 /wd4324")
     set(CG_GLEW_LIBRARY optimized glew32s debug glew32sd)
-    set(PROJECT_LIBS SDL2main SDL2 SDL2_image ${CG_GLEW_LIBRARY} OpenGL32)
+    set(PROJECT_LIBS SDL2main SDL2 SDL2_image SDL2_ttf ${CG_GLEW_LIBRARY} OpenGL32)
 endif(UNIX)
 
 macro(add_lesson NUM)
@@ -25,8 +25,11 @@ macro(add_lesson NUM)
     add_precompiled_header(lesson_${NUM} "stdafx.h")
 endmacro(add_lesson)
 
-file(GLOB SRC_LIBCHAPTER3 "libchapter3/src/*.cpp"
+file(GLOB SRC_LIBCHAPTER3
+    "libchapter3/src/*.cpp"
     "libchapter3/src/*.h"
+    "libchapter3/3rd_party/*.cpp"
+    "libchapter3/3rd_party/*.h"
     "libchapter3/*.h"
     "res/*.vert"
     "res/*.frag")
