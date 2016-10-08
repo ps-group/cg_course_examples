@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "WindowClient.h"
 
+using glm::mat4;
+using glm::vec3;
+
 namespace
 {
 const float CAMERA_INITIAL_ROTATION = 0.1f;
@@ -14,23 +17,6 @@ void SetupOpenGLState()
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CCW);
     glCullFace(GL_BACK);
-}
-
-template <class T>
-void DoWithTransform(const glm::mat4 &mat, T && callback)
-{
-    glPushMatrix();
-    glMultMatrixf(glm::value_ptr(mat));
-    callback();
-    glPopMatrix();
-}
-
-void SetupModelViewProjection(const glm::mat4 &modelView, const glm::mat4 &projection)
-{
-    glLoadMatrixf(glm::value_ptr(modelView));
-    glMatrixMode(GL_PROJECTION);
-    glLoadMatrixf(glm::value_ptr(projection));
-    glMatrixMode(GL_MODELVIEW);
 }
 }
 
@@ -67,11 +53,9 @@ void CWindowClient::OnUpdateWindow(float deltaSeconds)
 
     m_sphereMat.Setup();
     m_sunlight.Setup();
-    m_programContext.Use();
 
-    DoWithTransform(m_earthTransform, [&] {
-        m_sphereObj.Draw();
-    });
+    m_programContext.Use();
+    m_sphereObj.Draw();
 }
 
 void CWindowClient::OnKeyDown(const SDL_KeyboardEvent &event)
@@ -100,13 +84,15 @@ void CWindowClient::UpdateRotation(float deltaSeconds)
 {
     const float ROTATION_SPEED = 0.2f;
     const float deltaRotation = ROTATION_SPEED * deltaSeconds;
-    m_earthTransform = glm::rotate(m_earthTransform, deltaRotation,
-                                   glm::vec3(0, 1, 0));
+    const mat4 model = glm::rotate(m_programContext.GetModel(),
+                                   deltaRotation,
+                                   vec3(0, 1, 0));
+    m_programContext.SetModel(model);
 }
 
 void CWindowClient::SetupView(const glm::ivec2 &size)
 {
-    const glm::mat4 mv = m_camera.GetViewTransform();
+    const mat4 view = m_camera.GetViewTransform();
 
     // Матрица перспективного преобразования вычисляется функцией
     // glm::perspective, принимающей угол обзора, соотношение ширины
@@ -115,8 +101,10 @@ void CWindowClient::SetupView(const glm::ivec2 &size)
     const float aspect = float(size.x) / float(size.y);
     const float zNear = 0.01f;
     const float zFar = 100.f;
-    const glm::mat4 proj = glm::perspective(fieldOfView, aspect, zNear, zFar);
+    const mat4 proj = glm::perspective(fieldOfView, aspect, zNear, zFar);
 
     glViewport(0, 0, size.x, size.y);
-    SetupModelViewProjection(mv, proj);
+
+    m_programContext.SetView(view);
+    m_programContext.SetProjection(proj);
 }

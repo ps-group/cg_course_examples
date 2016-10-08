@@ -147,13 +147,25 @@ CProgramInfo CShaderProgram::GetProgramInfo() const
     return CProgramInfo(m_programId);
 }
 
-CProgramUniform CShaderProgram::FindUniform(const char *name) const
+CProgramUniform CShaderProgram::FindUniform(const std::string &name) const
 {
-    int location = glGetUniformLocation(m_programId, name);
-    if (location == -1)
+    auto cacheIt = m_uniformLocationCache.find(name);
+    int location = 0;
+
+    if (cacheIt != m_uniformLocationCache.end())
     {
-        throw std::invalid_argument("Wrong shader variable name: " + std::string(name));
+        location = cacheIt->second;
     }
+    else
+    {
+        int location = glGetUniformLocation(m_programId, name.c_str());
+        if (location == -1)
+        {
+            throw std::invalid_argument("Wrong shader variable name: " + std::string(name));
+        }
+        m_uniformLocationCache[name] = location;
+    }
+
     return CProgramUniform(location);
 }
 

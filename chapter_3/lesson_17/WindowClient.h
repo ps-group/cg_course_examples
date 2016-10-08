@@ -26,5 +26,4 @@ private:
     CPhongModelMaterial m_sphereMat;
     CDirectedLightSource m_sunlight;
     CEarthProgramContext m_programContext;
-    glm::mat4 m_earthTransform;
 };

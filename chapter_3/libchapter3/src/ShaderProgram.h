@@ -4,6 +4,8 @@
 #include <boost/optional.hpp>
 #include <string>
 #include <memory>
+#include <vector>
+#include <map>
 #include "ProgramUniform.h"
 #include "ProgramInfo.h"
 
@@ -35,7 +37,7 @@ public:
     boost::optional<std::string> Validate()const;
 
     CProgramInfo GetProgramInfo()const;
-    CProgramUniform FindUniform(const char *name)const;
+    CProgramUniform FindUniform(const std::string &name)const;
     void Use()const;
 
 private:
@@ -43,4 +45,5 @@ private:
 
     unsigned m_programId = 0;
     std::vector<unsigned> m_shaders;
+    mutable std::map<std::string, int> m_uniformLocationCache;
 };

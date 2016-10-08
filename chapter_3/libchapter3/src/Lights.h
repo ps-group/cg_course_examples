@@ -12,6 +12,7 @@ public:
     virtual ~ILightSource() = default;
     virtual void Setup()const = 0;
 
+    virtual glm::vec4 GetUniformPosition() const = 0;
     virtual glm::vec4 GetAmbient() const = 0;
     virtual glm::vec4 GetDiffuse() const = 0;
     virtual glm::vec4 GetSpecular() const = 0;
@@ -29,6 +30,7 @@ public:
     CAbstractLightSource(unsigned index);
     ~CAbstractLightSource();
 
+    glm::vec4 GetUniformPosition()const final;
     glm::vec4 GetAmbient() const final;
     glm::vec4 GetDiffuse() const final;
     glm::vec4 GetSpecular() const final;
@@ -37,10 +39,12 @@ public:
     void SetSpecular(const glm::vec4 &color) final;
 
 protected:
+    void SetUniformPosition(const glm::vec4 &position);
     void SetupImpl()const;
     unsigned GetIndex()const;
 
 private:
+    glm::vec4 m_uniformPosition;
     glm::vec4 m_ambient;
     glm::vec4 m_diffuse;
     glm::vec4 m_specular;
@@ -57,9 +61,6 @@ public:
     void SetDirection(const glm::vec3 &value);
 
     void Setup() const override;
-
-private:
-    glm::vec4 m_direction;
 };
 
 class CPositionLightSource : public CAbstractLightSource
@@ -72,9 +73,6 @@ public:
     void SetPosition(const glm::vec3 &value);
 
     void Setup() const override;
-
-private:
-    glm::vec4 m_position;
 };
 
 class CPhongModelMaterial
