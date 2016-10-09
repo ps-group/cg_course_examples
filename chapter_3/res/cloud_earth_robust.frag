@@ -1,3 +1,7 @@
+#version 130
+// GLSL version 130 enabled with OpenGL Core Profile 3.0.
+//  - `varying` renamed to `in` for fragment shader
+
 struct LightSource
 {
     // (x, y, z, 1) means positioned light.
@@ -20,13 +24,13 @@ uniform sampler2D colormap;
 uniform sampler2D surfaceDataMap;
 uniform sampler2D nightColormap;
 
-varying vec2 fragTextureUV;
-varying vec3 fragNormal;
-varying vec3 fragPosInViewSpace;
+in vec2 fragTextureUV;
+in vec3 fragNormal;
+in vec3 fragViewDirection;
 
 LightFactors GetLight0Factors()
 {
-    vec3 viewDirection = normalize(-fragPosInViewSpace);
+    vec3 viewDirection = normalize(-fragViewDirection);
     vec3 fixedNormal = normalize(fragNormal);
     // Fix lightDirection for both directed and undirected light sources.
     vec3 delta = light0.position.w * viewDirection;
@@ -61,7 +65,7 @@ void main()
     float waterFactor = surfaceData.g;
 
     vec4 diffuseColor = mix(color, vec4(factors.diffuse), cloudGray);
-    vec4 diffuseIntensity = mix(nightColor, diffuseColor, vec4(factors.diffuse))
+    vec4 diffuseIntensity = mix(nightColor, diffuseColor,vec4(factors.diffuse))
             * light0.diffuse;
 
     vec4 specularIntensity = waterFactor * factors.specular
