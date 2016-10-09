@@ -43,6 +43,7 @@ void CEarthProgramContext::Use()
     m_programEarth.FindUniform("nightColormap") = 2; // GL_TEXTURE2
 
     const glm::mat4 mv = m_view * m_model;
+    m_programEarth.FindUniform("view") = m_view;
     m_programEarth.FindUniform("modelView") = mv;
     m_programEarth.FindUniform("normalModelView") = GetNormalMatrix(mv);
     m_programEarth.FindUniform("projection") = m_projection;

@@ -17,12 +17,8 @@ uniform mat4 projection;
 
 void main(void)
 {
-    // Transformation for point and direction differs:
-    //   direction will be only rotated and scaled, but not moved.
     vec4 posInViewSpace = modelView * vec4(vertex, 1.0);
-    vec4 viewDirection = modelView * vec4(vertex, 0.0);
-
-    fragViewDirection = vec3(viewDirection);
+    fragViewDirection = vec3(posInViewSpace);
     fragNormal = normalize(vec3(normalModelView * vec4(normal, 0.0)));
     fragTextureUV = textureUV;
     gl_Position = projection * posInViewSpace;

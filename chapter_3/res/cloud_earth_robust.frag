@@ -23,6 +23,7 @@ uniform LightSource light0;
 uniform sampler2D colormap;
 uniform sampler2D surfaceDataMap;
 uniform sampler2D nightColormap;
+uniform mat4 view;
 
 in vec2 fragTextureUV;
 in vec3 fragNormal;
@@ -34,7 +35,8 @@ LightFactors GetLight0Factors()
     vec3 fixedNormal = normalize(fragNormal);
     // Fix lightDirection for both directed and undirected light sources.
     vec3 delta = light0.position.w * viewDirection;
-    vec3 lightDirection = normalize(light0.position.xyz + delta);
+    vec4 lightPosInViewSpace = view * light0.position;
+    vec3 lightDirection = normalize(lightPosInViewSpace.xyz + delta);
 
     vec3 reflectDirection = normalize(-reflect(lightDirection, fixedNormal));
 
