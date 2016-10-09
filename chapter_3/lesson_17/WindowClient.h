@@ -4,8 +4,24 @@
 #include "EarthProgramContext.h"
 #include <vector>
 
-class CWindowClient
+class CWindowClientBase
         : public CAbstractWindowClient
+{
+public:
+    CWindowClientBase(CWindow &window)
+        : CAbstractWindowClient(window)
+    {
+        // Прикрепляем VAO, который будет объектом по-умолчанию.
+        //  http://stackoverflow.com/questions/13403807/
+        m_defaultVAO.Bind();
+    }
+
+private:
+    CArrayObject m_defaultVAO;
+};
+
+class CWindowClient
+        : public CWindowClientBase
 {
 public:
     CWindowClient(CWindow &window);
@@ -20,10 +36,10 @@ private:
     void CheckOpenGLVersion();
     void UpdateRotation(float deltaSeconds);
     void SetupView(const glm::ivec2 &size);
+    void SetupLight0();
 
     CIdentitySphere m_sphereObj;
     CCamera m_camera;
-    CPhongModelMaterial m_sphereMat;
     CDirectedLightSource m_sunlight;
     CEarthProgramContext m_programContext;
 };

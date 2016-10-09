@@ -156,12 +156,12 @@ public:
         }
 
         // Создаём контекст OpenGL, связанный с окном.
-		m_pGLContext.reset(SDL_GL_CreateContext(m_pWindow.get()));
+        m_pGLContext.reset(SDL_GL_CreateContext(m_pWindow.get()));
 		if (!m_pGLContext)
 		{
 			CUtils::ValidateSDL2Errors();
 		}
-		CUtils::InitOnceGLEW();
+        CUtils::InitOnceGLEW();
 
         // Устанавливаем функцию обработки отладочных сообщений.
         if (m_contextMode == ContextMode::Debug)
@@ -181,7 +181,7 @@ public:
     }
 
     void DoMainLoop()
-	{
+    {
 		const std::chrono::milliseconds FRAME_PERIOD(16);
 
         SDL_Event event;

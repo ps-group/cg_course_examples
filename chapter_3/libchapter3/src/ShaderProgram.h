@@ -6,8 +6,6 @@
 #include <memory>
 #include <vector>
 #include <map>
-#include "ProgramUniform.h"
-#include "ProgramInfo.h"
 
 enum class ShaderType
 {
@@ -17,6 +15,10 @@ enum class ShaderType
     TessEvaluation,
     Compute,
 };
+
+class CProgramInfo;
+class CProgramUniform;
+class CVertexAttribute;
 
 class CShaderProgram : private boost::noncopyable
 {
@@ -38,6 +40,7 @@ public:
 
     CProgramInfo GetProgramInfo()const;
     CProgramUniform FindUniform(const std::string &name)const;
+    CVertexAttribute FindAttribute(const std::string &name)const;
     void Use()const;
 
 private:
@@ -46,4 +49,5 @@ private:
     unsigned m_programId = 0;
     std::vector<unsigned> m_shaders;
     mutable std::map<std::string, int> m_uniformLocationCache;
+    mutable std::map<std::string, int> m_attributeLocationCache;
 };

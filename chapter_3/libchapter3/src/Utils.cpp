@@ -35,6 +35,12 @@ void CUtils::InitOnceGLEW()
             throw std::runtime_error("GLEW initialization failed: "
                                      + errorStr);
 		}
+
+        // GLEW при инициализации использует вызов glGetString,
+        //   недопустимый для Core Profile.
+        // Вызываем glGetError(), чтобы очистить буфер ошибки OpenGL.
+        //   http://stackoverflow.com/questions/10857335/
+        glGetError();
 	}
 }
 

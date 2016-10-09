@@ -52,6 +52,21 @@ void CEarthProgramContext::Use()
     m_programEarth.FindUniform("light0.specular") = m_light0.specular;
 }
 
+CVertexAttribute CEarthProgramContext::GetPositionAttr() const
+{
+    return m_programEarth.FindAttribute("vertex");
+}
+
+CVertexAttribute CEarthProgramContext::GetNormalAttr() const
+{
+    return m_programEarth.FindAttribute("normal");
+}
+
+CVertexAttribute CEarthProgramContext::GetTexCoordAttr() const
+{
+    return m_programEarth.FindAttribute("textureUV");
+}
+
 const glm::mat4 &CEarthProgramContext::GetModel() const
 {
     return m_model;

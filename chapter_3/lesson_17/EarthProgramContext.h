@@ -14,6 +14,9 @@ public:
     CEarthProgramContext();
 
     void Use();
+    CVertexAttribute GetPositionAttr()const;
+    CVertexAttribute GetNormalAttr()const;
+    CVertexAttribute GetTexCoordAttr()const;
 
     const glm::mat4 &GetModel()const;
     const glm::mat4 &GetView()const;

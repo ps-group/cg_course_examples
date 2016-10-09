@@ -1,5 +1,8 @@
 #include "libchapter3_private.h"
 #include "ShaderProgram.h"
+#include "ProgramUniform.h"
+#include "VertexAttribute.h"
+#include "ProgramInfo.h"
 
 namespace
 {
@@ -72,6 +75,39 @@ std::string GetInfoLog(GLuint shaderId, PFNGLGETSHADERIVPROC getShaderivProc,
     }
 
     return infoLog;
+}
+
+// Указатель на вызов OpenGL, принимающий id программы и имя переменной,
+// и возвращающий её значение.
+using GetProgramLocationFn = int (*)(unsigned programId, const GLchar *name);
+
+// Запрашивает расположение uniform или attribute переменной
+//  по имени, используя переданный вызов API OpenGL.
+// Использует переданный кеш для уменьшения числа вызовов API OpenGL.
+// Выбрасывает std::runtime_error в случае, если переменной нет в программе.
+int GetCachedVariableLocation(unsigned programId,
+                              std::map<std::string, int> &cache,
+                              GetProgramLocationFn getLocationFn,
+                              const std::string &name)
+{
+    auto cacheIt = cache.find(name);
+    int location = 0;
+
+    if (cacheIt != cache.end())
+    {
+        location = cacheIt->second;
+    }
+    else
+    {
+        location = getLocationFn(programId, name.c_str());
+        if (location == -1)
+        {
+            throw std::runtime_error("Wrong shader variable name: " + std::string(name));
+        }
+        cache[name] = location;
+    }
+
+    return location;
 }
 
 }
@@ -149,24 +185,20 @@ CProgramInfo CShaderProgram::GetProgramInfo() const
 
 CProgramUniform CShaderProgram::FindUniform(const std::string &name) const
 {
-    auto cacheIt = m_uniformLocationCache.find(name);
-    int location = 0;
-
-    if (cacheIt != m_uniformLocationCache.end())
-    {
-        location = cacheIt->second;
-    }
-    else
-    {
-        int location = glGetUniformLocation(m_programId, name.c_str());
-        if (location == -1)
-        {
-            throw std::invalid_argument("Wrong shader variable name: " + std::string(name));
-        }
-        m_uniformLocationCache[name] = location;
-    }
-
+    const int location = GetCachedVariableLocation(m_programId,
+                                                   m_uniformLocationCache,
+                                                   glGetUniformLocation,
+                                                   name);
     return CProgramUniform(location);
+}
+
+CVertexAttribute CShaderProgram::FindAttribute(const std::string &name) const
+{
+    const int location = GetCachedVariableLocation(m_programId,
+                                                   m_attributeLocationCache,
+                                                   glGetAttribLocation,
+                                                   name);
+    return CVertexAttribute(location);
 }
 
 void CShaderProgram::Use() const

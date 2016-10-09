@@ -1,10 +1,15 @@
-attribute vec3 vertex;
-attribute vec3 normal;
-attribute vec2 textureUV;
+#version 130
+// GLSL version 130 enabled with OpenGL Core Profile 3.0.
+//  - `attribute` renamed to `in`
+//  - `varying` renamed to `out`
 
-varying vec2 fragTextureUV;
-varying vec3 fragNormal;
-varying vec3 fragPosInViewSpace;
+in vec3 vertex;
+in vec3 normal;
+in vec2 textureUV;
+
+out vec2 fragTextureUV;
+out vec3 fragNormal;
+out vec3 fragPosInViewSpace;
 
 uniform mat4 modelView;
 uniform mat4 normalModelView;

@@ -13,6 +13,8 @@ struct LightFactors
     float specular;
 };
 
+const float SHININESS = 10.0;
+
 uniform LightSource light0;
 uniform sampler2D colormap;
 uniform sampler2D surfaceDataMap;
@@ -27,15 +29,15 @@ LightFactors GetLight0Factors()
     vec3 viewDirection = normalize(-fragPosInViewSpace);
     vec3 fixedNormal = normalize(fragNormal);
     // Fix lightDirection for both directed and undirected light sources.
-    vec3 delta = gl_LightSource[0].position.w * viewDirection;
-    vec3 lightDirection = normalize(gl_LightSource[0].position.xyz + delta);
+    vec3 delta = light0.position.w * viewDirection;
+    vec3 lightDirection = normalize(light0.position.xyz + delta);
 
     vec3 reflectDirection = normalize(-reflect(lightDirection, fixedNormal));
 
     LightFactors result;
     result.diffuse = max(dot(fixedNormal, lightDirection), 0.0);
     float base = max(dot(reflectDirection, viewDirection), 0.0);
-    result.specular = pow(base, gl_FrontMaterial.shininess / 4.0);
+    result.specular = pow(base, SHININESS);
 
     result.diffuse = clamp(result.diffuse, 0.0, 1.0);
     result.specular = clamp(result.specular, 0.0, 1.0);
@@ -60,10 +62,10 @@ void main()
 
     vec4 diffuseColor = mix(color, vec4(factors.diffuse), cloudGray);
     vec4 diffuseIntensity = mix(nightColor, diffuseColor, vec4(factors.diffuse))
-            * gl_FrontLightProduct[0].diffuse;
+            * light0.diffuse;
 
     vec4 specularIntensity = waterFactor * factors.specular
-            * gl_FrontLightProduct[0].specular;
+            * light0.specular;
 
     gl_FragColor = diffuseIntensity + specularIntensity;
 }

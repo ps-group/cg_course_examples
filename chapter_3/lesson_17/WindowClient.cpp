@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "WindowClient.h"
+#include "EarthRenderer3D.h"
 
 using glm::mat4;
 using glm::vec3;
@@ -21,7 +22,7 @@ void SetupOpenGLState()
 }
 
 CWindowClient::CWindowClient(CWindow &window)
-    : CAbstractWindowClient(window)
+    : CWindowClientBase(window)
     , m_sphereObj(SPHERE_PRECISION, SPHERE_PRECISION)
     , m_camera(CAMERA_INITIAL_ROTATION, CAMERA_INITIAL_DISTANCE)
     , m_sunlight(GL_LIGHT0)
@@ -34,14 +35,8 @@ CWindowClient::CWindowClient(CWindow &window)
     CheckOpenGLVersion();
     SetupOpenGLState();
 
-    m_sphereMat.SetDiffuse(WHITE_RGBA);
-    m_sphereMat.SetAmbient(WHITE_RGBA);
-    m_sphereMat.SetSpecular(0.7f * WHITE_RGBA);
-    m_sphereMat.SetShininess(30);
-
     m_sunlight.SetDirection(SUNLIGHT_DIRECTION);
     m_sunlight.SetDiffuse(WHITE_RGBA);
-    m_sunlight.SetAmbient(0.4f * WHITE_RGBA);
     m_sunlight.SetSpecular(WHITE_RGBA);
 }
 
@@ -49,13 +44,12 @@ void CWindowClient::OnUpdateWindow(float deltaSeconds)
 {
     UpdateRotation(deltaSeconds);
     m_camera.Update(deltaSeconds);
+
     SetupView(GetWindow().GetWindowSize());
+    SetupLight0();
 
-    m_sphereMat.Setup();
-    m_sunlight.Setup();
-
-    m_programContext.Use();
-    m_sphereObj.Draw();
+    CEarthRenderer3D renderer(m_programContext);
+    m_sphereObj.Draw(renderer);
 }
 
 void CWindowClient::OnKeyDown(const SDL_KeyboardEvent &event)
@@ -107,4 +101,13 @@ void CWindowClient::SetupView(const glm::ivec2 &size)
 
     m_programContext.SetView(view);
     m_programContext.SetProjection(proj);
+}
+
+void CWindowClient::SetupLight0()
+{
+    CEarthProgramContext::SLightSource light0;
+    light0.specular = m_sunlight.GetSpecular();
+    light0.diffuse = m_sunlight.GetDiffuse();
+    light0.position = m_sunlight.GetUniformPosition();
+    m_programContext.SetLight0(light0);
 }
