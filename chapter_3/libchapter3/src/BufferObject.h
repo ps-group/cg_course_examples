@@ -2,6 +2,8 @@
 #include <boost/noncopyable.hpp>
 #include <vector>
 
+// Указывает на один из слотов, к которым можно
+//  подключать буфер вершинных данных.
 enum class BufferType
 {
     Attributes, // GL_ARRAY_BUFFER

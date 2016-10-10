@@ -6,7 +6,10 @@
 class CArrayObject
 {
 public:
+    struct do_bind_tag {};
+
     CArrayObject();
+    CArrayObject(do_bind_tag);
     ~CArrayObject();
 
     void Bind();

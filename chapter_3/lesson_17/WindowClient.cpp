@@ -22,7 +22,8 @@ void SetupOpenGLState()
 }
 
 CWindowClient::CWindowClient(CWindow &window)
-    : CWindowClientBase(window)
+    : CAbstractWindowClient(window)
+    , m_defaultVAO(CArrayObject::do_bind_tag())
     , m_sphereObj(SPHERE_PRECISION, SPHERE_PRECISION)
     , m_camera(CAMERA_INITIAL_ROTATION, CAMERA_INITIAL_DISTANCE)
     , m_sunlight(GL_LIGHT0)
