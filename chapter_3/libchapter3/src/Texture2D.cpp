@@ -201,7 +201,7 @@ void CTexture2D::Unbind()
 
 CTexture2DUniquePtr CTexture2DLoader::Load(const path &path)
 {
-    SDLSurfacePtr pSurface = CFilesystemUtils::LoadImage(path);
+    SDLSurfacePtr pSurface = CFilesystemUtils::LoadFileImage(path);
     const glm::ivec2 surfaceSize = { pSurface->w, pSurface->h };
     const bool hasAlpha = SDL_ISPIXELFORMAT_ALPHA(pSurface->format->format);
 
