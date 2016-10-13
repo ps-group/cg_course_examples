@@ -6,6 +6,8 @@
 
 namespace
 {
+const std::chrono::milliseconds FRAME_PERIOD(16);
+
 glm::vec2 GetMousePosition(const SDL_MouseButtonEvent &event)
 {
     return { event.x, event.y };
@@ -182,30 +184,32 @@ public:
 
     void DoMainLoop()
     {
-		const std::chrono::milliseconds FRAME_PERIOD(16);
+        if (!m_pClient)
+        {
+            throw std::logic_error("No client attached to window");
+        }
 
         SDL_Event event;
         CChronometer chronometer;
-        while (true)
+        while (!m_isTerminated)
         {
+            // Обработка событий
             while (SDL_PollEvent(&event) != 0)
             {
-                if (!ConsumeEvent(event) && m_pClient)
+                if (!ConsumeEvent(event))
                 {
                     DispatchEvent(event, *m_pClient);
                 }
             }
-            if (m_isTerminated)
-            {
-                break;
-            }
-            // Очистка буфера кадра, обновление и рисование сцены, вывод буфера кадра.
+
+            // Обновление сцены
+            m_pClient->OnUpdate(chronometer.GrabDeltaTime());
+
+            // Очистка и рисование кадра.
             Clear();
-            if (m_pClient)
-            {
-                const float deltaSeconds = chronometer.GrabDeltaTime();
-                m_pClient->OnUpdateWindow(deltaSeconds);
-            }
+            m_pClient->OnDraw();
+
+            // Перестановка буферов кадра и ожидание синхронизации FPS.
 			CUtils::ValidateOpenGLErrors();
 			SwapBuffers();
 			chronometer.WaitNextFrameTime(FRAME_PERIOD);

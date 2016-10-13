@@ -41,11 +41,14 @@ CWindowClient::CWindowClient(CWindow &window)
     m_sunlight.SetSpecular(WHITE_RGBA);
 }
 
-void CWindowClient::OnUpdateWindow(float deltaSeconds)
+void CWindowClient::OnUpdate(float deltaSeconds)
 {
     UpdateRotation(deltaSeconds);
     m_camera.Update(deltaSeconds);
+}
 
+void CWindowClient::OnDraw()
+{
     SetupView(GetWindow().GetWindowSize());
     SetupLight0();
 

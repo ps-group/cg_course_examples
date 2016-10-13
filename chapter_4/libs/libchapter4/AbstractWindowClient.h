@@ -10,7 +10,8 @@ class IWindowClient
 public:
     virtual ~IWindowClient() = default;
 
-    virtual void OnUpdateWindow(float deltaSeconds) = 0;
+    virtual void OnUpdate(float deltaSeconds) = 0;
+    virtual void OnDraw() = 0;
 
     virtual void OnDragBegin(const glm::vec2 &pos) { (void)pos; }
     virtual void OnDragMotion(const glm::vec2 &pos) { (void)pos; }
