@@ -105,3 +105,9 @@ glm::mat4 CCamera::GetViewTransform() const
     // с позиции eye на точку center, а направление "вверх" камеры равно up.
     return glm::lookAt(eye, center, up);
 }
+
+void CCamera::Dump()
+{
+    std::cerr << "Rotation: " << m_rotationRadians << " rad,"
+              << " distance: " << m_distance << " units" << std::endl;
+}

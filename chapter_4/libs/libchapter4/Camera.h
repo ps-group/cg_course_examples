@@ -16,6 +16,9 @@ public:
 
     glm::mat4 GetViewTransform() const;
 
+    // Генерирует отладочный вывод в std::cerr.
+    void Dump();
+
 private:
     float m_rotationRadians = 0;
     float m_distance = 1;

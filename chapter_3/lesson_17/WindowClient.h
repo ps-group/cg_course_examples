@@ -17,7 +17,6 @@ protected:
     void OnKeyUp(const SDL_KeyboardEvent &) override;
 
 private:
-    void CheckOpenGLVersion();
     void UpdateRotation(float deltaSeconds);
     void SetupView(const glm::ivec2 &size);
     void SetupLight0();

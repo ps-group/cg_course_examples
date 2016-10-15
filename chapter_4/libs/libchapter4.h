@@ -6,7 +6,6 @@
 #include "libchapter4/Window.h"
 #include "libchapter4/AbstractWindowClient.h"
 #include "libchapter4/Camera.h"
-#include "libchapter4/Lights.h"
 #include "libchapter4/BufferObject.h"
 #include "libchapter4/ArrayObject.h"
 

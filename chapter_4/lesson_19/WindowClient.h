@@ -1,8 +1,9 @@
 #pragma once
 #include "libchapter4.h"
-#include "IdentitySphere.h"
-#include "EarthProgramContext.h"
+#include "Tesselator.h"
+#include "StaticRenderSystem.h"
 #include <vector>
+#include <anax/World.hpp>
 
 class CWindowClient
         : public CAbstractWindowClient
@@ -18,18 +19,15 @@ protected:
     void OnKeyUp(const SDL_KeyboardEvent &) override;
 
 private:
-    void CheckOpenGLVersion();
-    void UpdateRotation(float deltaSeconds);
-    void SetupView(const glm::ivec2 &size);
-    void SetupLight0();
+    void InstantiateEntities();
+    void SetupSystems();
 
     // Данный VAO будет объектом по-умолчанию.
     // Его привязка должна произойти до первой привязки VBO.
     //  http://stackoverflow.com/questions/13403807/
     CArrayObject m_defaultVAO;
+    anax::World m_world;
+    CStaticRenderSystem m_renderSystem;
 
-    CIdentitySphere m_sphereObj;
     CCamera m_camera;
-    CDirectedLightSource m_sunlight;
-    CEarthProgramContext m_programContext;
 };

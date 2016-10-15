@@ -20,9 +20,8 @@ struct LightFactors
 const float SHININESS = 10.0;
 
 uniform LightSource light0;
-uniform sampler2D colormap;
-uniform sampler2D surfaceDataMap;
-uniform sampler2D nightColormap;
+uniform sampler2D diffuseMap;
+uniform sampler2D specularMap;
 uniform mat4 view;
 
 in vec2 fragTextureUV;
@@ -55,23 +54,13 @@ void main()
 {
     LightFactors factors = GetLight0Factors();
 
-    // Get base color by fetching the texture
-    vec4 color = texture2D(colormap, fragTextureUV.st);
-    // Get night earth color by fetching the texture
-    vec4 nightColor = texture2D(nightColormap, fragTextureUV.st);
-    // Extract surface data where each channel has own meaning
-    vec4 surfaceData = texture2D(surfaceDataMap, fragTextureUV.st);
-    // Red channel keeps cloud luminance
-    float cloudGray = surfaceData.r;
-    // Green channel keeps 1 for water and 0 for earth.
-    float waterFactor = surfaceData.g;
+    // Get material diffuse color by fetching the texture
+    vec4 matDiffuse = texture2D(diffuseMap, fragTextureUV.st);
+    // Get material specular color by fetching the texture
+    vec4 matSpecular = texture2D(specularMap, fragTextureUV.st);
 
-    vec4 diffuseColor = mix(color, vec4(factors.diffuse), cloudGray);
-    vec4 diffuseIntensity = mix(nightColor, diffuseColor,vec4(factors.diffuse))
-            * light0.diffuse;
-
-    vec4 specularIntensity = waterFactor * factors.specular
-            * light0.specular;
+    vec4 diffuseIntensity = matDiffuse * factors.diffuse * light0.diffuse;
+    vec4 specularIntensity = matSpecular * factors.specular * light0.specular;
 
     gl_FragColor = diffuseIntensity + specularIntensity;
 }

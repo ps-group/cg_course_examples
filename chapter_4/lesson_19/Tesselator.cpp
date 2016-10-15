@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "IdentitySphere.h"
+#include "Tesselator.h"
 #include <algorithm>
 
 namespace
@@ -8,11 +8,8 @@ namespace
 struct CSphereTesselator : SMeshDataP3NT2
 {
 public:
-    static const unsigned MIN_PRECISION = 4;
-
     void Tesselate(unsigned slices, unsigned stacks)
     {
-        assert((slices >= MIN_PRECISION) && (stacks >= MIN_PRECISION));
         MakeVertexAttributes(slices, stacks);
         MakeTriangleStripIndicies(slices, stacks);
     }
@@ -89,15 +86,14 @@ private:
 };
 }
 
-CIdentitySphere::CIdentitySphere(unsigned slices, unsigned stacks)
-    : m_mesh(MeshType::TriangleStrip)
+std::unique_ptr<CMeshP3NT2> CTesselator::TesselateSphere(unsigned precision)
 {
-    CSphereTesselator tesselator;
-    tesselator.Tesselate(slices, stacks);
-    m_mesh.Copy(tesselator);
-}
+    assert(precision >= MIN_PRECISION);
 
-void CIdentitySphere::Draw(IRenderer3D &renderer) const
-{
-    m_mesh.Draw(renderer);
+    CSphereTesselator tesselator;
+    tesselator.Tesselate(precision, precision);
+
+    auto pMesh = std::make_unique<CMeshP3NT2>(MeshType::TriangleStrip);
+    pMesh->Copy(tesselator);
+    return pMesh;
 }
