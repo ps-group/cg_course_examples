@@ -1,8 +1,7 @@
 #pragma once
 #include "libchapter4.h"
-#include "IRenderer3D.h"
 
-class CStaticProgramContext
+class CPlanetProgram
 {
 public:
     struct SLightSource
@@ -12,7 +11,7 @@ public:
         glm::vec4 specular;
     };
 
-    CStaticProgramContext();
+    CPlanetProgram();
 
     void Use();
     CVertexAttribute GetPositionAttr()const;
@@ -31,6 +30,7 @@ public:
 
     void BindDiffuseMap(CTexture2D &texture);
     void BindSpecularMap(CTexture2D &texture);
+    void BindEmissiveMap(CTexture2D &texture);
     void UpdateModelViewProjection();
 
 private:
@@ -39,5 +39,5 @@ private:
     glm::mat4 m_projection;
     glm::mat4 m_normalModelView;
     SLightSource m_light0;
-    CShaderProgram m_programEarth;
+    CShaderProgram m_program;
 };

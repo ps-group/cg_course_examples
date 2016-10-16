@@ -27,7 +27,10 @@ enum class TextureWrapMode
 class CTexture2D : private boost::noncopyable
 {
 public:
+    struct no_texture_tag {};
+
     CTexture2D(const glm::ivec2 &size, bool hasAlpha);
+    CTexture2D(no_texture_tag);
     ~CTexture2D();
 
     glm::ivec2 GetSize()const;

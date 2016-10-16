@@ -8,8 +8,11 @@ using glm::vec4;
 namespace
 {
 const float CAMERA_INITIAL_ROTATION = -1.8f;
-const float CAMERA_INITIAL_DISTANCE = 6.3f;
+const float CAMERA_INITIAL_DISTANCE = 16.0f;
 const int SPHERE_PRECISION = 40;
+const glm::vec4 SUNLIGHT_POSITION = {0, 0, 0, 1};
+const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
+const glm::vec4 FADED_WHITE_RGBA = {0.3f, 0.3f, 0.3f, 1.0f};
 
 void SetupOpenGLState()
 {
@@ -40,12 +43,22 @@ CWindowClient::CWindowClient(CWindow &window)
     , m_camera(CAMERA_INITIAL_ROTATION, CAMERA_INITIAL_DISTANCE)
 {
     const vec4 BLACK_RGBA = {0, 0, 0, 1};
-
     window.SetBackgroundColor(BLACK_RGBA);
     SetupOpenGLState();
 
-    InstantiateEntities();
-    SetupSystems();
+    m_renderSystem.SetupLight0(SUNLIGHT_POSITION, WHITE_RGBA, FADED_WHITE_RGBA);
+
+    CSceneLoader loader(m_world);
+    loader.LoadScene("res/solar_system/solar_system_2012.json");
+
+    // Добавляем систему, отвечающую за рендеринг планет.
+    m_world.addSystem(m_renderSystem);
+
+    // После активации новых сущностей или деактивации,
+    //  а при добавления новых систем следует
+    //  вызывать refresh() у мира.
+    m_world.refresh();
+//    InitScene();
 }
 
 void CWindowClient::OnUpdate(float deltaSeconds)
@@ -74,19 +87,20 @@ void CWindowClient::OnKeyUp(const SDL_KeyboardEvent &event)
     m_camera.OnKeyUp(event);
 }
 
-void CWindowClient::InstantiateEntities()
+void CWindowClient::InitScene()
 {
     CTexture2DLoader loader;
+    std::shared_ptr<CMeshP3NT2> pSphere = CTesselator::TesselateSphere(SPHERE_PRECISION);
 
     // Добавление сущности "Земля".
     {
-        mat4 transform = glm::translate(mat4(), { 1.f, 0.f, 3.f });
         anax::Entity earth = m_world.createEntity();
         auto &mesh = earth.addComponent<CStaticMeshComponent>();
-        mesh.m_pMesh = CTesselator::TesselateSphere(SPHERE_PRECISION);
-        mesh.m_worldTransform = transform;
+        mesh.m_pMesh = pSphere;
         mesh.m_pDiffuseMap = loader.Load("res/solar_system/earth_diffuse.jpg");
         mesh.m_pSpecularMap = loader.Load("res/solar_system/earth_specular.jpg");
+        auto &transform = earth.addComponent<CTransformComponent>();
+        transform.m_position = { 10.f, 0.f, 30.f };
 
         // Каждую сущность в Anax следует активировать.
         earth.activate();
@@ -94,23 +108,41 @@ void CWindowClient::InstantiateEntities()
 
     // Добавление сущности "Луна".
     {
-        mat4 transform = glm::translate(mat4(), { -4.f, 0.f, -2.f });
-        transform = glm::scale(transform, vec3(0.4f));
         anax::Entity moon = m_world.createEntity();
         auto &mesh = moon.addComponent<CStaticMeshComponent>();
-        mesh.m_pMesh = CTesselator::TesselateSphere(SPHERE_PRECISION);
-        mesh.m_worldTransform = transform;
+        mesh.m_pMesh = pSphere;
         mesh.m_pDiffuseMap = loader.Load("res/solar_system/moon_diffuse.png");
-        mesh.m_pSpecularMap = loader.Load("res/solar_system/moon_specular.png");
-
-        // Каждую сущность в Anax следует активировать.
+        auto &transform = moon.addComponent<CTransformComponent>();
+        transform.m_position = { 12.f, 0.f, 32.f };
+        transform.m_scale = vec3(0.4f);
         moon.activate();
     }
 
-}
+    // Добавление сущности "Марс".
+    {
+        anax::Entity mars = m_world.createEntity();
+        auto &mesh = mars.addComponent<CStaticMeshComponent>();
+        mesh.m_pMesh = pSphere;
+        mesh.m_pDiffuseMap = loader.Load("res/solar_system/mars_diffuse.jpg");
+        auto &transform = mars.addComponent<CTransformComponent>();
+        transform.m_position = { 40.f, 0.f, 18.f };
+        transform.m_scale = vec3(0.8f);
+        mars.activate();
+    }
 
-void CWindowClient::SetupSystems()
-{
+    // Добавление сущности "Солнце".
+    {
+        anax::Entity sol = m_world.createEntity();
+        auto &mesh = sol.addComponent<CStaticMeshComponent>();
+        mesh.m_pMesh = pSphere;
+        mesh.m_pEmissiveMap = loader.Load("res/solar_system/sol_emissive.jpg");
+        auto &transform = sol.addComponent<CTransformComponent>();
+        transform.m_position = vec3(SUNLIGHT_POSITION);
+        transform.m_scale = vec3(3.0f);
+        sol.activate();
+    }
+
+    // Добавляем систему, отвечающую за рендеринг планет.
     m_world.addSystem(m_renderSystem);
 
     // После активации новых сущностей или деактивации,

@@ -36,8 +36,9 @@ file(GLOB SRC_LIBCHAPTER4
     "libs/tinyxml/*.cpp"
     "libs/tinyxml/*.h"
     "libs/libchapter4.h"
-    "res/*.vert"
-    "res/*.frag")
+    "res/*/*.vert"
+    "res/*/*.frag"
+    "res/*/*.json")
 add_library(libchapter4 ${SRC_LIBCHAPTER4})
 
 # Добавляем библиотеку Anax.

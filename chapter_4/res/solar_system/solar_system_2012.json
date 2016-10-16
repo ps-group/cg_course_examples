@@ -1,0 +1,72 @@
+{
+    "space_objects": {
+        "sol": {
+            "emissive": "sol_emissive.jpg",
+            "position": [0, 0, 0],
+            "scale": 3
+        },
+        "mercury": {
+            "diffuse": "mercury_diffuse.jpg",
+            "scale": 0.4,
+            "position": [6, 0, -4],
+            "orbit": {
+                "owner": "sol",
+                "largeAxis": 0.387,
+                "eccentricity": 0.206,
+                "invMeanMotion": 0.241,
+                "periapsisEpoch": [7, 0]
+            }
+        },
+        "venus": {
+            "diffuse": "venus_diffuse.jpg",
+            "scale": 1.0,
+            "position": [-15, 0, 8],
+            "orbit": {
+                "owner": "sol",
+                "largeAxis": 0.723,
+                "eccentricity": 0.007,
+                "invMeanMotion": 0.635,
+                "periapsisEpoch": [3, 24]
+            }
+        },
+        "earth": {
+            "diffuse": "earth_diffuse.jpg",
+            "specular": "earth_specular.jpg",
+            "clouds": "earth_clouds.jpg",
+            "scale": 1.0,
+            "position": [10, 0, 30],
+            "orbit": {
+                "owner": "sol",
+                "largeAxis": 1.000,
+                "eccentricity": 0.017,
+                "invMeanMotion": 1.000,
+                "periapsisEpoch": [0, 0]
+            }
+        },
+        "moon": {
+            "diffuse": "moon_diffuse.png",
+            "scale": 0.4,
+            "position": [12, 0, 32],
+            "orbit": {
+                "owner": "earth",
+                "largeAxis": 0.03,
+                "eccentricity": 0.055,
+                "invMeanMotion": 0.1,
+                "periapsisEpoch": [1, 1]
+            }
+        },
+        "mars": {
+            "diffuse": "mars_diffuse.jpg",
+            "scale": 0.8,
+            "position": [40, 0, 18],
+            "orbit": {
+                "owner": "sol",
+                "largeAxis": 1.524,
+                "eccentricity": 0.093,
+                "invMeanMotion": 1.881,
+                "periapsisEpoch": [1, 1]
+            }
+        }
+    }
+}
+

@@ -1,9 +1,9 @@
 #include "stdafx.h"
-#include "StaticRenderer.h"
-#include "StaticProgramContext.h"
+#include "PlanetRenderer.h"
+#include "PlanetProgram.h"
 
 
-CStaticRenderer3D::CStaticRenderer3D(CStaticProgramContext &context)
+CPlanetRenderer3D::CPlanetRenderer3D(CPlanetProgram &context)
     : m_context(context)
     , m_vertexAttr(m_context.GetPositionAttr())
     , m_normalAttr(m_context.GetNormalAttr())
@@ -15,24 +15,24 @@ CStaticRenderer3D::CStaticRenderer3D(CStaticProgramContext &context)
     m_texCoordAttr.EnablePointer();
 }
 
-CStaticRenderer3D::~CStaticRenderer3D()
+CPlanetRenderer3D::~CPlanetRenderer3D()
 {
     m_vertexAttr.DisablePointer();
     m_normalAttr.DisablePointer();
     m_texCoordAttr.DisablePointer();
 }
 
-void CStaticRenderer3D::SetTexCoord2DOffset(size_t offset, size_t stride)
+void CPlanetRenderer3D::SetTexCoord2DOffset(size_t offset, size_t stride)
 {
     m_texCoordAttr.SetVec2Offset(offset, stride);
 }
 
-void CStaticRenderer3D::SetPosition3DOffset(size_t offset, size_t stride)
+void CPlanetRenderer3D::SetPosition3DOffset(size_t offset, size_t stride)
 {
     m_vertexAttr.SetVec3Offset(offset, stride, false);
 }
 
-void CStaticRenderer3D::SetNormalOffset(size_t offset, size_t stride)
+void CPlanetRenderer3D::SetNormalOffset(size_t offset, size_t stride)
 {
     m_normalAttr.SetVec3Offset(offset, stride, false);
 }

@@ -2,13 +2,13 @@
 #include "libchapter4.h"
 #include "IRenderer3D.h"
 
-class CStaticProgramContext;
+class CPlanetProgram;
 
-class CStaticRenderer3D : public IRenderer3D
+class CPlanetRenderer3D : public IRenderer3D
 {
 public:
-    CStaticRenderer3D(CStaticProgramContext &context);
-    ~CStaticRenderer3D();
+    CPlanetRenderer3D(CPlanetProgram &context);
+    ~CPlanetRenderer3D();
 
     // IRenderer3D interface
     void SetTexCoord2DOffset(size_t offset, size_t stride) override;
@@ -16,7 +16,7 @@ public:
     void SetNormalOffset(size_t offset, size_t stride) override;
 
 private:
-    CStaticProgramContext &m_context;
+    CPlanetProgram &m_context;
     CVertexAttribute m_vertexAttr;
     CVertexAttribute m_normalAttr;
     CVertexAttribute m_texCoordAttr;

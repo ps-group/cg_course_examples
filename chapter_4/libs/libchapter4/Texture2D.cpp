@@ -174,6 +174,10 @@ CTexture2D::CTexture2D(const glm::ivec2 &size, bool hasAlpha)
     glGenTextures(1, &m_textureId);
 }
 
+CTexture2D::CTexture2D(no_texture_tag)
+{
+}
+
 CTexture2D::~CTexture2D()
 {
     glDeleteTextures(1, &m_textureId);

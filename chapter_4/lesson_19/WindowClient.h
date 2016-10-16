@@ -1,9 +1,9 @@
 #pragma once
 #include "libchapter4.h"
 #include "Tesselator.h"
-#include "StaticRenderSystem.h"
+#include "RenderSystem.h"
+#include "SceneLoader.h"
 #include <vector>
-#include <anax/World.hpp>
 
 class CWindowClient
         : public CAbstractWindowClient
@@ -19,15 +19,14 @@ protected:
     void OnKeyUp(const SDL_KeyboardEvent &) override;
 
 private:
-    void InstantiateEntities();
-    void SetupSystems();
+    void InitScene();
 
     // Данный VAO будет объектом по-умолчанию.
     // Его привязка должна произойти до первой привязки VBO.
     //  http://stackoverflow.com/questions/13403807/
     CArrayObject m_defaultVAO;
     anax::World m_world;
-    CStaticRenderSystem m_renderSystem;
+    CRenderSystem m_renderSystem;
 
     CCamera m_camera;
 };

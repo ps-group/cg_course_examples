@@ -8,6 +8,7 @@
 #include "libchapter4/Camera.h"
 #include "libchapter4/BufferObject.h"
 #include "libchapter4/ArrayObject.h"
+#include "libchapter4/Transform.h"
 
 #include "libchapter4/Texture2D.h"
 #include "libchapter4/ProgramUniform.h"
