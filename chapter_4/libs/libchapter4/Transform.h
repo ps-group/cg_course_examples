@@ -16,5 +16,5 @@ public:
 
     glm::vec3 m_scale = glm::vec3(1);
     glm::quat m_rotation;
-    glm::vec3 m_position;
+    glm::vec3 m_translate;
 };

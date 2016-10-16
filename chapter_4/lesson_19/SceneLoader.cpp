@@ -12,6 +12,7 @@ using namespace nlohmann;
 namespace
 {
 const int SPHERE_PRECISION = 40;
+const double DAYS_IN_YEAR_ON_EARTH = 365.24;
 
 double ReadNumber(const json &dict, const std::string &key)
 {
@@ -119,24 +120,27 @@ private:
 
     void AddSpaceBody(anax::Entity &body, const std::string &name, const json &dict)
     {
-        (void)dict;
+        const double dayDurationInYears =
+                ReadOptionalNumber(dict, "dayDuration", 0)
+                / DAYS_IN_YEAR_ON_EARTH;
         auto &com = body.addComponent<CSpaceBodyComponent>();
         com.m_name = name;
-        com.m_dayPeriod = float(ReadOptionalNumber(dict, "dayPeriod", 0));
+        com.m_dayDuration = float(dayDurationInYears);
+        com.m_rotationAxis = ReadOptionalVec3(dict, "rotationAxis", {0, 1, 0});
     }
 
     void AddTransform(anax::Entity &body, const json &dict)
     {
         auto &com = body.addComponent<CTransformComponent>();
         com.m_scale = ReadOptionalVec3(dict, "scale", glm::vec3(1));
-        com.m_position = ReadOptionalVec3(dict, "position", glm::vec3(0));
+        com.m_translate = ReadOptionalVec3(dict, "position", glm::vec3(0));
     }
 
     void AddOrbit(anax::Entity &body, const json &dict)
     {
         const double largeAxis = ReadNumber(dict, "largeAxis");
         const double eccentricity = ReadNumber(dict, "eccentricity");
-        const double meanMotion = 1.0 / ReadNumber(dict, "invMeanMotion");
+        const double meanMotion = 1.0 / ReadNumber(dict, "yearDuration");
         const double periapsisEpoch = ReadAngle(dict, "periapsisEpoch");
 
         auto &com = body.addComponent<CEllipticOrbitComponent>(

@@ -23,7 +23,8 @@ class CTransformComponent
 class CSpaceBodyComponent : public anax::Component
 {
 public:
-    float m_dayPeriod = 0;
+    float m_dayDuration = 0;
+    glm::vec3 m_rotationAxis;
     std::string m_name;
 };
 

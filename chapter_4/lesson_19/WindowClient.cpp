@@ -39,6 +39,8 @@ glm::mat4 MakeProjectionMatrix(const glm::ivec2 &size)
 CWindowClient::CWindowClient(CWindow &window)
     : CAbstractWindowClient(window)
     , m_defaultVAO(CArrayObject::do_bind_tag())
+    , m_keplerSystem(m_timeController)
+    , m_rotationSystem(m_timeController)
     , m_camera(CAMERA_INITIAL_ROTATION, CAMERA_INITIAL_DISTANCE)
 {
     const vec4 BLACK_RGBA = {0, 0, 0, 1};
@@ -54,6 +56,9 @@ CWindowClient::CWindowClient(CWindow &window)
     //  согласно их орбитам и прошедшему времени по законам Кеплера.
     m_world.addSystem(m_keplerSystem);
 
+    // Добавляем систему, выполняющую вращение тел вокруг своих осей.
+    m_world.addSystem(m_rotationSystem);
+
     // Добавляем систему, отвечающую за рендеринг планет.
     m_world.addSystem(m_renderSystem);
 
@@ -66,7 +71,9 @@ CWindowClient::CWindowClient(CWindow &window)
 void CWindowClient::OnUpdate(float deltaSeconds)
 {
     m_camera.Update(deltaSeconds);
-    m_keplerSystem.Update(deltaSeconds);
+    m_timeController.Update(deltaSeconds);
+    m_keplerSystem.Update();
+    m_rotationSystem.Update();
 }
 
 void CWindowClient::OnDraw()

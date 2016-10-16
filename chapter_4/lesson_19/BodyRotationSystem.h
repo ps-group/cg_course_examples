@@ -4,18 +4,17 @@
 
 class ITimeController;
 
-class CKeplerLawSystem
+class CBodyRotationSystem
         : public anax::System<anax::Requires<
             CSpaceBodyComponent,
-            CTransformComponent,
-            CEllipticOrbitComponent
+            CTransformComponent
         >>
 {
 public:
-    CKeplerLawSystem(ITimeController &controller);
+    CBodyRotationSystem(ITimeController &controller);
 
     void Update();
 
 private:
-    ITimeController &m_timeController;
+    ITimeController &m_timeContoller;
 };

@@ -2,19 +2,6 @@
 #include "RenderSystem.h"
 #include "PlanetRenderer.h"
 
-namespace
-{
-glm::mat4 GetTransformMatrix(const CTransformComponent &component)
-{
-    glm::mat4 result;
-    result = glm::translate(result, component.m_position)
-            * glm::mat4_cast(component.m_rotation);
-    result = glm::scale(result, component.m_scale);
-
-    return result;
-}
-}
-
 CRenderSystem::CRenderSystem()
     : m_blackTexture(CTexture2D::no_texture_tag())
 {
@@ -43,7 +30,7 @@ void CRenderSystem::Render(const glm::mat4 &view, const glm::mat4 &projection)
         m_planetProgram.BindDiffuseMap(GetTextureOrBlack(mesh.m_pDiffuseMap));
         m_planetProgram.BindSpecularMap(GetTextureOrBlack(mesh.m_pSpecularMap));
         m_planetProgram.BindEmissiveMap(GetTextureOrBlack(mesh.m_pEmissiveMap));
-        m_planetProgram.SetModel(GetTransformMatrix(transform));
+        m_planetProgram.SetModel(transform.ToMat4());
         m_planetProgram.UpdateModelViewProjection();
         mesh.m_pMesh->Draw(renderer);
     }
