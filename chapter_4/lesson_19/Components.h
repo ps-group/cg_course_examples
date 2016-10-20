@@ -24,6 +24,7 @@ class CSpaceBodyComponent : public anax::Component
 {
 public:
     float m_dayDuration = 0;
+    float m_bodySize = 0;
     glm::vec3 m_rotationAxis;
     std::string m_name;
 };

@@ -18,28 +18,6 @@ glm::vec2 GetMousePosition(const SDL_MouseMotionEvent &event)
     return { event.x, event.y };
 }
 
-void DispatchEvent(const SDL_Event &event, IWindowClient &acceptor)
-{
-    switch (event.type)
-    {
-    case SDL_KEYDOWN:
-        acceptor.OnKeyDown(event.key);
-        break;
-    case SDL_KEYUP:
-        acceptor.OnKeyUp(event.key);
-        break;
-    case SDL_MOUSEBUTTONDOWN:
-        acceptor.OnDragBegin(GetMousePosition(event.button));
-        break;
-    case SDL_MOUSEBUTTONUP:
-        acceptor.OnDragEnd(GetMousePosition(event.button));
-        break;
-    case SDL_MOUSEMOTION:
-        acceptor.OnDragMotion(GetMousePosition(event.motion));
-        break;
-    }
-}
-
 void SetupProfileAttributes(ContextProfile profile, ContextMode mode)
 {
     // Включаем режим сглаживания с помощью субпиксельного рендеринга.
@@ -137,7 +115,7 @@ public:
     {
     }
 
-    void Show(const std::string &title, const glm::ivec2 &size)
+    void Show(const std::string &title, const glm::ivec2 &size, bool fullscreen)
     {
 		m_size = size;
 
@@ -149,8 +127,13 @@ public:
         // Специальное значение SDL_WINDOWPOS_CENTERED вместо x и y заставит SDL2
         // разместить окно в центре монитора по осям x и y.
         // Для использования OpenGL вы ДОЛЖНЫ указать флаг SDL_WINDOW_OPENGL.
+        unsigned flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+        if (fullscreen)
+        {
+            flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+        }
         m_pWindow.reset(SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                         size.x, size.y, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE));
+                                         size.x, size.y, flags));
         if (!m_pWindow)
         {
             const std::string reason = SDL_GetError();
@@ -261,6 +244,28 @@ private:
         }
     }
 
+    void DispatchEvent(const SDL_Event &event, IWindowClient &acceptor)
+    {
+        switch (event.type)
+        {
+        case SDL_KEYDOWN:
+            acceptor.OnKeyDown(event.key);
+            break;
+        case SDL_KEYUP:
+            acceptor.OnKeyUp(event.key);
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+            acceptor.OnMousePress(GetMousePosition(event.button));
+            break;
+        case SDL_MOUSEBUTTONUP:
+            acceptor.OnMouseUp(GetMousePosition(event.button));
+            break;
+        case SDL_MOUSEMOTION:
+            acceptor.OnMouseMotion(GetMousePosition(event.motion));
+            break;
+        }
+    }
+
     bool m_isTerminated = false;
     ContextProfile m_profile;
     ContextMode m_contextMode;
@@ -282,7 +287,12 @@ CWindow::~CWindow()
 
 void CWindow::Show(const std::string &title, const glm::ivec2 &size)
 {
-    m_pImpl->Show(title, size);
+    m_pImpl->Show(title, size, false);
+}
+
+void CWindow::ShowFullscreen(const std::string &title)
+{
+    m_pImpl->Show(title, {800, 600}, true);
 }
 
 void CWindow::SetBackgroundColor(const glm::vec4 &color)

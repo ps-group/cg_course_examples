@@ -5,12 +5,11 @@
             "position": [0, 0, 0],
             "rotationAxis": [0, 1, 0],
             "dayDuration": 25.4,
-            "scale": 3
+            "size": 109
         },
         "mercury": {
             "diffuse": "mercury_diffuse.jpg",
-            "scale": 0.4,
-            "position": [6, 0, -4],
+            "size": 0.382,
             "dayDuration": 58.6,
             "orbit": {
                 "owner": "sol",
@@ -22,8 +21,7 @@
         },
         "venus": {
             "diffuse": "venus_diffuse.jpg",
-            "scale": 1.0,
-            "position": [-15, 0, 8],
+            "size": 0.94,
             "dayDuration": -243,
             "orbit": {
                 "owner": "sol",
@@ -37,9 +35,8 @@
             "diffuse": "earth_diffuse.jpg",
             "specular": "earth_specular.jpg",
             "clouds": "earth_clouds.jpg",
-            "scale": 1.0,
+            "size": 1,
             "dayDuration": 1,
-            "position": [10, 0, 30],
             "orbit": {
                 "owner": "sol",
                 "largeAxis": 1.000,
@@ -50,8 +47,7 @@
         },
         "moon": {
             "diffuse": "moon_diffuse.png",
-            "scale": 0.4,
-            "position": [12, 0, 32],
+            "size": 0.273,
             "dayDuration": 28,
             "orbit": {
                 "owner": "earth",
@@ -63,8 +59,7 @@
         },
         "mars": {
             "diffuse": "mars_diffuse.jpg",
-            "scale": 0.8,
-            "position": [40, 0, 18],
+            "size": 0.53,
             "dayDuration": 1,
             "orbit": {
                 "owner": "sol",
@@ -72,6 +67,30 @@
                 "eccentricity": 0.093,
                 "yearDuration": 1.881,
                 "periapsisEpoch": [1, 1]
+            }
+        },
+        "jupiter": {
+            "diffuse": "jupiter_diffuse.jpg",
+            "size": 11.2,
+            "dayDuration": 0.41,
+            "orbit": {
+                "owner": "sol",
+                "largeAxis": 5.203,
+                "eccentricity": 0.048,
+                "yearDuration": 11.862,
+                "periapsisEpoch": [1, 18]
+            }
+        },
+        "saturn": {
+            "diffuse": "saturn_diffuse.jpg",
+            "size": 9.41,
+            "dayDuration": 0.44,
+            "orbit": {
+                "owner": "sol",
+                "largeAxis": 6.539,
+                "eccentricity": 0.056,
+                "yearDuration": 20.658,
+                "periapsisEpoch": [2, 29]
             }
         }
     }

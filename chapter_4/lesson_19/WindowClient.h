@@ -18,8 +18,11 @@ protected:
     // IWindowClient interface
     void OnUpdate(float deltaSeconds) override;
     void OnDraw() override;
-    void OnKeyDown(const SDL_KeyboardEvent &) override;
-    void OnKeyUp(const SDL_KeyboardEvent &) override;
+    bool OnKeyDown(const SDL_KeyboardEvent &) override;
+    bool OnKeyUp(const SDL_KeyboardEvent &) override;
+    bool OnMousePress(const glm::vec2 &pos) override;
+    bool OnMouseMotion(const glm::vec2 &pos) override;
+    bool OnMouseUp(const glm::vec2 &pos) override;
 
 private:
     // Данный VAO будет объектом по-умолчанию.

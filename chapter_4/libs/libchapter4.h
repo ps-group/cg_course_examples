@@ -1,6 +1,7 @@
 #pragma once
 
 #include "libchapter4/libchapter4_private.h"
+#include "libchapter4/IInputListener.h"
 #include "libchapter4/Utils.h"
 #include "libchapter4/FilesystemUtils.h"
 #include "libchapter4/Window.h"

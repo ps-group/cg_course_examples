@@ -123,8 +123,11 @@ private:
         const double dayDurationInYears =
                 ReadOptionalNumber(dict, "dayDuration", 0)
                 / DAYS_IN_YEAR_ON_EARTH;
+        const double bodySize = ReadOptionalNumber(dict, "size", 0);
+
         auto &com = body.addComponent<CSpaceBodyComponent>();
         com.m_name = name;
+        com.m_bodySize = float(bodySize);
         com.m_dayDuration = float(dayDurationInYears);
         com.m_rotationAxis = ReadOptionalVec3(dict, "rotationAxis", {0, 1, 0});
     }
@@ -132,8 +135,8 @@ private:
     void AddTransform(anax::Entity &body, const json &dict)
     {
         auto &com = body.addComponent<CTransformComponent>();
-        com.m_scale = ReadOptionalVec3(dict, "scale", glm::vec3(1));
-        com.m_translate = ReadOptionalVec3(dict, "position", glm::vec3(0));
+        com.m_sizeScale = ReadOptionalVec3(dict, "scale", glm::vec3(1));
+        com.m_position = ReadOptionalVec3(dict, "position", glm::vec3(0));
     }
 
     void AddOrbit(anax::Entity &body, const json &dict)

@@ -7,8 +7,7 @@ using glm::vec4;
 
 namespace
 {
-const float CAMERA_INITIAL_ROTATION = -1.8f;
-const float CAMERA_INITIAL_DISTANCE = 16.0f;
+const glm::vec3 CAMERA_START_POSITION = { -1, 0, -3 };
 const glm::vec4 SUNLIGHT_POSITION = {0, 0, 0, 1};
 const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
 const glm::vec4 FADED_WHITE_RGBA = {0.3f, 0.3f, 0.3f, 1.0f};
@@ -41,7 +40,7 @@ CWindowClient::CWindowClient(CWindow &window)
     , m_defaultVAO(CArrayObject::do_bind_tag())
     , m_keplerSystem(m_timeController)
     , m_rotationSystem(m_timeController)
-    , m_camera(CAMERA_INITIAL_ROTATION, CAMERA_INITIAL_DISTANCE)
+    , m_camera(CAMERA_START_POSITION)
 {
     const vec4 BLACK_RGBA = {0, 0, 0, 1};
     window.SetBackgroundColor(BLACK_RGBA);
@@ -80,19 +79,34 @@ void CWindowClient::OnDraw()
 {
     const glm::ivec2 windowSize = GetWindow().GetWindowSize();
 
-    const mat4 view = m_camera.GetViewTransform();
+    const mat4 view = m_camera.GetTransform().ToMat4();
     const mat4 proj = MakeProjectionMatrix(windowSize);
 
     glViewport(0, 0, windowSize.x, windowSize.y);
     m_renderSystem.Render(view, proj);
 }
 
-void CWindowClient::OnKeyDown(const SDL_KeyboardEvent &event)
+bool CWindowClient::OnKeyDown(const SDL_KeyboardEvent &event)
 {
-    m_camera.OnKeyDown(event);
+    return m_camera.OnKeyDown(event);
 }
 
-void CWindowClient::OnKeyUp(const SDL_KeyboardEvent &event)
+bool CWindowClient::OnKeyUp(const SDL_KeyboardEvent &event)
 {
-    m_camera.OnKeyUp(event);
+    return m_camera.OnKeyUp(event);
+}
+
+bool CWindowClient::OnMousePress(const glm::vec2 &pos)
+{
+    return m_camera.OnMousePress(pos);
+}
+
+bool CWindowClient::OnMouseMotion(const glm::vec2 &pos)
+{
+    return m_camera.OnMouseMotion(pos);
+}
+
+bool CWindowClient::OnMouseUp(const glm::vec2 &pos)
+{
+    return m_camera.OnMouseUp(pos);
 }

@@ -2,13 +2,14 @@
 #include "Camera.h"
 #include <glm/gtx/rotate_vector.hpp>
 
+using glm::vec2;
+using glm::vec3;
 
 namespace
 {
-const float ROTATION_SPEED_RADIANS = 1.f;
-const float LINEAR_MOVE_SPEED = 5.f;
-const float MIN_DISTANCE = 1.5f;
-const float MAX_DISTANCE = 30.f;
+// Число радианов, на которые вращается камера
+//  при перемещении мыши на один пиксель.
+const float RADIANS_IN_PIXEL = 1.f / 200.f;
 
 bool ShouldTrackKeyPressed(const SDL_Keysym &key)
 {
@@ -27,45 +28,47 @@ bool ShouldTrackKeyPressed(const SDL_Keysym &key)
     return false;
 }
 
-float GetRotationSpeedRadians(std::set<unsigned> & keysPressed)
+// Возвращает нормализованное направление движения.
+vec3 GetMoveDirection(const std::set<unsigned> & keysPressed)
 {
+    vec3 direction;
     if (keysPressed.count(SDLK_RIGHT) || keysPressed.count(SDLK_d))
     {
-        return ROTATION_SPEED_RADIANS;
+        direction.x = -1.f;
     }
-    if (keysPressed.count(SDLK_LEFT) || keysPressed.count(SDLK_a))
+    else if (keysPressed.count(SDLK_LEFT) || keysPressed.count(SDLK_a))
     {
-        return -ROTATION_SPEED_RADIANS;
+        direction.x = +1.f;
     }
-    return 0;
-}
-
-float GetLinearMoveSpeed(std::set<unsigned> & keysPressed)
-{
     if (keysPressed.count(SDLK_UP) || keysPressed.count(SDLK_w))
     {
-        return -LINEAR_MOVE_SPEED;
+        direction.z = +1.f;
     }
-    if (keysPressed.count(SDLK_DOWN) || keysPressed.count(SDLK_s))
+    else if (keysPressed.count(SDLK_DOWN) || keysPressed.count(SDLK_s))
     {
-        return +LINEAR_MOVE_SPEED;
+        direction.z = -1.f;
     }
-    return 0;
+
+    // Если направление ненулевое, нормализуем его.
+    if (glm::length(direction) > std::numeric_limits<float>::epsilon())
+    {
+        direction = glm::normalize(direction);
+    }
+
+    return direction;
 }
 }
 
-
-CCamera::CCamera(float rotationRadians, float distance)
-    : m_rotationRadians(rotationRadians)
-    , m_distance(distance)
+CCamera::CCamera(const glm::vec3 &position, const glm::quat &orientation)
 {
+    m_transform.m_position = position;
+    m_transform.m_orientation = orientation;
 }
 
 void CCamera::Update(float deltaSec)
 {
-    m_rotationRadians += deltaSec * GetRotationSpeedRadians(m_keysPressed);
-    m_distance += deltaSec * GetLinearMoveSpeed(m_keysPressed);
-    m_distance = glm::clamp(m_distance, MIN_DISTANCE, MAX_DISTANCE);
+    const vec3 motion = m_moveSpeed * deltaSec * GetMoveDirection(m_keysPressed);
+    m_transform.m_position += motion * m_transform.m_orientation;
 }
 
 bool CCamera::OnKeyDown(const SDL_KeyboardEvent &event)
@@ -88,26 +91,61 @@ bool CCamera::OnKeyUp(const SDL_KeyboardEvent &event)
     return false;
 }
 
-glm::mat4 CCamera::GetViewTransform() const
+bool CCamera::OnMousePress(const glm::vec2 &pos)
 {
-    glm::vec3 direction = {0.f, 0.f, 1.f};
-    // Нормализуем вектор (приводим к единичной длине),
-    // затем поворачиваем вокруг оси Z.
-    // см. http://glm.g-truc.net/0.9.3/api/a00199.html
-    direction = glm::rotateY(glm::normalize(direction), m_rotationRadians);
-
-    const glm::vec3 eye = direction * m_distance;
-    const glm::vec3 center = {0, 0, 0};
-    const glm::vec3 up = {0, 1, 0};
-
-    // Матрица моделирования-вида вычисляется функцией glm::lookAt.
-    // Она даёт матрицу, действующую так, как будто камера смотрит
-    // с позиции eye на точку center, а направление "вверх" камеры равно up.
-    return glm::lookAt(eye, center, up);
+    m_prevDragPos = pos;
+    m_isDragging = true;
+    return true;
 }
 
-void CCamera::Dump()
+bool CCamera::OnMouseMotion(const glm::vec2 &pos)
 {
-    std::cerr << "Rotation: " << m_rotationRadians << " rad,"
-              << " distance: " << m_distance << " units" << std::endl;
+    if (!m_isDragging)
+    {
+        return true;
+    }
+    const float epsilon = std::numeric_limits<float>::epsilon();
+    const vec2 delta = m_prevDragPos - pos;
+    m_prevDragPos = pos;
+
+    // Сначала вращаем вверх/вниз вокруг ориентированной оси Ox.
+//    if (abs(delta.y) > epsilon)
+//    {
+//        const vec3 axisX = vec3(1, 0, 0) * m_transform.m_orientation;
+//        const float angleUp = delta.y * RADIANS_IN_PIXEL;
+//        m_transform.m_orientation = glm::rotate(m_transform.m_orientation, angleUp, axisX);
+//    }
+
+    if (abs(delta.x) > epsilon)
+    {
+        // Затем вращаем влево/вправо вокруг оси направления вверх.
+        const vec3 axisUp = glm::axis(m_transform.m_orientation);
+//        const vec3 axisY = vec3(0, 1, 0) * m_transform.m_orientation;
+        const float angleRight = delta.x * RADIANS_IN_PIXEL
+                + glm::angle(m_transform.m_orientation);
+        m_transform.m_orientation = glm::angleAxis(angleRight, axisUp);
+    }
+
+    return true;
+}
+
+bool CCamera::OnMouseUp(const glm::vec2 &)
+{
+    m_isDragging = false;
+    return true;
+}
+
+const CTransform3D &CCamera::GetTransform() const
+{
+    return m_transform;
+}
+
+float CCamera::GetMoveSpeed() const
+{
+    return m_moveSpeed;
+}
+
+void CCamera::SetMoveSpeed(float value)
+{
+    m_moveSpeed = value;
 }

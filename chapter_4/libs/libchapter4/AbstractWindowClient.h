@@ -1,23 +1,17 @@
 #pragma once
 
 #include "Window.h"
-#include <SDL2/SDL_events.h>
+#include "IInputListener.h"
 
 // Обрабатывает обновление состояния и рисование кадра
 // Также обрабатывает события SDL, разделённые по категориям.
-class IWindowClient
+class IWindowClient : public IInputListener
 {
 public:
     virtual ~IWindowClient() = default;
 
     virtual void OnUpdate(float deltaSeconds) = 0;
     virtual void OnDraw() = 0;
-
-    virtual void OnDragBegin(const glm::vec2 &pos) { (void)pos; }
-    virtual void OnDragMotion(const glm::vec2 &pos) { (void)pos; }
-    virtual void OnDragEnd(const glm::vec2 &pos) { (void)pos; }
-    virtual void OnKeyDown(const SDL_KeyboardEvent &) {}
-    virtual void OnKeyUp(const SDL_KeyboardEvent &) {}
 };
 
 class CWindow;

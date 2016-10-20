@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "BodyRotationSystem.h"
 #include "TimeController.h"
+#include "Scale.h"
 
 CBodyRotationSystem::CBodyRotationSystem(ITimeController &controller)
     : m_timeContoller(controller)
@@ -17,8 +18,11 @@ void CBodyRotationSystem::Update()
 
         const double rotationSpeed = 1.0 / double(body.m_dayDuration);
         const float angle = float(fmod(rotationSpeed * time, 2 * M_PI));
-        const glm::quat rotation = glm::angleAxis(angle, body.m_rotationAxis);
+        const glm::quat orientation = glm::angleAxis(angle, body.m_rotationAxis);
 
-        transform.m_rotation = rotation;
+        const float scale = scale::GetPlanetSizeInAU(body.m_bodySize);
+
+        transform.m_sizeScale = glm::vec3(scale);
+        transform.m_orientation = orientation;
     }
 }
