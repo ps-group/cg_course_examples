@@ -1,9 +1,12 @@
 #include "libchapter4_private.h"
 #include "Camera.h"
 #include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 using glm::vec2;
 using glm::vec3;
+using glm::mat4;
+using glm::quat;
 
 namespace
 {
@@ -59,16 +62,15 @@ vec3 GetMoveDirection(const std::set<unsigned> & keysPressed)
 }
 }
 
-CCamera::CCamera(const glm::vec3 &position, const glm::quat &orientation)
+CCamera::CCamera(const glm::vec3 &position)
+    : m_position(position)
 {
-    m_transform.m_position = position;
-    m_transform.m_orientation = orientation;
 }
 
 void CCamera::Update(float deltaSec)
 {
     const vec3 motion = m_moveSpeed * deltaSec * GetMoveDirection(m_keysPressed);
-    m_transform.m_position += motion * m_transform.m_orientation;
+    m_position += motion;
 }
 
 bool CCamera::OnKeyDown(const SDL_KeyboardEvent &event)
@@ -91,53 +93,40 @@ bool CCamera::OnKeyUp(const SDL_KeyboardEvent &event)
     return false;
 }
 
-bool CCamera::OnMousePress(const glm::vec2 &pos)
+bool CCamera::OnMousePress(const glm::vec2 &)
 {
-    m_prevDragPos = pos;
-    m_isDragging = true;
     return true;
 }
 
 bool CCamera::OnMouseMotion(const glm::vec2 &pos)
 {
-    if (!m_isDragging)
+    boost::optional<vec2> prevMousePos = m_prevMousePos;
+    m_prevMousePos = pos;
+    if (!prevMousePos)
     {
         return true;
     }
-    const float epsilon = std::numeric_limits<float>::epsilon();
-    const vec2 delta = m_prevDragPos - pos;
-    m_prevDragPos = pos;
 
-    // Сначала вращаем вверх/вниз вокруг ориентированной оси Ox.
-//    if (abs(delta.y) > epsilon)
-//    {
-//        const vec3 axisX = vec3(1, 0, 0) * m_transform.m_orientation;
-//        const float angleUp = delta.y * RADIANS_IN_PIXEL;
-//        m_transform.m_orientation = glm::rotate(m_transform.m_orientation, angleUp, axisX);
-//    }
-
-    if (abs(delta.x) > epsilon)
-    {
-        // Затем вращаем влево/вправо вокруг оси направления вверх.
-        const vec3 axisUp = glm::axis(m_transform.m_orientation);
-//        const vec3 axisY = vec3(0, 1, 0) * m_transform.m_orientation;
-        const float angleRight = delta.x * RADIANS_IN_PIXEL
-                + glm::angle(m_transform.m_orientation);
-        m_transform.m_orientation = glm::angleAxis(angleRight, axisUp);
-    }
+    const vec2 delta = *prevMousePos - pos;
+    // Движение мыши по оси X изменяет рысканье (yaw).
+    m_yaw -= delta.x * RADIANS_IN_PIXEL;
+    // Движение мыши по оси Y изменяет курс (roll)
+    m_roll -= delta.y * RADIANS_IN_PIXEL;
 
     return true;
 }
 
 bool CCamera::OnMouseUp(const glm::vec2 &)
 {
-    m_isDragging = false;
     return true;
 }
 
-const CTransform3D &CCamera::GetTransform() const
+mat4 CCamera::GetViewMat4() const
 {
-    return m_transform;
+    const mat4 rotationMatrix = glm::yawPitchRoll(m_yaw, m_pitch, m_roll);
+    const mat4 translateMatrix = glm::translate(mat4(), m_position);
+
+    return translateMatrix * rotationMatrix;
 }
 
 float CCamera::GetMoveSpeed() const

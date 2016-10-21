@@ -79,7 +79,7 @@ void CWindowClient::OnDraw()
 {
     const glm::ivec2 windowSize = GetWindow().GetWindowSize();
 
-    const mat4 view = m_camera.GetTransform().ToMat4();
+    const mat4 view = m_camera.GetViewMat4();
     const mat4 proj = MakeProjectionMatrix(windowSize);
 
     glViewport(0, 0, windowSize.x, windowSize.y);
