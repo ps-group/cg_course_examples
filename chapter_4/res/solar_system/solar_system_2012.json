@@ -92,6 +92,30 @@
                 "yearDuration": 20.658,
                 "periapsisEpoch": [2, 29]
             }
+        },
+        "uranus": {
+            "diffuse": "uranus_diffuse.jpg",
+            "size": 3.98,
+            "dayDuration": -0.7193,
+            "orbit": {
+                "owner": "sol",
+                "largeAxis": 19.190,
+                "eccentricity": 0.048,
+                "yearDuration": 84.800,
+                "periapsisEpoch": [0, 45]
+            }
+        },
+        "neptune": {
+            "diffuse": "neptune_diffuse.jpg",
+            "size": 3.81,
+            "dayDuration": -0.67125,
+            "orbit": {
+                "owner": "sol",
+                "largeAxis": 30.081,
+                "eccentricity": 0.009,
+                "yearDuration": 154.232,
+                "periapsisEpoch": [1, 47]
+            }
         }
     }
 }
