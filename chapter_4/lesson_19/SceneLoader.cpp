@@ -77,11 +77,13 @@ glm::vec3 ReadOptionalVec3(const json &dict, const std::string &key, const glm::
     return result;
 }
 
-class CSceneLoaderImpl
+class CSceneDefinitionParser
 {
 public:
-    CSceneLoaderImpl(anax::World &world, const boost::filesystem::path &workdir)
-        : m_world(world)
+    CSceneDefinitionParser(anax::World &world, CAssetLoader &assetLoader,
+                           const boost::filesystem::path &workdir)
+        : m_assetLoader(assetLoader)
+        , m_world(world)
         , m_workdir(workdir)
         , m_pSphere(CTesselator::TesselateSphere(SPHERE_PRECISION))
     {
@@ -156,18 +158,18 @@ private:
 
     // Возвращает указатель на текстуру
     // либо nullptr, если текстура не указана в JSON
-    CTexture2DUniquePtr GetOptTexture(const json &dict, const std::string &key)
+    CTexture2DSharedPtr GetOptTexture(const json &dict, const std::string &key)
     {
         const auto it = dict.find(key);
         if (it != dict.end() && it.value().is_string())
         {
             const std::string filename = it->get<std::string>();
-            return m_loader.Load(m_workdir / filename);
+            return m_assetLoader.LoadTexture(m_workdir / filename);
         }
         return nullptr;
     }
 
-    CTexture2DLoader m_loader;
+    CAssetLoader &m_assetLoader;
     anax::World &m_world;
     boost::filesystem::path m_workdir;
     std::shared_ptr<CMeshP3NT2> m_pSphere;
@@ -181,9 +183,11 @@ CSceneLoader::CSceneLoader(anax::World &world)
 
 void CSceneLoader::LoadScene(const boost::filesystem::path &path)
 {
+    CAssetLoader assetLoader;
+
     // Получаем абсолютный путь к файлу описания сцены,
     //  каталог с данным файлом будет использован для поиска ресурсов.
-    const auto abspath = CFilesystemUtils::GetResourceAbspath(path);
+    const auto abspath = assetLoader.GetResourceAbspath(path);
     const auto resourceDir = abspath.parent_path();
 
     std::ifstream file(abspath.native());
@@ -193,6 +197,6 @@ void CSceneLoader::LoadScene(const boost::filesystem::path &path)
     }
     json sceneObj = json::parse(file);
 
-    CSceneLoaderImpl impl(m_world, resourceDir);
+    CSceneDefinitionParser impl(m_world, assetLoader, resourceDir);
     impl.ParseSpaceObjects(sceneObj["space_objects"]);
 }

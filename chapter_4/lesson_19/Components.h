@@ -9,9 +9,9 @@ class CStaticMeshComponent : public anax::Component
 {
 public:
     std::shared_ptr<CMeshP3NT2> m_pMesh;
-    CTexture2DUniquePtr m_pDiffuseMap;
-    CTexture2DUniquePtr m_pSpecularMap;
-    CTexture2DUniquePtr m_pEmissiveMap;
+    CTexture2DSharedPtr m_pDiffuseMap;
+    CTexture2DSharedPtr m_pSpecularMap;
+    CTexture2DSharedPtr m_pEmissiveMap;
 };
 
 class CTransformComponent

@@ -4,7 +4,9 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <vector>
-#include "libchapter4.h"
+#include <boost/noncopyable.hpp>
+#include "libchapter4/BufferObject.h"
+#include "libchapter4/MeshType.h"
 
 class IRenderer3D;
 
@@ -22,14 +24,6 @@ struct SMeshDataP3NT2
 {
     std::vector<SVertexP3NT2> vertices;
     std::vector<uint32_t> indicies;
-};
-
-// Тип примитива, представленного сеткой.
-enum class MeshType
-{
-    Triangles,
-    TriangleFan,
-    TriangleStrip,
 };
 
 // Класс для хранения в видеопамяти и рендеринга сетки вершин

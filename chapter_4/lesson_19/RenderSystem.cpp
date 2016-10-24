@@ -36,7 +36,7 @@ void CRenderSystem::Render(const glm::mat4 &view, const glm::mat4 &projection)
     }
 }
 
-CTexture2D &CRenderSystem::GetTextureOrBlack(const CTexture2DUniquePtr &pTexture)
+CTexture2D &CRenderSystem::GetTextureOrBlack(const CTexture2DSharedPtr &pTexture)
 {
     if (pTexture)
     {

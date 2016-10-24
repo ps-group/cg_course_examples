@@ -1,7 +1,7 @@
 #include "libchapter4_private.h"
 #include "Texture2D.h"
 #include "../tinyxml/tinyxml2.h"
-#include "FilesystemUtils.h"
+#include "AssetLoader.h"
 #include "Utils.h"
 #include <codecvt>
 #include <cstdlib>
@@ -15,18 +15,6 @@ using boost::filesystem::path;
 
 namespace
 {
-GLenum ConvertEnum(TextureWrapMode mode)
-{
-    // Значение константы взято от GL_CLAMP_TO_EDGE_EXT библиотеки GLEW.
-#if defined(_WIN32) && !defined(GL_CLAMP_TO_EDGE)
-#define GL_CLAMP_TO_EDGE 0x812F
-#endif
-    static const std::map<TextureWrapMode, GLenum> MAPPING = {
-        { TextureWrapMode::CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE },
-        { TextureWrapMode::REPEAT, GL_REPEAT },
-    };
-    return MAPPING.at(mode);
-}
 
 class CPropertyListParser
 {
@@ -34,8 +22,9 @@ public:
     using MetaHandler = std::function<void(const std::string &textureName, glm::ivec2 &size)>;
     using FrameHandler = std::function<void(const std::string &, const CFloatRect &)>;
 
-    CPropertyListParser(const path &xmlPath)
+    CPropertyListParser(const path &xmlPath, CAssetLoader &loader)
         : m_xmlPath(xmlPath.generic_string())
+        , m_loader(loader)
     {
     }
 
@@ -51,7 +40,7 @@ public:
 
     void Parse()
     {
-        const std::string xml = CFilesystemUtils::LoadFileAsString(m_xmlPath);
+        const std::string xml = m_loader.LoadFileAsString(m_xmlPath);
         xml::XMLDocument document;
         m_error = document.Parse(xml.c_str(), xml.length());
         CheckError();
@@ -162,14 +151,23 @@ private:
     MetaHandler m_onParsedTextureMeta;
     FrameHandler m_onParsedFrame;
     std::string m_xmlPath;
+    CAssetLoader &m_loader;
     xml::XMLError m_error = xml::XML_SUCCESS;
 };
+
+GLenum ConvertEnum(TextureWrapMode mode)
+{
+    static const std::map<TextureWrapMode, GLenum> MAPPING = {
+        { TextureWrapMode::CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE },
+        { TextureWrapMode::MIRRORED_REPEAT, GL_REPEAT },
+        { TextureWrapMode::REPEAT, GL_MIRRORED_REPEAT },
+    };
+    return MAPPING.at(mode);
+}
 }
 
 
-CTexture2D::CTexture2D(const glm::ivec2 &size, bool hasAlpha)
-    : m_size(size)
-    , m_hasAlpha(hasAlpha)
+CTexture2D::CTexture2D()
 {
     glGenTextures(1, &m_textureId);
 }
@@ -203,64 +201,67 @@ void CTexture2D::Unbind()
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-CTexture2DUniquePtr CTexture2DLoader::Load(const path &path)
+void CTexture2D::ApplyImageData(const SDL_Surface &surface)
 {
-    SDLSurfacePtr pSurface = CFilesystemUtils::LoadImage(path);
-    const glm::ivec2 surfaceSize = { pSurface->w, pSurface->h };
-    const bool hasAlpha = SDL_ISPIXELFORMAT_ALPHA(pSurface->format->format);
+    m_hasAlpha = SDL_ISPIXELFORMAT_ALPHA(surface.format->format);
+    m_size = { surface.w, surface.h };
 
-    // Все изображения будем конвертировать в RGB или RGBA,
-    //  в зависимости от наличия альфа-канала в исходном изображении.
-    const GLenum pixelFormat = hasAlpha ? GL_RGBA : GL_RGB;
-    const uint32_t requiredFormat = hasAlpha
-        ? SDL_PIXELFORMAT_ABGR8888
-        : SDL_PIXELFORMAT_RGB24;
-    if (pSurface->format->format != requiredFormat)
+    const GLenum pixelFormat = m_hasAlpha ? GL_RGBA : GL_RGB;
+    glTexImage2D(GL_TEXTURE_2D, 0, GLint(pixelFormat), m_size.x, m_size.y,
+        0, pixelFormat, GL_UNSIGNED_BYTE, surface.pixels);
+}
+
+void CTexture2D::ApplyWrapMode(TextureWrapMode wrapS, TextureWrapMode wrapT)
+{
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GLint(ConvertEnum(wrapS)));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GLint(ConvertEnum(wrapT)));
+}
+
+void CTexture2D::ApplyTrilinearFilter()
+{
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
+
+void CTexture2D::ApplyMaxAnisotropy()
+{
+    float anisotropy = 0.f;
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &anisotropy);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
+}
+
+void CTexture2D::GenerateMipmaps()
+{
+    glGenerateMipmap(GL_TEXTURE_2D);
+}
+
+CTexture2DSharedPtr CTextureCache::Get(const path &name) const
+{
+    const auto it = m_cache.find(name.native());
+    if (it != m_cache.end())
     {
-        pSurface.reset(SDL_ConvertSurfaceFormat(pSurface.get(), requiredFormat, 0));
+        return it->second.lock();
     }
-
-    // В системе координат OpenGL отсчёт идёт с нижней левой точки,
-    //  а не с верхней левой, поэтому переворачиваем изображение.
-    CUtils::FlipSurfaceVertically(*pSurface);
-
-    auto pTexture = std::make_unique<CTexture2D>(surfaceSize, hasAlpha);
-    pTexture->DoWhileBinded([&] {
-        glTexImage2D(GL_TEXTURE_2D, 0, GLint(pixelFormat), pSurface->w, pSurface->h,
-            0, pixelFormat, GL_UNSIGNED_BYTE, pSurface->pixels);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GLint(ConvertEnum(m_wrapS)));
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GLint(ConvertEnum(m_wrapT)));
-    });
-
-    return pTexture;
+    return nullptr;
 }
 
-void CTexture2DLoader::SetWrapMode(TextureWrapMode wrap)
+void CTextureCache::Add(const path &name, const CTexture2DSharedPtr &pTexture)
 {
-    m_wrapS = wrap;
-    m_wrapT = wrap;
+    m_cache[name.native()] = pTexture;
 }
 
-void CTexture2DLoader::SetWrapMode(TextureWrapMode wrapS, TextureWrapMode wrapT)
+CTexture2DAtlas::CTexture2DAtlas(const path &xmlPath, CAssetLoader &loader)
 {
-    m_wrapS = wrapS;
-    m_wrapT = wrapT;
-}
-
-CTexture2DAtlas::CTexture2DAtlas(const path &xmlPath, CTexture2DLoader loader)
-{
-    const path abspath = CFilesystemUtils::GetResourceAbspath(xmlPath);
+    const path abspath = loader.GetResourceAbspath(xmlPath);
     glm::vec2 frameScale;
 
-    CPropertyListParser parser(abspath);
+    CPropertyListParser parser(abspath, loader);
     parser.DoOnParsedTextureMeta([&](const std::string &filename, const glm::ivec2 &size) {
         // Запоминаем коэффициенты для преобразования всех координат
         //    в атласе текстур к диапазону [0..1].
         frameScale = { float(1.f / size.x),
                        float(1.f / size.y) };
-        m_pTexture = loader.Load(abspath.parent_path() / filename);
+        m_pTexture = loader.LoadTexture(abspath.parent_path() / filename);
     });
     parser.DoOnParsedFrame([&](const std::string &name, const CFloatRect &rect) {
         // Преобразуем координаты в атласе текстур к диапазону [0..1]

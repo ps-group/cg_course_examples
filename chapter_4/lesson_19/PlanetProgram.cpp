@@ -11,8 +11,9 @@ glm::mat4 GetNormalMatrix(const glm::mat4 &modelView)
 
 CPlanetProgram::CPlanetProgram()
 {
-    const auto vertShader = CFilesystemUtils::LoadFileAsString("res/solar_system/planet.vert");
-    const auto fragShader = CFilesystemUtils::LoadFileAsString("res/solar_system/planet.frag");
+    CAssetLoader loader;
+    const auto vertShader = loader.LoadFileAsString("res/solar_system/planet.vert");
+    const auto fragShader = loader.LoadFileAsString("res/solar_system/planet.frag");
     m_program.CompileShader(vertShader, ShaderType::Vertex);
     m_program.CompileShader(fragShader, ShaderType::Fragment);
     m_program.Link();

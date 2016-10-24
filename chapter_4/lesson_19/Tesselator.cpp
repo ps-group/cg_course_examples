@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Tesselator.h"
+#include "MeshP3NT2.h"
 #include <algorithm>
 
 namespace
