@@ -51,7 +51,7 @@ file(GLOB SRC_LIBANAX
 add_library(libanax ${SRC_LIBANAX})
 
 add_lesson(19)
-#add_lesson(20)
+add_lesson(20)
 #add_lesson(21)
 #add_lesson(22)
 #add_lesson(23)
