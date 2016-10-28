@@ -14,6 +14,8 @@ struct SSubMesh
     glm::uvec2 m_indexRange;
     MeshType m_type = MeshType::Triangles;
     unsigned m_materialIndex = 0;
+    // Размер вершины и смещения атрибутов
+    // от начала каждой вершины, в байтах.
     unsigned m_stride = 0;
     int m_positionOffset = -1;
     int m_normalsOffset = -1;
@@ -36,7 +38,7 @@ struct SComplexMeshData
 {
     std::vector<SMaterial> m_materials;
     std::vector<SSubMesh> m_submeshes;
-    std::vector<float> m_vertexData;
+    std::vector<uint8_t> m_vertexData;
     std::vector<uint32_t> m_indicies;
     CBoundingBox m_bbox;
 };

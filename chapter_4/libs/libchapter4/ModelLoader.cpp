@@ -120,37 +120,37 @@ public:
 private:
     void CopyVertexes(const aiMesh& mesh, const SSubMesh &submesh)
     {
-        // Добавляем нужное число элементов float в массив,
+        // Добавляем нужное число байт в массив,
         //  затем формируем указатель для начала записи данных.
         const size_t oldSize = m_data.m_vertexData.size();
         const size_t submeshSize = submesh.m_stride * mesh.mNumVertices;
         m_data.m_vertexData.resize(oldSize + submeshSize);
 
-        float *pDestData = m_data.m_vertexData.data() + oldSize;
+        uint8_t *pDest = m_data.m_vertexData.data() + oldSize;
         for (unsigned i = 0, n = mesh.mNumVertices; i < n; i += 1)
         {
             // Копируем нормали и вершины
-            std::memcpy(pDestData + submesh.m_positionOffset,
+            std::memcpy(pDest + submesh.m_positionOffset,
                         &mesh.mVertices[i].x, sizeof(aiVector3D));
-            std::memcpy(pDestData + submesh.m_normalsOffset,
+            std::memcpy(pDest + submesh.m_normalsOffset,
                         &mesh.mNormals[i].x, sizeof(aiVector3D));
 
             // Копируем текстурные координаты
             if (submesh.m_textureOffset != -1)
             {
-                std::memcpy(pDestData + submesh.m_textureOffset,
+                std::memcpy(pDest + submesh.m_textureOffset,
                             &mesh.mTextureCoords[0][i].x, sizeof(aiVector2D));
             }
 
             // Копируем тангенциальные координаты
             if (submesh.m_tangentsOffset != -1)
             {
-                std::memcpy(pDestData + submesh.m_tangentsOffset,
+                std::memcpy(pDest + submesh.m_tangentsOffset,
                             &mesh.mTangents[i].x, sizeof(aiVector3D));
             }
 
             // Сдвигаем указатель на данные.
-            pDestData += submesh.m_stride;
+            pDest += submesh.m_stride;
         }
     }
 
@@ -159,17 +159,17 @@ private:
     void SetupBytesLayout(const aiMesh& mesh, SSubMesh &submesh)
     {
         submesh.m_positionOffset = 0;
-        submesh.m_normalsOffset = 3;
-        unsigned vertexSize = 6; // Нормали + вершины
+        submesh.m_normalsOffset = sizeof(aiVector3D);
+        unsigned vertexSize = 2 * sizeof(aiVector3D); // Нормали + вершины
         if (mesh.HasTextureCoords(0))
         {
             submesh.m_textureOffset = int(vertexSize);
-            vertexSize += 2; // Текстурные координаты UV
+            vertexSize += sizeof(aiVector2D); // Текстурные координаты UV
         }
         if (mesh.HasTangentsAndBitangents())
         {
             submesh.m_tangentsOffset = int(vertexSize);
-            vertexSize += 3; // Тангенциальные касательные
+            vertexSize += sizeof(aiVector3D); // Тангенциальные касательные
         }
         submesh.m_stride = vertexSize;
     }

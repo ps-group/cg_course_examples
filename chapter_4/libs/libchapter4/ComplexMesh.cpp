@@ -44,9 +44,7 @@ void CComplexMesh::Draw(IComplexMeshRenderer &renderer)
         auto applyAttribute = [&](IComplexMeshRenderer::Attribute attr, int offset) {
             if (offset >= 0)
             {
-                renderer.BindAttribute(attr,
-                                       sizeof(float) * size_t(offset),
-                                       sizeof(float) * size_t(submesh.m_stride));
+                renderer.BindAttribute(attr, size_t(offset), size_t(submesh.m_stride));
             }
             else
             {
