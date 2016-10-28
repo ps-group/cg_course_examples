@@ -24,5 +24,6 @@ void CSceneLoader::LoadScene()
     meshCom.m_pMesh = std::make_shared<CComplexMesh>();
     meshCom.m_pMesh->SetData(data);
     auto &transformCom = entity.addComponent<CTransformComponent>();
+    transformCom.m_sizeScale = glm::vec3(0.1f);
     entity.activate();
 }

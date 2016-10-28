@@ -38,6 +38,7 @@ glm::mat4 MakeProjectionMatrix(const glm::ivec2 &size)
 CWindowClient::CWindowClient(CWindow &window)
     : CAbstractWindowClient(window)
     , m_defaultVAO(CArrayObject::do_bind_tag())
+    , m_mouseGrabber(window)
     , m_camera(CAMERA_START_POSITION)
 {
     const vec4 BLACK_RGBA = {0, 0, 0, 1};
@@ -87,17 +88,18 @@ bool CWindowClient::OnKeyUp(const SDL_KeyboardEvent &event)
     return m_camera.OnKeyUp(event);
 }
 
-bool CWindowClient::OnMousePress(const glm::vec2 &pos)
+bool CWindowClient::OnMousePress(const SDL_MouseButtonEvent &event)
 {
-    return m_camera.OnMousePress(pos);
+    return m_camera.OnMousePress(event);
 }
 
-bool CWindowClient::OnMouseMotion(const glm::vec2 &pos)
+bool CWindowClient::OnMouseMotion(const SDL_MouseMotionEvent &event)
 {
-    return m_camera.OnMouseMotion(pos);
+    return m_mouseGrabber.OnMouseMotion(event)
+            || m_camera.OnMouseMotion(event);
 }
 
-bool CWindowClient::OnMouseUp(const glm::vec2 &pos)
+bool CWindowClient::OnMouseUp(const SDL_MouseButtonEvent &event)
 {
-    return m_camera.OnMouseUp(pos);
+    return m_camera.OnMouseUp(event);
 }

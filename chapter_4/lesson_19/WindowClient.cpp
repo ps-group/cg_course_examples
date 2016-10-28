@@ -96,17 +96,17 @@ bool CWindowClient::OnKeyUp(const SDL_KeyboardEvent &event)
     return m_camera.OnKeyUp(event);
 }
 
-bool CWindowClient::OnMousePress(const glm::vec2 &pos)
+bool CWindowClient::OnMousePress(const SDL_MouseButtonEvent &event)
 {
-    return m_camera.OnMousePress(pos);
+    return m_camera.OnMousePress(event);
 }
 
-bool CWindowClient::OnMouseMotion(const glm::vec2 &pos)
+bool CWindowClient::OnMouseMotion(const SDL_MouseMotionEvent &event)
 {
-    return m_camera.OnMouseMotion(pos);
+    return m_camera.OnMouseMotion(event);
 }
 
-bool CWindowClient::OnMouseUp(const glm::vec2 &pos)
+bool CWindowClient::OnMouseUp(const SDL_MouseButtonEvent &event)
 {
-    return m_camera.OnMouseUp(pos);
+    return m_camera.OnMouseUp(event);
 }

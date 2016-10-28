@@ -83,6 +83,7 @@ class CMeshAccumulator
 {
 public:
     static const size_t RESERVED_SIZE = 4 * 1024;
+    static const unsigned TRI_VERTEX_COUNT = 3;
 
     CMeshAccumulator(SComplexMeshData &data)
         : m_data(data)
@@ -105,7 +106,7 @@ public:
         };
         submesh.m_indexRange = {
             unsigned(m_data.m_indicies.size()),
-            unsigned(m_data.m_indicies.size()) + mesh.mNumFaces
+            unsigned(m_data.m_indicies.size()) + TRI_VERTEX_COUNT * mesh.mNumFaces
         };
 
         submesh.m_materialIndex = mesh.mMaterialIndex;
@@ -175,19 +176,17 @@ private:
 
     void CopyIndexes(const aiMesh& mesh)
     {
-        const unsigned triangleVertexCount = 3;
-
         // Добавляем нужное число элементов uint32_t в массив,
         //  затем формируем указатель для начала записи данных.
         const size_t oldSize = m_data.m_indicies.size();
-        m_data.m_indicies.resize(oldSize + triangleVertexCount * mesh.mNumFaces);
+        m_data.m_indicies.resize(oldSize + TRI_VERTEX_COUNT * mesh.mNumFaces);
         uint32_t *pDestData = m_data.m_indicies.data() + oldSize;
 
         for (unsigned i = 0, n = mesh.mNumFaces; i < n; i += 1)
         {
             unsigned *indicies = mesh.mFaces[i].mIndices;
-            std::memcpy(pDestData, indicies, sizeof(unsigned) * triangleVertexCount);
-            pDestData += triangleVertexCount;
+            std::memcpy(pDestData, indicies, sizeof(unsigned) * TRI_VERTEX_COUNT);
+            pDestData += TRI_VERTEX_COUNT;
         }
     }
 

@@ -37,6 +37,7 @@ public:
 
     void Show(const std::string &title, const glm::ivec2 &size);
     void ShowFullscreen(const std::string &title);
+    void WarpMouse(const glm::ivec2 &newPosition);
 
     void SetBackgroundColor(glm::vec4 const& color);
     void SetClient(IWindowClient *pClient);

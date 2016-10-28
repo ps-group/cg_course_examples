@@ -8,16 +8,6 @@ namespace
 {
 const std::chrono::milliseconds FRAME_PERIOD(16);
 
-glm::vec2 GetMousePosition(const SDL_MouseButtonEvent &event)
-{
-    return { event.x, event.y };
-}
-
-glm::vec2 GetMousePosition(const SDL_MouseMotionEvent &event)
-{
-    return { event.x, event.y };
-}
-
 void SetupProfileAttributes(ContextProfile profile, ContextMode mode)
 {
     // Включаем режим сглаживания с помощью субпиксельного рендеринга.
@@ -199,6 +189,11 @@ public:
         }
     }
 
+    void WarpMouse(const glm::ivec2 &newPosition)
+    {
+        SDL_WarpMouseInWindow(m_pWindow.get(), newPosition.x, newPosition.y);
+    }
+
     void SetBackgroundColor(const glm::vec4 &color)
     {
         m_clearColor = color;
@@ -255,13 +250,13 @@ private:
             acceptor.OnKeyUp(event.key);
             break;
         case SDL_MOUSEBUTTONDOWN:
-            acceptor.OnMousePress(GetMousePosition(event.button));
+            acceptor.OnMousePress(event.button);
             break;
         case SDL_MOUSEBUTTONUP:
-            acceptor.OnMouseUp(GetMousePosition(event.button));
+            acceptor.OnMouseUp(event.button);
             break;
         case SDL_MOUSEMOTION:
-            acceptor.OnMouseMotion(GetMousePosition(event.motion));
+            acceptor.OnMouseMotion(event.motion);
             break;
         }
     }
@@ -293,6 +288,11 @@ void CWindow::Show(const std::string &title, const glm::ivec2 &size)
 void CWindow::ShowFullscreen(const std::string &title)
 {
     m_pImpl->Show(title, {800, 600}, true);
+}
+
+void CWindow::WarpMouse(const glm::ivec2 &newPosition)
+{
+    m_pImpl->WarpMouse(newPosition);
 }
 
 void CWindow::SetBackgroundColor(const glm::vec4 &color)
