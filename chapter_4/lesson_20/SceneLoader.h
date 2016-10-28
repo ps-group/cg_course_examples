@@ -8,7 +8,7 @@ class CSceneLoader
 public:
     CSceneLoader(anax::World &world);
 
-    void LoadScene(const boost::filesystem::path &path);
+    void LoadScene();
 
 private:
     anax::World &m_world;

@@ -1,6 +1,5 @@
 #pragma once
 #include "libchapter4.h"
-#include "Tesselator.h"
 #include "SceneLoader.h"
 #include "RenderSystem.h"
 #include "TimeController.h"

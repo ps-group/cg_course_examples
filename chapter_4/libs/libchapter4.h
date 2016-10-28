@@ -7,6 +7,7 @@
 #include "libchapter4/AbstractWindowClient.h"
 #include "libchapter4/Camera.h"
 #include "libchapter4/AssetLoader.h"
+#include "libchapter4/ModelLoader.h"
 
 #include "libchapter4/Transform.h"
 #include "libchapter4/BoundingBox.h"

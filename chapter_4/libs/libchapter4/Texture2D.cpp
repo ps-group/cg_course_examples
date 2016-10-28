@@ -178,7 +178,10 @@ CTexture2D::CTexture2D(no_texture_tag)
 
 CTexture2D::~CTexture2D()
 {
-    glDeleteTextures(1, &m_textureId);
+    if (m_textureId != 0)
+    {
+        glDeleteTextures(1, &m_textureId);
+    }
 }
 
 glm::ivec2 CTexture2D::GetSize() const

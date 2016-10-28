@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "PlanetProgram.h"
+#include "PhongProgram.h"
 
 namespace
 {

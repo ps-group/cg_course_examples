@@ -13,9 +13,12 @@ struct SSubMesh
     glm::uvec2 m_vertexRange;
     glm::uvec2 m_indexRange;
     MeshType m_type = MeshType::Triangles;
-    bool m_hasTexCoord: 1;
-    bool m_hasTangentSpace: 1;
     unsigned m_materialIndex = 0;
+    unsigned m_stride = 0;
+    int m_positionOffset = -1;
+    int m_normalsOffset = -1;
+    int m_textureOffset = -1;
+    int m_tangentsOffset = -1;
 };
 
 struct SMaterial
@@ -38,6 +41,53 @@ struct SComplexMeshData
     CBoundingBox m_bbox;
 };
 
+/**
+ * @class IComplexMeshRenderer - интерфейс, устанавливающий связь между
+ * классами для вывода вершин и программой на GLSL.
+ *
+ * Методы интерфейса устанавливают массив атрибутов вершины,
+ * используемых позднее для вызовов glDrawElements или glDrawArrays.
+ *
+ * Параметры методов обеспечивают работу со смешанными массивами:
+ *  - offset - смещение (в байтах) от начала буфера данных в видеопамяти
+ *             до первого элемента нужного типа данных.
+ *  - stride - число байт между двумя элементами одного типа данных
+ */
+class IComplexMeshRenderer
+{
+public:
+    enum Attribute
+    {
+        TexCoord2D,
+        Position3D,
+        Normal,
+    };
+
+    enum Layer
+    {
+        Diffuse,
+        Specular,
+        Emissive
+    };
+
+    virtual ~IComplexMeshRenderer() = default;
+
+    /**
+     * Параметры обеспечивают работу со смешанными массивами:
+     *  - offset - смещение (в байтах) от начала буфера данных в видеопамяти
+     *             до первого элемента нужного типа данных.
+     *  - stride - число байт между двумя элементами одного типа данных
+     **/
+    virtual void BindAttribute(Attribute attribute, size_t offset, size_t stride) = 0;
+
+    /// Выполняет отключение вершинного атрибута.
+    virtual void UnbindAttribute(Attribute attribute) = 0;
+
+    /// Выполняет привязку текстуры, если указатель не равен нулю,
+    ///  иначе отвязывает текстуру.
+    virtual void BindTexture(Layer layer, CTexture2D *pTexture) = 0;
+};
+
 class CComplexMesh
 {
 public:
@@ -45,6 +95,8 @@ public:
 
     void SetData(const SComplexMeshData &data);
     void SetData(SComplexMeshData &&data);
+
+    void Draw(IComplexMeshRenderer &renderer);
 
 private:
     std::vector<SMaterial> m_materials;

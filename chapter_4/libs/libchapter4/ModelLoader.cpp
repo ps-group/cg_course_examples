@@ -1,5 +1,6 @@
 #include "libchapter4_private.h"
 #include "ModelLoader.h"
+#include "AssetLoader.h"
 
 // Для импорта используем библиотеку Assimp
 //  см. http://assimp.sourceforge.net/
@@ -20,10 +21,10 @@ class CMaterialReader
 {
 public:
     CMaterialReader(const aiMaterial& srcMat, const path &resourceDir,
-                    const CModelLoader::LoadTextureFn &loadTexture)
+                    CAssetLoader &assetLoader)
         : m_srcMat(srcMat)
         , m_resourceDir(resourceDir)
-        , m_loadTexture(loadTexture)
+        , m_assetLoader(assetLoader)
     {
     }
 
@@ -67,7 +68,7 @@ public:
         if (AI_SUCCESS == m_srcMat.Get(key, type, index, filename))
         {
             path abspath = m_resourceDir / filename.data;
-            return m_loadTexture(abspath);
+            return m_assetLoader.LoadTexture(abspath);
         }
         return nullptr;
     }
@@ -75,7 +76,7 @@ public:
 private:
     const aiMaterial& m_srcMat;
     path m_resourceDir;
-    CModelLoader::LoadTextureFn m_loadTexture;
+    CAssetLoader &m_assetLoader;
 };
 
 class CMeshAccumulator
@@ -99,78 +100,82 @@ public:
 
         SSubMesh submesh;
         submesh.m_vertexRange = {
-            m_lastVertexIndex + 1,
-            m_lastVertexIndex + mesh.mNumVertices
+            0u,
+            mesh.mNumVertices - 1u,
         };
         submesh.m_indexRange = {
             unsigned(m_data.m_indicies.size()),
             unsigned(m_data.m_indicies.size()) + mesh.mNumFaces
         };
-        m_lastVertexIndex += mesh.mNumVertices;
 
         submesh.m_materialIndex = mesh.mMaterialIndex;
-        submesh.m_hasTexCoord = mesh.HasTextureCoords(0);
-        submesh.m_hasTangentSpace = mesh.HasTangentsAndBitangents();
-
-        m_data.m_submeshes.push_back(submesh);
+        SetupBytesLayout(mesh, submesh);
         CopyVertexes(mesh, submesh);
         CopyIndexes(mesh);
+
+        m_data.m_submeshes.push_back(submesh);
     }
 
 private:
     void CopyVertexes(const aiMesh& mesh, const SSubMesh &submesh)
     {
-        const size_t numComponents = GetVertexComponentsCount(submesh);
-
         // Добавляем нужное число элементов float в массив,
         //  затем формируем указатель для начала записи данных.
         const size_t oldSize = m_data.m_vertexData.size();
-        m_data.m_vertexData.resize(oldSize + numComponents * mesh.mNumVertices);
+        const size_t submeshSize = submesh.m_stride * mesh.mNumVertices;
+        m_data.m_vertexData.resize(oldSize + submeshSize);
+
         float *pDestData = m_data.m_vertexData.data() + oldSize;
-
-        auto addData = [&](const float *srcData, size_t count) {
-            std::memcpy(pDestData, srcData, sizeof(float) * count);
-            pDestData += count;
-        };
-
         for (unsigned i = 0, n = mesh.mNumVertices; i < n; i += 1)
         {
             // Копируем нормали и вершины
-            addData(&mesh.mVertices[i].x, 3);
-            addData(&mesh.mNormals[i].x, 3);
+            std::memcpy(pDestData + submesh.m_positionOffset,
+                        &mesh.mVertices[i].x, sizeof(aiVector3D));
+            std::memcpy(pDestData + submesh.m_normalsOffset,
+                        &mesh.mNormals[i].x, sizeof(aiVector3D));
 
             // Копируем текстурные координаты
-            if (submesh.m_hasTexCoord)
+            if (submesh.m_textureOffset != -1)
             {
-                addData(&mesh.mNormals[i].x, 2);
+                std::memcpy(pDestData + submesh.m_textureOffset,
+                            &mesh.mTextureCoords[0][i].x, sizeof(aiVector2D));
             }
 
             // Копируем тангенциальные координаты
-            if (submesh.m_hasTangentSpace)
+            if (submesh.m_tangentsOffset != -1)
             {
-                addData(&mesh.mTangents[i].x, 3);
+                std::memcpy(pDestData + submesh.m_tangentsOffset,
+                            &mesh.mTangents[i].x, sizeof(aiVector3D));
             }
+
+            // Сдвигаем указатель на данные.
+            pDestData += submesh.m_stride;
         }
     }
 
-    size_t GetVertexComponentsCount(const SSubMesh &submesh)
+    // Устанавливает смещения компонентов и размер вершины
+    //  в байтах для подсети треугольников.
+    void SetupBytesLayout(const aiMesh& mesh, SSubMesh &submesh)
     {
-        size_t vertexSize = 6; // Нормали + вершины
-        if (submesh.m_hasTexCoord)
+        submesh.m_positionOffset = 0;
+        submesh.m_normalsOffset = 3;
+        unsigned vertexSize = 6; // Нормали + вершины
+        if (mesh.HasTextureCoords(0))
         {
+            submesh.m_textureOffset = int(vertexSize);
             vertexSize += 2; // Текстурные координаты UV
         }
-        if (submesh.m_hasTangentSpace)
+        if (mesh.HasTangentsAndBitangents())
         {
+            submesh.m_tangentsOffset = int(vertexSize);
             vertexSize += 3; // Тангенциальные касательные
         }
-        return vertexSize;
+        submesh.m_stride = vertexSize;
     }
 
     void CopyIndexes(const aiMesh& mesh)
     {
         const unsigned triangleVertexCount = 3;
-        const unsigned indexOffset = unsigned(m_data.m_indicies.size());
 
         // Добавляем нужное число элементов uint32_t в массив,
         //  затем формируем указатель для начала записи данных.
@@ -181,15 +186,12 @@ private:
         for (unsigned i = 0, n = mesh.mNumFaces; i < n; i += 1)
         {
             unsigned *indicies = mesh.mFaces[i].mIndices;
-            pDestData[0] = indexOffset + indicies[0];
-            pDestData[1] = indexOffset + indicies[1];
-            pDestData[2] = indexOffset + indicies[2];
+            std::memcpy(pDestData, indicies, sizeof(unsigned) * triangleVertexCount);
             pDestData += triangleVertexCount;
         }
     }
 
     SComplexMeshData &m_data;
-    unsigned m_lastVertexIndex = 0;
 };
 
 const aiScene *OpenScene(const path &path,
@@ -236,22 +238,34 @@ CBoundingBox GetNodeBoundingBox(const aiScene& scene, const aiNode& node)
     return box;
 }
 
+bool CanBePhongShaded(unsigned shadingMode)
+{
+    switch (shadingMode)
+    {
+    case 0:
+    case aiShadingMode_Phong:
+    case aiShadingMode_Blinn:
+    case aiShadingMode_Gouraud:
+    case aiShadingMode_Flat:
+        return true;
+    default:
+        return false;
+    }
+}
 
-void LoadMaterials(const path &resourceDir, const CModelLoader::LoadTextureFn &loadTexture,
+void LoadMaterials(const path &resourceDir, CAssetLoader &assetLoader,
                    const aiScene &scene, std::vector<SMaterial> &materials)
 {
     materials.resize(scene.mNumMaterials);
     for (unsigned mi = 0; mi < scene.mNumMaterials; ++mi)
     {
-        CMaterialReader reader(*(scene.mMaterials[mi]), resourceDir, loadTexture);
+        CMaterialReader reader(*(scene.mMaterials[mi]), resourceDir, assetLoader);
         SMaterial &material = materials[mi];
 
         // TODO: реализовать новые модели освещения
-        //       например, aiShadingMode_CookTorrance.
-        const aiShadingMode shadingMode = static_cast<aiShadingMode>(
-                    reader.GetUnsigned(AI_MATKEY_SHADING_MODEL));
-        if (shadingMode != aiShadingMode_Phong
-            && shadingMode != aiShadingMode_Blinn)
+        //       например, aiShadingMode_CookTorrance, aiShadingMode_Toon.
+        const unsigned shadingMode = reader.GetUnsigned(AI_MATKEY_SHADING_MODEL);
+        if (!CanBePhongShaded(shadingMode))
         {
             throw std::runtime_error("Given shading model was not implemented");
         }
@@ -291,22 +305,24 @@ void VerifyMeshData(SComplexMeshData &data)
 }
 
 
-CModelLoader::CModelLoader(const LoadTextureFn &loadTextureFn)
-    : m_loadTextureFn(loadTextureFn)
+CModelLoader::CModelLoader(CAssetLoader &assetLoader)
+    : m_assetLoader(assetLoader)
 {
 }
 
 void CModelLoader::Load(const boost::filesystem::path &path, SComplexMeshData &data)
 {
+    const boost::filesystem::path abspath = m_assetLoader.GetResourceAbspath(path);
+
     data.m_materials.clear();
     data.m_submeshes.clear();
     data.m_indicies.clear();
     data.m_vertexData.clear();
 
     Assimp::Importer importer;
-    const aiScene *pScene = OpenScene(path, importer);
+    const aiScene *pScene = OpenScene(abspath, importer);
     data.m_bbox = GetNodeBoundingBox(*pScene, *pScene->mRootNode);
-    LoadMaterials(path.parent_path(), m_loadTextureFn, *pScene, data.m_materials);
+    LoadMaterials(abspath.parent_path(), m_assetLoader, *pScene, data.m_materials);
     LoadMeshes(*pScene, data);
 
     VerifyMeshData(data);

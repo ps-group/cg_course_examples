@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "RenderSystem.h"
-#include "PlanetRenderer.h"
+#include "PhongRenderer.h"
 
 CRenderSystem::CRenderSystem()
     : m_blackTexture(CTexture2D::no_texture_tag())
@@ -24,14 +24,11 @@ void CRenderSystem::Render(const glm::mat4 &view, const glm::mat4 &projection)
     CPlanetRenderer3D renderer(m_planetProgram);
     for (const auto &entity : getEntities())
     {
-        auto &mesh = entity.getComponent<CStaticMeshComponent>();
         auto &transform = entity.getComponent<CTransformComponent>();
-
-        m_planetProgram.BindDiffuseMap(GetTextureOrBlack(mesh.m_pDiffuseMap));
-        m_planetProgram.BindSpecularMap(GetTextureOrBlack(mesh.m_pSpecularMap));
-        m_planetProgram.BindEmissiveMap(GetTextureOrBlack(mesh.m_pEmissiveMap));
         m_planetProgram.SetModel(transform.ToMat4());
         m_planetProgram.UpdateModelViewProjection();
+
+        auto &mesh = entity.getComponent<CMeshComponent>();
         mesh.m_pMesh->Draw(renderer);
     }
 }

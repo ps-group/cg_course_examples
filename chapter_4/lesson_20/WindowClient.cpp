@@ -38,25 +38,19 @@ glm::mat4 MakeProjectionMatrix(const glm::ivec2 &size)
 CWindowClient::CWindowClient(CWindow &window)
     : CAbstractWindowClient(window)
     , m_defaultVAO(CArrayObject::do_bind_tag())
-    , m_keplerSystem(m_timeController)
-    , m_rotationSystem(m_timeController)
     , m_camera(CAMERA_START_POSITION)
 {
     const vec4 BLACK_RGBA = {0, 0, 0, 1};
+    const float CAM_SPEED = 20;
+
     window.SetBackgroundColor(BLACK_RGBA);
     SetupOpenGLState();
 
+    m_camera.SetMoveSpeed(CAM_SPEED);
     m_renderSystem.SetupLight0(SUNLIGHT_POSITION, WHITE_RGBA, FADED_WHITE_RGBA);
 
     CSceneLoader loader(m_world);
-    loader.LoadScene("res/solar_system/solar_system_2012.json");
-
-    // Добавляем систему, отвечающую за изменение положения планет
-    //  согласно их орбитам и прошедшему времени по законам Кеплера.
-    m_world.addSystem(m_keplerSystem);
-
-    // Добавляем систему, выполняющую вращение тел вокруг своих осей.
-    m_world.addSystem(m_rotationSystem);
+    loader.LoadScene();
 
     // Добавляем систему, отвечающую за рендеринг планет.
     m_world.addSystem(m_renderSystem);
@@ -70,9 +64,6 @@ CWindowClient::CWindowClient(CWindow &window)
 void CWindowClient::OnUpdate(float deltaSeconds)
 {
     m_camera.Update(deltaSeconds);
-    m_timeController.Update(deltaSeconds);
-    m_keplerSystem.Update();
-    m_rotationSystem.Update();
 }
 
 void CWindowClient::OnDraw()

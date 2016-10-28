@@ -1,10 +1,10 @@
 #pragma once
 #include "Components.h"
-#include "PlanetProgram.h"
+#include "PhongProgram.h"
 #include <anax/System.hpp>
 
 class CRenderSystem
-        : public anax::System<anax::Requires<CStaticMeshComponent, CTransformComponent>>
+        : public anax::System<anax::Requires<CMeshComponent, CTransformComponent>>
 {
 public:
     CRenderSystem();

@@ -1,11 +1,7 @@
 #pragma once
 #include "libchapter4.h"
-#include "Tesselator.h"
 #include "SceneLoader.h"
 #include "RenderSystem.h"
-#include "TimeController.h"
-#include "KeplerLawSystem.h"
-#include "BodyRotationSystem.h"
 #include <vector>
 
 class CWindowClient
@@ -30,10 +26,7 @@ private:
     //  http://stackoverflow.com/questions/13403807/
     CArrayObject m_defaultVAO;
     anax::World m_world;
-    CTimeController m_timeController;
     CRenderSystem m_renderSystem;
-    CKeplerLawSystem m_keplerSystem;
-    CBodyRotationSystem m_rotationSystem;
 
     CCamera m_camera;
 };
