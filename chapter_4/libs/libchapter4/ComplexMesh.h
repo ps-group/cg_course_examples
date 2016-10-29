@@ -17,6 +17,7 @@ struct SSubMesh
     // Размер вершины и смещения атрибутов
     // от начала каждой вершины, в байтах.
     unsigned m_stride = 0;
+    unsigned m_baseOffset = 0;
     int m_positionOffset = -1;
     int m_normalsOffset = -1;
     int m_textureOffset = -1;

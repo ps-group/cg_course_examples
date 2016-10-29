@@ -44,7 +44,9 @@ void CComplexMesh::Draw(IComplexMeshRenderer &renderer)
         auto applyAttribute = [&](IComplexMeshRenderer::Attribute attr, int offset) {
             if (offset >= 0)
             {
-                renderer.BindAttribute(attr, size_t(offset), size_t(submesh.m_stride));
+                const size_t bytesOffset = size_t(submesh.m_baseOffset + unsigned(offset));
+                const size_t bytesStide = size_t(submesh.m_stride);
+                renderer.BindAttribute(attr, bytesOffset, bytesStide);
             }
             else
             {
@@ -58,7 +60,7 @@ void CComplexMesh::Draw(IComplexMeshRenderer &renderer)
         const GLuint start = submesh.m_vertexRange.x;
         const GLuint end = submesh.m_vertexRange.y;
         const GLsizei count = GLsizei(submesh.m_indexRange.y - submesh.m_indexRange.x + 1);
-        const GLsizei offset = GLsizei(submesh.m_indexRange.x);
+        const GLsizei offset = GLsizei(sizeof(uint32_t) * submesh.m_indexRange.x);
         glDrawRangeElements(GL_TRIANGLES, start, end, count, GL_UNSIGNED_INT,
                             reinterpret_cast<const void*>(offset));
     }

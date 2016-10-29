@@ -158,6 +158,7 @@ private:
     //  в байтах для подсети треугольников.
     void SetupBytesLayout(const aiMesh& mesh, SSubMesh &submesh)
     {
+        submesh.m_baseOffset = unsigned(m_data.m_vertexData.size());
         submesh.m_positionOffset = 0;
         submesh.m_normalsOffset = sizeof(aiVector3D);
         unsigned vertexSize = 2 * sizeof(aiVector3D); // Нормали + вершины
@@ -179,7 +180,8 @@ private:
         // Добавляем нужное число элементов uint32_t в массив,
         //  затем формируем указатель для начала записи данных.
         const size_t oldSize = m_data.m_indicies.size();
-        m_data.m_indicies.resize(oldSize + TRI_VERTEX_COUNT * mesh.mNumFaces);
+        const size_t submeshSize = TRI_VERTEX_COUNT * mesh.mNumFaces;
+        m_data.m_indicies.resize(oldSize + submeshSize);
         uint32_t *pDestData = m_data.m_indicies.data() + oldSize;
 
         for (unsigned i = 0, n = mesh.mNumFaces; i < n; i += 1)
@@ -325,4 +327,18 @@ void CModelLoader::Load(const boost::filesystem::path &path, SComplexMeshData &d
     LoadMeshes(*pScene, data);
 
     VerifyMeshData(data);
+}
+
+void CModelLoader::DumpInfo(const boost::filesystem::path &path)
+{
+    const boost::filesystem::path abspath = m_assetLoader.GetResourceAbspath(path);
+    Assimp::Importer importer;
+    const aiScene *pScene = OpenScene(abspath, importer);
+
+    std::cerr << "3D Model loaded"
+              << ", " << pScene->mNumMeshes << " meshes"
+              << ", " << pScene->mNumMaterials << " materials"
+              << ", " << pScene->mNumAnimations << " animations"
+              << ", " << pScene->mNumLights << " lights"
+              << std::endl;
 }
