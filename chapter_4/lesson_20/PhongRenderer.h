@@ -12,7 +12,7 @@ public:
 
     void BindAttribute(Attribute attribute, size_t offset, size_t stride) override;
     void UnbindAttribute(Attribute attribute) override;
-    void BindTexture(Layer layer, CTexture2D *pTexture) override;
+    void SetMaterialLayer(Layer layer, CTexture2D *pTexture, const glm::vec4 &color) override;
 
 private:
     CPlanetProgram &m_context;

@@ -87,8 +87,8 @@ public:
     virtual void UnbindAttribute(Attribute attribute) = 0;
 
     /// Выполняет привязку текстуры, если указатель не равен нулю,
-    ///  иначе отвязывает текстуру.
-    virtual void BindTexture(Layer layer, CTexture2D *pTexture) = 0;
+    ///  иначе отвязывает текстуру и устанавливает вместо неё цвет color.
+    virtual void SetMaterialLayer(Layer layer, CTexture2D *pTexture, const glm::vec4 &color) = 0;
 };
 
 class CComplexMesh

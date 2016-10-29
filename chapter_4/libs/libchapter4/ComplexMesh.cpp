@@ -27,10 +27,10 @@ void CComplexMesh::SetData(SComplexMeshData &&data)
 
 void ApplyMaterial(IComplexMeshRenderer &renderer, const SMaterial &mat)
 {
-    // TODO: добавить обработку цветов, заменяющих или изменяющих текстуры.
-    renderer.BindTexture(IComplexMeshRenderer::Diffuse, mat.m_pDiffuse.get());
-    renderer.BindTexture(IComplexMeshRenderer::Specular, mat.m_pSpecular.get());
-    renderer.BindTexture(IComplexMeshRenderer::Emissive, mat.m_pEmissive.get());
+    // TODO: добавить обработку `mat.m_shinness`.
+    renderer.SetMaterialLayer(IComplexMeshRenderer::Diffuse, mat.m_pDiffuse.get(), mat.m_diffuseColor);
+    renderer.SetMaterialLayer(IComplexMeshRenderer::Specular, mat.m_pSpecular.get(), mat.m_specularColor);
+    renderer.SetMaterialLayer(IComplexMeshRenderer::Emissive, mat.m_pEmissive.get(), mat.m_emissiveColor);
 }
 
 void CComplexMesh::Draw(IComplexMeshRenderer &renderer)

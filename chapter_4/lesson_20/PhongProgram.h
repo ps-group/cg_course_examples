@@ -27,10 +27,12 @@ public:
     void SetView(const glm::mat4 &value);
     void SetProjection(const glm::mat4 &value);
     void SetLight0(const SLightSource &source);
+    void SetMaterial(const SMaterial &material);
 
-    void BindDiffuseMap(CTexture2D &texture);
-    void BindSpecularMap(CTexture2D &texture);
-    void BindEmissiveMap(CTexture2D &texture);
+    // Если текстуры нет, её заменяет цвет материала.
+    void BindDiffuseMap(CTexture2D *pTexture, const glm::vec4 &defaultColor);
+    void BindSpecularMap(CTexture2D *pTexture, const glm::vec4 &defaultColor);
+    void BindEmissiveMap(CTexture2D *pTexture, const glm::vec4 &defaultColor);
     void UpdateModelViewProjection();
 
 private:

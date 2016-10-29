@@ -329,6 +329,36 @@ void CModelLoader::Load(const boost::filesystem::path &path, SComplexMeshData &d
     VerifyMeshData(data);
 }
 
+// Обходит дерево узлов (aiNode) сцены (aiScene),
+//  печатает имя каждого узла.
+class CNodeTreeDumper
+{
+public:
+    void Inspect(aiNode *pNode)
+    {
+        if (!pNode)
+        {
+            return;
+        }
+        m_indentLevel += 1;
+        PrintNodeName(pNode->mName.C_Str());
+        for (unsigned i = 0, n = pNode->mNumChildren; i < n; ++i)
+        {
+            Inspect(pNode->mChildren[i]);
+        }
+        m_indentLevel -= 1;
+    }
+
+private:
+    void PrintNodeName(const std::string &name)
+    {
+        std::string indent(2 * m_indentLevel, ' ');
+        std::cerr << indent << "Node " << name << std::endl;
+    }
+
+    unsigned m_indentLevel = 0;
+};
+
 void CModelLoader::DumpInfo(const boost::filesystem::path &path)
 {
     const boost::filesystem::path abspath = m_assetLoader.GetResourceAbspath(path);
@@ -341,4 +371,7 @@ void CModelLoader::DumpInfo(const boost::filesystem::path &path)
               << ", " << pScene->mNumAnimations << " animations"
               << ", " << pScene->mNumLights << " lights"
               << std::endl;
+
+    CNodeTreeDumper inspector;
+    inspector.Inspect(pScene->mRootNode);
 }

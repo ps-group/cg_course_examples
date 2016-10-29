@@ -8,7 +8,7 @@ using glm::vec4;
 namespace
 {
 const glm::vec3 CAMERA_START_POSITION = { -1, 0, -3 };
-const glm::vec4 SUNLIGHT_POSITION = {0, 0, 0, 1};
+const glm::vec4 SUNLIGHT_DIRECTION = {0, 1, 0, 0};
 const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
 const glm::vec4 FADED_WHITE_RGBA = {0.3f, 0.3f, 0.3f, 1.0f};
 
@@ -48,7 +48,7 @@ CWindowClient::CWindowClient(CWindow &window)
     SetupOpenGLState();
 
     m_camera.SetMoveSpeed(CAM_SPEED);
-    m_renderSystem.SetupLight0(SUNLIGHT_POSITION, WHITE_RGBA, FADED_WHITE_RGBA);
+    m_renderSystem.SetupLight0(SUNLIGHT_DIRECTION, WHITE_RGBA, FADED_WHITE_RGBA);
 
     CSceneLoader loader(m_world);
     loader.LoadScene();

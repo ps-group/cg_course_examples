@@ -57,19 +57,18 @@ void CPlanetRenderer3D::UnbindAttribute(Attribute attribute)
     }
 }
 
-void CPlanetRenderer3D::BindTexture(Layer layer, CTexture2D *pTexture)
+void CPlanetRenderer3D::SetMaterialLayer(Layer layer, CTexture2D *pTexture, const glm::vec4 &color)
 {
-    CTexture2D black(CTexture2D::no_texture_tag{});
     switch (layer)
     {
     case Diffuse:
-        m_context.BindDiffuseMap(pTexture ? *pTexture : black);
+        m_context.BindDiffuseMap(pTexture, color);
         break;
     case Specular:
-        m_context.BindSpecularMap(pTexture ? *pTexture : black);
+        m_context.BindSpecularMap(pTexture, color);
         break;
     case Emissive:
-        m_context.BindEmissiveMap(pTexture ? *pTexture : black);
+        m_context.BindEmissiveMap(pTexture, color);
         break;
     }
 }
