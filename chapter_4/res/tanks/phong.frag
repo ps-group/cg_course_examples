@@ -25,7 +25,7 @@ struct Material
 };
 
 const float SHININESS = 10.0;
-const float AMBIENT_DIFFUSE = 0.1;
+const float AMBIENT_DIFFUSE = 0.2;
 
 uniform LightSource light0;
 uniform Material material;
