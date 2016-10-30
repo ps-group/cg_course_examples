@@ -33,7 +33,6 @@ CWindowClient::CWindowClient(CWindow &window)
     const glm::vec4 BLACK_RGBA = {0, 0, 0, 1};
 
     window.SetBackgroundColor(BLACK_RGBA);
-    CheckOpenGLVersion();
     SetupOpenGLState();
 
     m_sunlight.SetDirection(SUNLIGHT_DIRECTION);
@@ -45,7 +44,10 @@ void CWindowClient::OnUpdateWindow(float deltaSeconds)
 {
     UpdateRotation(deltaSeconds);
     m_camera.Update(deltaSeconds);
+}
 
+void CWindowClient::OnDrawWindow()
+{
     SetupView(GetWindow().GetWindowSize());
     SetupLight0();
 

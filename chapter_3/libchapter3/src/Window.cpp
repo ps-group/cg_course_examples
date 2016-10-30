@@ -200,13 +200,15 @@ public:
             {
                 break;
             }
-            // Очистка буфера кадра, обновление и рисование сцены, вывод буфера кадра.
-            Clear();
+            // Обновление сцены.
             if (m_pClient)
             {
                 const float deltaSeconds = chronometer.GrabDeltaTime();
                 m_pClient->OnUpdateWindow(deltaSeconds);
             }
+            // Очистка буфера кадра, обновление и рисование сцены, вывод буфера кадра.
+            Clear();
+            m_pClient->OnDrawWindow();
 			CUtils::ValidateOpenGLErrors();
 			SwapBuffers();
 			chronometer.WaitNextFrameTime(FRAME_PERIOD);

@@ -43,6 +43,10 @@ CWindowClient::CWindowClient(CWindow &window)
 void CWindowClient::OnUpdateWindow(float deltaSeconds)
 {
     (void)deltaSeconds;
+}
+
+void CWindowClient::OnDrawWindow()
+{
     SetupView(GetWindow().GetWindowSize());
 
     // Активной будет первая программа из очереди.

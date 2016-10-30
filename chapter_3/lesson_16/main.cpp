@@ -7,7 +7,7 @@ int main(int, char *[])
     try
     {
         CWindow window;
-        window.Show("Demo #16", {800, 600});
+        window.Show("Demo #16: Planet Earth (Legacy OpenGL)", {800, 600});
         CWindowClient client(window);
         window.DoMainLoop();
     }

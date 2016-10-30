@@ -63,6 +63,10 @@ void CWindowClient::OnUpdateWindow(float deltaSeconds)
 {
     UpdateRotation(deltaSeconds);
     m_camera.Update(deltaSeconds);
+}
+
+void CWindowClient::OnDrawWindow()
+{
     SetupView(GetWindow().GetWindowSize());
 
     m_sphereMat.Setup();

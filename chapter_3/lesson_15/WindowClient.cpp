@@ -68,8 +68,11 @@ CWindowClient::CWindowClient(CWindow &window)
 void CWindowClient::OnUpdateWindow(float deltaSeconds)
 {
     m_twistController.Update(deltaSeconds);
-
     m_camera.Update(deltaSeconds);
+}
+
+void CWindowClient::OnDrawWindow()
+{
     SetupView(GetWindow().GetWindowSize());
 
     m_sunlight.Setup();

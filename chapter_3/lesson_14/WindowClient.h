@@ -11,6 +11,7 @@ public:
 protected:
     // IWindowClient interface
     void OnUpdateWindow(float deltaSeconds) override;
+    void OnDrawWindow() override;
     void OnKeyUp(const SDL_KeyboardEvent &) override;
 
 private:

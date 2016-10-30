@@ -7,7 +7,7 @@ int main(int, char *[])
     try
     {
         CWindow window;
-        window.Show("OpenGL Demo", {800, 600});
+        window.Show("Demo #13: Smooth Phong Shading", {800, 600});
         CWindowClient client(window);
         window.DoMainLoop();
     }
