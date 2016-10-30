@@ -3,13 +3,13 @@
 #include "PhongProgram.h"
 
 
-CPlanetRenderer3D::CPlanetRenderer3D(CPlanetProgram &context)
-    : m_context(context)
-    , m_vertexAttr(m_context.GetPositionAttr())
-    , m_normalAttr(m_context.GetNormalAttr())
-    , m_texCoordAttr(m_context.GetTexCoordAttr())
+CPlanetRenderer3D::CPlanetRenderer3D(CPlanetProgram &program)
+    : m_program(program)
+    , m_vertexAttr(m_program.GetPositionAttr())
+    , m_normalAttr(m_program.GetNormalAttr())
+    , m_texCoordAttr(m_program.GetTexCoordAttr())
 {
-    m_context.Use();
+    m_program.Use();
 //    m_vertexAttr.EnablePointer();
 //    m_normalAttr.EnablePointer();
 //    m_texCoordAttr.EnablePointer();
@@ -20,6 +20,17 @@ CPlanetRenderer3D::~CPlanetRenderer3D()
     m_vertexAttr.DisablePointer();
     m_normalAttr.DisablePointer();
     m_texCoordAttr.DisablePointer();
+}
+
+void CPlanetRenderer3D::SetWorldTransform(const glm::mat4 &value)
+{
+    m_worldTransform = value;
+}
+
+void CPlanetRenderer3D::SetTransform(const glm::mat4 &transform)
+{
+    m_program.SetModel(m_worldTransform * transform);
+    m_program.UpdateModelViewProjection();
 }
 
 void CPlanetRenderer3D::BindAttribute(Attribute attribute, size_t offset, size_t stride)
@@ -62,13 +73,13 @@ void CPlanetRenderer3D::SetMaterialLayer(Layer layer, CTexture2D *pTexture, cons
     switch (layer)
     {
     case Diffuse:
-        m_context.BindDiffuseMap(pTexture, color);
+        m_program.BindDiffuseMap(pTexture, color);
         break;
     case Specular:
-        m_context.BindSpecularMap(pTexture, color);
+        m_program.BindSpecularMap(pTexture, color);
         break;
     case Emissive:
-        m_context.BindEmissiveMap(pTexture, color);
+        m_program.BindEmissiveMap(pTexture, color);
         break;
     }
 }

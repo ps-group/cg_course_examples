@@ -197,6 +197,6 @@ void CSceneLoader::LoadScene(const boost::filesystem::path &path)
     }
     json sceneObj = json::parse(file);
 
-    CSceneDefinitionParser impl(m_world, assetLoader, resourceDir);
-    impl.ParseSpaceObjects(sceneObj["space_objects"]);
+    CSceneDefinitionParser parser(m_world, assetLoader, resourceDir);
+    parser.ParseSpaceObjects(sceneObj["space_objects"]);
 }

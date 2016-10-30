@@ -1,6 +1,7 @@
 #include "libchapter4_private.h"
 #include "ModelLoader.h"
 #include "AssetLoader.h"
+#include <sstream>
 
 // Для импорта используем библиотеку Assimp
 //  см. http://assimp.sourceforge.net/
@@ -92,14 +93,32 @@ public:
         m_data.m_indicies.reserve(RESERVED_SIZE);
     }
 
+    // Обходит все узлы сцены и запоминает суммарную трансформацию
+    //  для каждой подсетки.
+    void CollectTransforms(const aiNode &pNode)
+    {
+        CollectTransformsImpl(pNode, glm::mat4());
+    }
+
+    // Добавляет сетку треугольников в общий набор данных.
     void Add(const aiMesh& mesh)
     {
         if (mesh.mPrimitiveTypes != aiPrimitiveType_TRIANGLE)
         {
             throw std::runtime_error("Only triangle meshes are supported");
         }
+        const unsigned submeshNo = unsigned(m_data.m_submeshes.size());
 
         SSubMesh submesh;
+        try
+        {
+            submesh.m_transform = m_meshTransforms.at(submeshNo);
+        }
+        catch (const std::out_of_range &)
+        {
+            throw std::out_of_range("Submesh #" + std::to_string(submeshNo)
+                                    + " has no transform");
+        }
         submesh.m_vertexRange = {
             0u,
             mesh.mNumVertices - 1u,
@@ -192,7 +211,37 @@ private:
         }
     }
 
+    // Рекурсивно вызываемая функция,
+    //  собирающая трансформации подсеток сцены.
+    void CollectTransformsImpl(const aiNode &node, const glm::mat4 &parentTransform)
+    {
+        const auto localMat4 = glm::make_mat4(&node.mTransformation.a1);
+
+        // В OpenGL матрицы по умолчанию принимаются в виде
+        //  "столбец за столбцом", а не "строка за строкой",
+        //  поэтому мы транспонируем матрицу локального преобразования.
+        const auto globalMat4 = parentTransform * glm::transpose(localMat4);
+
+        for (unsigned mi = 0; mi < node.mNumMeshes; ++mi)
+        {
+            const unsigned meshNo = node.mMeshes[mi];
+            if (m_meshTransforms.count(meshNo))
+            {
+                // В данном загрузчике модели не будет обработана ситуация,
+                //  когда несколько узлов совместно используют одну сетку.
+                throw std::runtime_error("Mesh #" + std::to_string(meshNo)
+                                         + " used twice in node tree");
+            }
+            m_meshTransforms[meshNo] = globalMat4;
+        }
+        for (unsigned ci = 0; ci < node.mNumChildren; ++ci)
+        {
+            CollectTransformsImpl(*node.mChildren[ci], globalMat4);
+        }
+    }
+
     SComplexMeshData &m_data;
+    std::unordered_map<unsigned, glm::mat4> m_meshTransforms;
 };
 
 const aiScene *OpenScene(const path &path,
@@ -284,6 +333,7 @@ void LoadMaterials(const path &resourceDir, CAssetLoader &assetLoader,
 void LoadMeshes(const aiScene &scene, SComplexMeshData &data)
 {
     CMeshAccumulator accumulator(data);
+    accumulator.CollectTransforms(*scene.mRootNode);
     for (unsigned mi = 0; mi < scene.mNumMeshes; ++mi)
     {
         accumulator.Add(*scene.mMeshes[mi]);
@@ -341,7 +391,7 @@ public:
             return;
         }
         m_indentLevel += 1;
-        PrintNodeName(pNode->mName.C_Str());
+        PrintNodeInfo(pNode->mName.C_Str(), pNode->mTransformation);
         for (unsigned i = 0, n = pNode->mNumChildren; i < n; ++i)
         {
             Inspect(pNode->mChildren[i]);
@@ -350,13 +400,128 @@ public:
     }
 
 private:
-    void PrintNodeName(const std::string &name)
+    void PrintNodeInfo(const std::string &name, const aiMatrix4x4 &transform)
     {
-        std::string indent(2 * m_indentLevel, ' ');
+        const unsigned SIZE = 4;
+        const std::string indent(2 * m_indentLevel, ' ');
+
         std::cerr << indent << "Node " << name << std::endl;
+        for (unsigned row = 0; row < SIZE; ++row)
+        {
+            std::cerr << indent << "[ ";
+            for (unsigned column = 0; column < SIZE; ++column)
+            {
+                const float value = transform[row][column];
+                std::cerr << value << " ";
+            }
+            std::cerr << "]" << std::endl;
+        }
     }
 
     unsigned m_indentLevel = 0;
+};
+
+class CMaterialDumper
+{
+public:
+    void PrintValue(const std::string &key, const std::string &value)
+    {
+        std::cerr << "  property " << key << " = " << value << std::endl;
+    }
+
+    void PrintMaterialTitle(unsigned materialNo)
+    {
+        std::cerr << "-- material #" << materialNo << " --" << std::endl;
+    }
+
+    void Inspect(unsigned materialNo, const aiMaterial &mat)
+    {
+        PrintMaterialTitle(materialNo);
+        for (unsigned pi = 0; pi < mat.mNumProperties; ++pi)
+        {
+            const aiMaterialProperty &prop = *mat.mProperties[pi];
+
+            switch (prop.mType)
+            {
+            case aiPTI_Float:
+                DumpFloatProperty(mat, prop);
+                break;
+            case aiPTI_String:
+                DumpStringProperty(mat, prop);
+                break;
+            case aiPTI_Integer:
+                DumpIntProperty(mat, prop);
+            case aiPTI_Buffer:
+                DumpBufferProperty(mat, prop);
+                break;
+            default:
+                break;
+            }
+
+        }
+    }
+
+private:
+    void DumpFloatProperty(const aiMaterial &mat, const aiMaterialProperty &prop)
+    {
+        float buffer[100];
+        unsigned count = 100;
+        if (AI_SUCCESS == mat.Get(prop.mKey.C_Str(), prop.mSemantic, prop.mIndex, buffer, &count))
+        {
+            PrintValue(prop.mKey.C_Str(), ArrayToString(buffer, count));
+        }
+        else
+        {
+            PrintValue(prop.mKey.C_Str(), "<float read failed>");
+        }
+    }
+
+    void DumpStringProperty(const aiMaterial &mat, const aiMaterialProperty &prop)
+    {
+        aiString value;
+        if (AI_SUCCESS == mat.Get(prop.mKey.C_Str(), prop.mSemantic, prop.mIndex, value))
+        {
+            PrintValue(prop.mKey.C_Str(), std::string("'") + value.C_Str() + "'");
+        }
+        else
+        {
+            PrintValue(prop.mKey.C_Str(), "<string read failed>");
+        }
+    }
+
+    void DumpIntProperty(const aiMaterial &mat, const aiMaterialProperty &prop)
+    {
+        int buffer[100];
+        unsigned count = 100;
+        if (AI_SUCCESS == mat.Get(prop.mKey.C_Str(), prop.mSemantic, prop.mIndex, buffer, &count))
+        {
+            PrintValue(prop.mKey.C_Str(), ArrayToString(buffer, count));
+        }
+        else
+        {
+            PrintValue(prop.mKey.C_Str(), "<int read failed>");
+        }
+    }
+
+    void DumpBufferProperty(const aiMaterial &mat, const aiMaterialProperty &prop)
+    {
+        PrintValue(prop.mKey.C_Str(), "<some data buffer>");
+    }
+
+    template <class T>
+    std::string ArrayToString(T values[], unsigned count)
+    {
+        std::stringstream stream;
+        for (unsigned i = 0; i < count; ++i)
+        {
+            stream << values[i];
+            if (i + 1 != count)
+            {
+                stream << ", ";
+            }
+        }
+        return stream.str();
+    }
 };
 
 void CModelLoader::DumpInfo(const boost::filesystem::path &path)
@@ -374,4 +539,10 @@ void CModelLoader::DumpInfo(const boost::filesystem::path &path)
 
     CNodeTreeDumper inspector;
     inspector.Inspect(pScene->mRootNode);
+
+    CMaterialDumper materialInspector;
+    for (unsigned mi = 0; mi < pScene->mNumMaterials; ++mi)
+    {
+        materialInspector.Inspect(mi, *(pScene->mMaterials[mi]));
+    }
 }

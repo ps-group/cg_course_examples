@@ -8,8 +8,12 @@
 #include "Texture2D.h"
 #include "BoundingBox.h"
 
+class CComplexMesh;
+using CComplexMeshSharedPtr = std::shared_ptr<CComplexMesh>;
+
 struct SSubMesh
 {
+    glm::mat4 m_transform;
     glm::uvec2 m_vertexRange;
     glm::uvec2 m_indexRange;
     MeshType m_type = MeshType::Triangles;
@@ -74,6 +78,8 @@ public:
     };
 
     virtual ~IComplexMeshRenderer() = default;
+
+    virtual void SetTransform(const glm::mat4 &transform) = 0;
 
     /**
      * Параметры обеспечивают работу со смешанными массивами:

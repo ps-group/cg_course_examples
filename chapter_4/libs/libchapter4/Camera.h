@@ -11,10 +11,11 @@ class CCamera
         , private boost::noncopyable
 {
 public:
-    explicit CCamera(const glm::vec3 &position = glm::vec3(),
-                     const glm::vec3 &up = glm::vec3(0, 1, 0),
-                     const glm::vec3 &forward = glm::vec3(0, 0, 1));
+    explicit CCamera(const glm::vec3 &eye = glm::vec3(0, 0, 1),
+                     const glm::vec3 &at = glm::vec3(0, 0, 0),
+                     const glm::vec3 &up = glm::vec3(0, 1, 0));
 
+    void SetActive(bool active);
     void Update(float deltaSec);
     bool OnKeyDown(const SDL_KeyboardEvent &event);
     bool OnKeyUp(const SDL_KeyboardEvent &event);
@@ -26,11 +27,12 @@ public:
     void SetMoveSpeed(float value);
 
 private:
+    bool m_isActive = false;
     float m_moveSpeed = 1.f;
     glm::vec3 m_position;
 
-    glm::vec3 m_up;
     glm::vec3 m_forward;
+    glm::vec3 m_up;
 
     std::set<unsigned> m_keysPressed;
 };

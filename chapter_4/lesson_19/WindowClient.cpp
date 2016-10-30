@@ -7,8 +7,8 @@ using glm::vec4;
 
 namespace
 {
-const glm::vec3 CAMERA_START_POSITION = { -1, 0, -3 };
-const glm::vec4 SUNLIGHT_DIRECTION = {0, 0, 0, 1};
+const glm::vec3 CAMERA_EYE = { 0, 5, 10 };
+const glm::vec4 SUNLIGHT_POSITION = {0, 0, 0, 1};
 const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
 const glm::vec4 FADED_WHITE_RGBA = {0.3f, 0.3f, 0.3f, 1.0f};
 
@@ -40,13 +40,13 @@ CWindowClient::CWindowClient(CWindow &window)
     , m_defaultVAO(CArrayObject::do_bind_tag())
     , m_keplerSystem(m_timeController)
     , m_rotationSystem(m_timeController)
-    , m_camera(CAMERA_START_POSITION)
+    , m_camera(CAMERA_EYE)
 {
     const vec4 BLACK_RGBA = {0, 0, 0, 1};
     window.SetBackgroundColor(BLACK_RGBA);
     SetupOpenGLState();
 
-    m_renderSystem.SetupLight0(SUNLIGHT_DIRECTION, WHITE_RGBA, FADED_WHITE_RGBA);
+    m_renderSystem.SetupLight0(SUNLIGHT_POSITION, WHITE_RGBA, FADED_WHITE_RGBA);
 
     CSceneLoader loader(m_world);
     loader.LoadScene("res/solar_system/solar_system_2012.json");
@@ -69,6 +69,14 @@ CWindowClient::CWindowClient(CWindow &window)
 
 void CWindowClient::OnUpdate(float deltaSeconds)
 {
+    // Активируем камеру при первом обновлении, чтобы пропустить
+    //  события MouseMove, связанные с настройкой окна.
+    if (!m_didActivateCamera)
+    {
+        m_didActivateCamera = true;
+        m_camera.SetActive(true);
+    }
+
     m_camera.Update(deltaSeconds);
     m_timeController.Update(deltaSeconds);
     m_keplerSystem.Update();

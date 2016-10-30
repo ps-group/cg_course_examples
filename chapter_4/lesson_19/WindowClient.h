@@ -34,5 +34,6 @@ private:
     CKeplerLawSystem m_keplerSystem;
     CBodyRotationSystem m_rotationSystem;
 
+    bool m_didActivateCamera = false;
     CCamera m_camera;
 };

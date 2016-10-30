@@ -8,7 +8,7 @@
 class CMeshComponent : public anax::Component
 {
 public:
-    std::shared_ptr<CComplexMesh> m_pMesh;
+    CComplexMeshSharedPtr m_pMesh;
 };
 
 class CTransformComponent

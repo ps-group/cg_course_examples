@@ -39,6 +39,7 @@ void CComplexMesh::Draw(IComplexMeshRenderer &renderer)
     m_indicies.Bind();
     for (const SSubMesh &submesh : m_submeshes)
     {
+        renderer.SetTransform(submesh.m_transform);
         ApplyMaterial(renderer, m_materials[submesh.m_materialIndex]);
 
         auto applyAttribute = [&](IComplexMeshRenderer::Attribute attr, int offset) {

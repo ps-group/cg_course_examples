@@ -37,11 +37,11 @@ vec3 GetMoveDirection(const std::set<unsigned> & keysPressed)
     vec3 direction;
     if (keysPressed.count(SDLK_RIGHT) || keysPressed.count(SDLK_d))
     {
-        direction.x = +1.f;
+        direction.x = -1.f;
     }
     else if (keysPressed.count(SDLK_LEFT) || keysPressed.count(SDLK_a))
     {
-        direction.x = -1.f;
+        direction.x = +1.f;
     }
     if (keysPressed.count(SDLK_UP) || keysPressed.count(SDLK_w))
     {
@@ -63,27 +63,42 @@ vec3 GetMoveDirection(const std::set<unsigned> & keysPressed)
 
 // В OpenGL используется левосторонняя система координат,
 //  следовательно, вектор `right` должен быть таким, чтобы с его конца
-//  кратчайший поворот от вектора `m_up` к вектору `m_forward`
-//  был виден против часовой стрелки,
-//  и поэтому мы инвертируем векторное произведение.
+//  кратчайший поворот от вектора `m_up` к вектору `m_forward` был виден
+//  по часовой стрелке, то есть совпадает с векторным произведением.
 // См. http://www.gamedev.ru/code/forum/?id=43526
 vec3 GetRightDirection(const vec3 &up, const vec3 &forward)
 {
-    return -glm::cross(up, forward);
+    return glm::cross(up, forward);
+}
+
+// По причинам, описанным выше, добавляем
+//  знак минус к векторному произведению.
+vec3 GetForwardDirection(const vec3 &up, const vec3 &right)
+{
+    return -glm::cross(up, right);
 }
 
 // По причинам, описанным выше, мы не инвертируем векторное произведение.
-vec3 GetForwardDirection(const vec3 &up, const vec3 &right)
+vec3 GetUpDirection(const vec3 &forward, const vec3 &right)
 {
-    return glm::cross(up, right);
+    return glm::cross(forward, right);
 }
 }
 
-CCamera::CCamera(const glm::vec3 &position, const glm::vec3 &up, const glm::vec3 &forward)
-    : m_position(position)
-    , m_up(glm::normalize(up))
-    , m_forward(glm::normalize(forward))
+CCamera::CCamera(const glm::vec3 &eye, const glm::vec3 &at, const glm::vec3 &up)
+    : m_position(eye)
+    , m_forward(glm::normalize(at - eye))
 {
+    // Угол между `forward` и `up` может быть не равен 90 градусам,
+    //  поэтому мы дважды вычисляем векторное произведение
+    //  для получения истинного направления `up`.
+    const vec3 right = glm::normalize(GetRightDirection(up, m_forward));
+    m_up = glm::normalize(GetUpDirection(m_forward, right));
+}
+
+void CCamera::SetActive(bool active)
+{
+    m_isActive = active;
 }
 
 void CCamera::Update(float deltaSec)
@@ -118,22 +133,25 @@ bool CCamera::OnKeyUp(const SDL_KeyboardEvent &event)
 
 bool CCamera::OnMouseMotion(const SDL_MouseMotionEvent &event)
 {
-    const vec2 delta = vec2(-event.xrel, -event.yrel);
+    if (m_isActive)
+    {
+        const vec2 delta = vec2(-event.xrel, -event.yrel);
 
-    // Движение мыши по оси X изменяет рысканье (yaw),
-    //  то есть поворачивает вектор forward вокруг up.
-    const float deltaYaw = delta.x * RADIANS_IN_PIXEL;
-    m_forward = glm::normalize(glm::rotate(m_forward, deltaYaw, m_up));
+        // Движение мыши по оси X изменяет рысканье (yaw),
+        //  то есть поворачивает вектор forward вокруг up.
+        const float deltaYaw = delta.x * RADIANS_IN_PIXEL;
+        m_forward = glm::normalize(glm::rotate(m_forward, deltaYaw, m_up));
 
-    // Движение мыши по оси Y изменяет курс (roll),
-    //  то есть поворачивает вектора up вокруг right
-    //  и восстанавливаем вектор forward.
-    const float deltaRoll = delta.y * RADIANS_IN_PIXEL;
-    const vec3 right = GetRightDirection(m_up, m_forward);
-    m_up = glm::normalize(glm::rotate(m_up, deltaRoll, right));
-    m_forward = GetForwardDirection(m_up, right);
+        // Движение мыши по оси Y изменяет курс (roll),
+        //  то есть поворачивает вектора up вокруг right
+        //  и восстанавливаем вектор forward.
+        const float deltaRoll = -delta.y * RADIANS_IN_PIXEL;
+        const vec3 right = GetRightDirection(m_up, m_forward);
+        m_up = glm::normalize(glm::rotate(m_up, deltaRoll, right));
+        m_forward = GetForwardDirection(m_up, right);
+    }
 
-    return true;
+    return m_isActive;
 }
 
 mat4 CCamera::GetViewMat4() const

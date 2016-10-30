@@ -7,10 +7,13 @@ using glm::vec4;
 
 namespace
 {
-const glm::vec3 CAMERA_START_POSITION = { -1, 0, -3 };
-const glm::vec4 SUNLIGHT_DIRECTION = {0, 1, 0, 0};
-const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
-const glm::vec4 FADED_WHITE_RGBA = {0.3f, 0.3f, 0.3f, 1.0f};
+const vec3 CAMERA_EYE = {0, 10, 20};
+const vec3 CAMERA_AT = {0, 0, 0};
+const vec3 CAMERA_UP = {0, 1, 0};
+const vec4 SUNLIGHT_DIRECTION = {0, -1, 0, 0};
+const vec4 WHITE_RGBA = {1, 1, 1, 1};
+const vec4 FADED_WHITE_RGBA = {0.3f, 0.3f, 0.3f, 1.0f};
+const char SCENE_JSON[] = "res/static_scene/scene.json";
 
 void SetupOpenGLState()
 {
@@ -39,7 +42,7 @@ CWindowClient::CWindowClient(CWindow &window)
     : CAbstractWindowClient(window)
     , m_defaultVAO(CArrayObject::do_bind_tag())
     , m_mouseGrabber(window)
-    , m_camera(CAMERA_START_POSITION)
+    , m_camera(CAMERA_EYE)
 {
     const vec4 BLACK_RGBA = {0, 0, 0, 1};
     const float CAM_SPEED = 20;
@@ -51,7 +54,7 @@ CWindowClient::CWindowClient(CWindow &window)
     m_renderSystem.SetupLight0(SUNLIGHT_DIRECTION, WHITE_RGBA, FADED_WHITE_RGBA);
 
     CSceneLoader loader(m_world);
-    loader.LoadScene();
+    loader.LoadScene(SCENE_JSON);
 
     // Добавляем систему, отвечающую за рендеринг планет.
     m_world.addSystem(m_renderSystem);
@@ -64,6 +67,14 @@ CWindowClient::CWindowClient(CWindow &window)
 
 void CWindowClient::OnUpdate(float deltaSeconds)
 {
+    // Активируем камеру при первом обновлении, чтобы пропустить
+    //  события MouseMove, связанные с настройкой окна.
+    if (!m_didActivateCamera)
+    {
+        m_didActivateCamera = true;
+        m_camera.SetActive(true);
+    }
+
     m_camera.Update(deltaSeconds);
 }
 

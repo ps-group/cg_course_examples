@@ -25,9 +25,7 @@ void CRenderSystem::Render(const glm::mat4 &view, const glm::mat4 &projection)
     for (const auto &entity : getEntities())
     {
         auto &transform = entity.getComponent<CTransformComponent>();
-        m_planetProgram.SetModel(transform.ToMat4());
-        m_planetProgram.UpdateModelViewProjection();
-
+        renderer.SetWorldTransform(transform.ToMat4());
         auto &mesh = entity.getComponent<CMeshComponent>();
         mesh.m_pMesh->Draw(renderer);
     }

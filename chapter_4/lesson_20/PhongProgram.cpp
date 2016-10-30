@@ -12,8 +12,8 @@ glm::mat4 GetNormalMatrix(const glm::mat4 &modelView)
 CPlanetProgram::CPlanetProgram()
 {
     CAssetLoader loader;
-    const auto vertShader = loader.LoadFileAsString("res/tanks/phong.vert");
-    const auto fragShader = loader.LoadFileAsString("res/tanks/phong.frag");
+    const auto vertShader = loader.LoadFileAsString("res/static_scene/phong.vert");
+    const auto fragShader = loader.LoadFileAsString("res/static_scene/phong.frag");
     m_program.CompileShader(vertShader, ShaderType::Vertex);
     m_program.CompileShader(fragShader, ShaderType::Fragment);
     m_program.Link();

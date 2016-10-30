@@ -29,5 +29,6 @@ private:
     CRenderSystem m_renderSystem;
 
     CMouseGrabber m_mouseGrabber;
+    bool m_didActivateCamera = false;
     CCamera m_camera;
 };
