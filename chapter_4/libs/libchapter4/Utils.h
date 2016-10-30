@@ -1,12 +1,16 @@
 ﻿#pragma once
 #include <memory>
 #include <chrono>
+#include <vector>
 #include <glm/fwd.hpp>
+#include <glm/vec2.hpp>
 #include <SDL2/SDL_video.h>
 
 // Did you install SDL_ttf development files?
 // see http://www.libsdl.org/projects/SDL_ttf/
 #include <SDL2/SDL_ttf.h>
+
+class CWindow;
 
 namespace detail
 {
@@ -62,6 +66,8 @@ public:
                                         const glm::vec3 &color);
 };
 
+// Класс отвечает за измерение промежутков времени между кадрами
+//  и за ожидание следующего кадра.
 class CChronometer
 {
 public:
@@ -72,4 +78,34 @@ public:
 
 private:
 	std::chrono::system_clock::time_point m_lastTime;
+};
+
+// Класс захватывает курсор мыши, а также решает проблему
+//  перемещения невидимого курсора к границам окна:
+//  - на каждом кадре курсор принудительно перемещается в центр окна
+//  - перемещение курсора порождает событие mouse moved
+//    с известными deltaX, deltaY, что позволяет
+//    игнорировать это событие.
+// Можно заподозрить, что иногда mouse grabber будет фильтровать
+//  не те события и тем самым нарушать правильную обработку мыши,
+//  но это неправда: общее движение мыши остаётся инвариантом.
+class CMouseGrabber
+{
+public:
+    CMouseGrabber(CWindow &window);
+
+    // Возвращает true, если событие было поглощено.
+    // Событие поглощается, если оно порождено программным
+    //  перемещением мыши.
+    bool OnMouseMotion(const SDL_MouseMotionEvent &event);
+
+private:
+    void WarpMouseSafely();
+
+    CWindow &m_windowRef;
+
+    // Ожидаемые координаты событий mouse move, порождаемых
+    //  программным перемещением курсора,
+    //  события с такими координатами игнорируются.
+    std::vector<glm::ivec2> m_blacklistedMoves;
 };

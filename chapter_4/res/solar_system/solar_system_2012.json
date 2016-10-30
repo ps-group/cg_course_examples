@@ -1,0 +1,122 @@
+{
+    "space_objects": {
+        "sol": {
+            "emissive": "sol_emissive.jpg",
+            "position": [0, 0, 0],
+            "rotationAxis": [0, 1, 0],
+            "dayDuration": 25.4,
+            "size": 109
+        },
+        "mercury": {
+            "diffuse": "mercury_diffuse.jpg",
+            "size": 0.382,
+            "dayDuration": 58.6,
+            "orbit": {
+                "owner": "sol",
+                "largeAxis": 0.387,
+                "eccentricity": 0.206,
+                "yearDuration": 0.241,
+                "periapsisEpoch": [7, 0]
+            }
+        },
+        "venus": {
+            "diffuse": "venus_diffuse.jpg",
+            "size": 0.94,
+            "dayDuration": -243,
+            "orbit": {
+                "owner": "sol",
+                "largeAxis": 0.723,
+                "eccentricity": 0.007,
+                "yearDuration": 0.635,
+                "periapsisEpoch": [3, 24]
+            }
+        },
+        "earth": {
+            "diffuse": "earth_diffuse.jpg",
+            "specular": "earth_specular.jpg",
+            "clouds": "earth_clouds.jpg",
+            "size": 1,
+            "dayDuration": 1,
+            "orbit": {
+                "owner": "sol",
+                "largeAxis": 1.000,
+                "eccentricity": 0.017,
+                "yearDuration": 1.000,
+                "periapsisEpoch": [0, 0]
+            }
+        },
+        "moon": {
+            "diffuse": "moon_diffuse.png",
+            "size": 0.273,
+            "dayDuration": 28,
+            "orbit": {
+                "owner": "earth",
+                "largeAxis": 0.03,
+                "eccentricity": 0.055,
+                "yearDuration": 0.1,
+                "periapsisEpoch": [1, 1]
+            }
+        },
+        "mars": {
+            "diffuse": "mars_diffuse.jpg",
+            "size": 0.53,
+            "dayDuration": 1,
+            "orbit": {
+                "owner": "sol",
+                "largeAxis": 1.524,
+                "eccentricity": 0.093,
+                "yearDuration": 1.881,
+                "periapsisEpoch": [1, 1]
+            }
+        },
+        "jupiter": {
+            "diffuse": "jupiter_diffuse.jpg",
+            "size": 11.2,
+            "dayDuration": 0.41,
+            "orbit": {
+                "owner": "sol",
+                "largeAxis": 5.203,
+                "eccentricity": 0.048,
+                "yearDuration": 11.862,
+                "periapsisEpoch": [1, 18]
+            }
+        },
+        "saturn": {
+            "diffuse": "saturn_diffuse.jpg",
+            "size": 9.41,
+            "dayDuration": 0.44,
+            "orbit": {
+                "owner": "sol",
+                "largeAxis": 6.539,
+                "eccentricity": 0.056,
+                "yearDuration": 20.658,
+                "periapsisEpoch": [2, 29]
+            }
+        },
+        "uranus": {
+            "diffuse": "uranus_diffuse.jpg",
+            "size": 3.98,
+            "dayDuration": -0.7193,
+            "orbit": {
+                "owner": "sol",
+                "largeAxis": 19.190,
+                "eccentricity": 0.048,
+                "yearDuration": 84.800,
+                "periapsisEpoch": [0, 45]
+            }
+        },
+        "neptune": {
+            "diffuse": "neptune_diffuse.jpg",
+            "size": 3.81,
+            "dayDuration": -0.67125,
+            "orbit": {
+                "owner": "sol",
+                "largeAxis": 30.081,
+                "eccentricity": 0.009,
+                "yearDuration": 154.232,
+                "periapsisEpoch": [1, 47]
+            }
+        }
+    }
+}
+

@@ -1,0 +1,22 @@
+{
+    "objects": [
+        {
+            "model": "helicopter.md2",
+            "position": [-8, 0, 0],
+            "eulerAngles": [0, 1.57, 0],
+            "size": 0.1
+        },
+        {
+            "model": "phoenix_ugv.md2",
+            "position": [0, 0, 0],
+            "eulerAngles": [0, 0, 0],
+            "size": 0.1
+        },
+        {
+            "model": "LOADER.3DS",
+            "position": [8, 4.5, 0],
+            "eulerAngles": [0, 1.57, 0],
+            "size": 0.01
+        }
+    ]
+}

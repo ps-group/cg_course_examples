@@ -1,23 +1,38 @@
 #pragma once
 
-#include <glm/fwd.hpp>
-#include <SDL2/SDL_events.h>
+#include "IInputListener.h"
+#include "Transform.h"
 #include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
 #include <set>
 
-class CCamera : private boost::noncopyable
+class CCamera
+        : public IInputListener
+        , private boost::noncopyable
 {
 public:
-    explicit CCamera(float rotationRadians, float distance);
+    explicit CCamera(const glm::vec3 &eye = glm::vec3(0, 0, 1),
+                     const glm::vec3 &at = glm::vec3(0, 0, 0),
+                     const glm::vec3 &up = glm::vec3(0, 1, 0));
 
+    void SetActive(bool active);
     void Update(float deltaSec);
     bool OnKeyDown(const SDL_KeyboardEvent &event);
     bool OnKeyUp(const SDL_KeyboardEvent &event);
+    bool OnMouseMotion(const SDL_MouseMotionEvent &event);
 
-    glm::mat4 GetViewTransform() const;
+    glm::mat4 GetViewMat4() const;
+
+    float GetMoveSpeed() const;
+    void SetMoveSpeed(float value);
 
 private:
-    float m_rotationRadians = 0;
-    float m_distance = 1;
+    bool m_isActive = false;
+    float m_moveSpeed = 1.f;
+    glm::vec3 m_position;
+
+    glm::vec3 m_forward;
+    glm::vec3 m_up;
+
     std::set<unsigned> m_keysPressed;
 };

@@ -1,15 +1,16 @@
 #include "stdafx.h"
 #include "WindowClient.h"
-#include "EarthRenderer3D.h"
 
 using glm::mat4;
 using glm::vec3;
+using glm::vec4;
 
 namespace
 {
-const float CAMERA_INITIAL_ROTATION = 0.1f;
-const float CAMERA_INITIAL_DISTANCE = 3;
-const int SPHERE_PRECISION = 40;
+const glm::vec3 CAMERA_EYE = { 0, 5, 10 };
+const glm::vec4 SUNLIGHT_POSITION = {0, 0, 0, 1};
+const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
+const glm::vec4 FADED_WHITE_RGBA = {0.3f, 0.3f, 0.3f, 1.0f};
 
 void SetupOpenGLState()
 {
@@ -19,76 +20,9 @@ void SetupOpenGLState()
     glFrontFace(GL_CCW);
     glCullFace(GL_BACK);
 }
-}
 
-CWindowClient::CWindowClient(CWindow &window)
-    : CAbstractWindowClient(window)
-    , m_defaultVAO(CArrayObject::do_bind_tag())
-    , m_sphereObj(SPHERE_PRECISION, SPHERE_PRECISION)
-    , m_camera(CAMERA_INITIAL_ROTATION, CAMERA_INITIAL_DISTANCE)
-    , m_sunlight(GL_LIGHT0)
+glm::mat4 MakeProjectionMatrix(const glm::ivec2 &size)
 {
-    const glm::vec3 SUNLIGHT_DIRECTION = {-1.f, 0.2f, 0.7f};
-    const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
-    const glm::vec4 BLACK_RGBA = {0, 0, 0, 1};
-
-    window.SetBackgroundColor(BLACK_RGBA);
-    CheckOpenGLVersion();
-    SetupOpenGLState();
-
-    m_sunlight.SetDirection(SUNLIGHT_DIRECTION);
-    m_sunlight.SetDiffuse(WHITE_RGBA);
-    m_sunlight.SetSpecular(WHITE_RGBA);
-}
-
-void CWindowClient::OnUpdateWindow(float deltaSeconds)
-{
-    UpdateRotation(deltaSeconds);
-    m_camera.Update(deltaSeconds);
-
-    SetupView(GetWindow().GetWindowSize());
-    SetupLight0();
-
-    CEarthRenderer3D renderer(m_programContext);
-    m_sphereObj.Draw(renderer);
-}
-
-void CWindowClient::OnKeyDown(const SDL_KeyboardEvent &event)
-{
-    m_camera.OnKeyDown(event);
-}
-
-void CWindowClient::OnKeyUp(const SDL_KeyboardEvent &event)
-{
-    m_camera.OnKeyUp(event);
-}
-
-void CWindowClient::CheckOpenGLVersion()
-{
-    // Мы требуем наличия OpenGL 2.0
-    // В OpenGL 2.0 шейдерные программы вошли в спецификацию API.
-    // Ещё в OpenGL 1.2 мультитекстурирование также вошло в спецификацию,
-    // см. http://opengl.org/registry/specs/ARB/multitexture.txt
-    if (!GLEW_VERSION_2_0)
-    {
-        throw std::runtime_error("Sorry, but OpenGL 2.0 is not available");
-    }
-}
-
-void CWindowClient::UpdateRotation(float deltaSeconds)
-{
-    const float ROTATION_SPEED = 0.2f;
-    const float deltaRotation = ROTATION_SPEED * deltaSeconds;
-    const mat4 model = glm::rotate(m_programContext.GetModel(),
-                                   deltaRotation,
-                                   vec3(0, 1, 0));
-    m_programContext.SetModel(model);
-}
-
-void CWindowClient::SetupView(const glm::ivec2 &size)
-{
-    const mat4 view = m_camera.GetViewTransform();
-
     // Матрица перспективного преобразования вычисляется функцией
     // glm::perspective, принимающей угол обзора, соотношение ширины
     // и высоты окна, расстояния до ближней и дальней плоскостей отсечения.
@@ -96,19 +30,91 @@ void CWindowClient::SetupView(const glm::ivec2 &size)
     const float aspect = float(size.x) / float(size.y);
     const float zNear = 0.01f;
     const float zFar = 100.f;
-    const mat4 proj = glm::perspective(fieldOfView, aspect, zNear, zFar);
 
-    glViewport(0, 0, size.x, size.y);
-
-    m_programContext.SetView(view);
-    m_programContext.SetProjection(proj);
+    return glm::perspective(fieldOfView, aspect, zNear, zFar);
+}
 }
 
-void CWindowClient::SetupLight0()
+CWindowClient::CWindowClient(CWindow &window)
+    : CAbstractWindowClient(window)
+    , m_defaultVAO(CArrayObject::do_bind_tag())
+    , m_keplerSystem(m_timeController)
+    , m_rotationSystem(m_timeController)
+    , m_camera(CAMERA_EYE)
 {
-    CEarthProgramContext::SLightSource light0;
-    light0.specular = m_sunlight.GetSpecular();
-    light0.diffuse = m_sunlight.GetDiffuse();
-    light0.position = m_sunlight.GetUniformPosition();
-    m_programContext.SetLight0(light0);
+    const vec4 BLACK_RGBA = {0, 0, 0, 1};
+    window.SetBackgroundColor(BLACK_RGBA);
+    SetupOpenGLState();
+
+    m_renderSystem.SetupLight0(SUNLIGHT_POSITION, WHITE_RGBA, FADED_WHITE_RGBA);
+
+    CSceneLoader loader(m_world);
+    loader.LoadScene("res/solar_system/solar_system_2012.json");
+
+    // Добавляем систему, отвечающую за изменение положения планет
+    //  согласно их орбитам и прошедшему времени по законам Кеплера.
+    m_world.addSystem(m_keplerSystem);
+
+    // Добавляем систему, выполняющую вращение тел вокруг своих осей.
+    m_world.addSystem(m_rotationSystem);
+
+    // Добавляем систему, отвечающую за рендеринг планет.
+    m_world.addSystem(m_renderSystem);
+
+    // После активации новых сущностей или деактивации,
+    //  а при добавления новых систем следует
+    //  вызывать refresh() у мира.
+    m_world.refresh();
+}
+
+void CWindowClient::OnUpdate(float deltaSeconds)
+{
+    // Активируем камеру при первом обновлении, чтобы пропустить
+    //  события MouseMove, связанные с настройкой окна.
+    if (!m_didActivateCamera)
+    {
+        m_didActivateCamera = true;
+        m_camera.SetActive(true);
+    }
+
+    m_camera.Update(deltaSeconds);
+    m_timeController.Update(deltaSeconds);
+    m_keplerSystem.Update();
+    m_rotationSystem.Update();
+}
+
+void CWindowClient::OnDraw()
+{
+    const glm::ivec2 windowSize = GetWindow().GetWindowSize();
+
+    const mat4 view = m_camera.GetViewMat4();
+    const mat4 proj = MakeProjectionMatrix(windowSize);
+
+    glViewport(0, 0, windowSize.x, windowSize.y);
+    m_renderSystem.Render(view, proj);
+}
+
+bool CWindowClient::OnKeyDown(const SDL_KeyboardEvent &event)
+{
+    return m_camera.OnKeyDown(event);
+}
+
+bool CWindowClient::OnKeyUp(const SDL_KeyboardEvent &event)
+{
+    return m_camera.OnKeyUp(event);
+}
+
+bool CWindowClient::OnMousePress(const SDL_MouseButtonEvent &event)
+{
+    return m_camera.OnMousePress(event);
+}
+
+bool CWindowClient::OnMouseMotion(const SDL_MouseMotionEvent &event)
+{
+    return m_camera.OnMouseMotion(event);
+}
+
+bool CWindowClient::OnMouseUp(const SDL_MouseButtonEvent &event)
+{
+    return m_camera.OnMouseUp(event);
 }

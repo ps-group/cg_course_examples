@@ -1,7 +1,10 @@
 #pragma once
 #include "libchapter4.h"
-#include "IdentitySphere.h"
-#include "EarthProgramContext.h"
+#include "SceneLoader.h"
+#include "RenderSystem.h"
+#include "TimeController.h"
+#include "KeplerLawSystem.h"
+#include "BodyRotationSystem.h"
 #include <vector>
 
 class CWindowClient
@@ -12,23 +15,25 @@ public:
 
 protected:
     // IWindowClient interface
-    void OnUpdateWindow(float deltaSeconds) override;
-    void OnKeyDown(const SDL_KeyboardEvent &) override;
-    void OnKeyUp(const SDL_KeyboardEvent &) override;
+    void OnUpdate(float deltaSeconds) override;
+    void OnDraw() override;
+    bool OnKeyDown(const SDL_KeyboardEvent &) override;
+    bool OnKeyUp(const SDL_KeyboardEvent &) override;
+    bool OnMousePress(const SDL_MouseButtonEvent &event) override;
+    bool OnMouseMotion(const SDL_MouseMotionEvent &event) override;
+    bool OnMouseUp(const SDL_MouseButtonEvent &event) override;
 
 private:
-    void CheckOpenGLVersion();
-    void UpdateRotation(float deltaSeconds);
-    void SetupView(const glm::ivec2 &size);
-    void SetupLight0();
-
     // Данный VAO будет объектом по-умолчанию.
     // Его привязка должна произойти до первой привязки VBO.
     //  http://stackoverflow.com/questions/13403807/
     CArrayObject m_defaultVAO;
+    anax::World m_world;
+    CTimeController m_timeController;
+    CRenderSystem m_renderSystem;
+    CKeplerLawSystem m_keplerSystem;
+    CBodyRotationSystem m_rotationSystem;
 
-    CIdentitySphere m_sphereObj;
+    bool m_didActivateCamera = false;
     CCamera m_camera;
-    CDirectedLightSource m_sunlight;
-    CEarthProgramContext m_programContext;
 };

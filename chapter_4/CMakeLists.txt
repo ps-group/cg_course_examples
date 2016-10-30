@@ -8,14 +8,14 @@ include(../cmake/win32_paths.cmake)
 if(UNIX)
     set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra -Wno-unused-parameter")
-    set(PROJECT_LIBS SDL2 SDL2_image SDL2_ttf GL GLEW GLU boost_filesystem boost_system)
+    set(PROJECT_LIBS SDL2 SDL2_image SDL2_ttf GL GLEW GLU boost_filesystem boost_system assimp)
 else(UNIX)
     include_directories(${CG_WIN32_INCLUDE_PATHS})
     link_directories(${CG_WIN32_LINKER_PATHS})
     add_definitions(-DGLEW_STATIC=1)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4201 /wd4324")
     set(CG_GLEW_LIBRARY optimized glew32s debug glew32sd)
-    set(PROJECT_LIBS SDL2main SDL2 SDL2_image SDL2_ttf ${CG_GLEW_LIBRARY} OpenGL32)
+    set(PROJECT_LIBS SDL2main SDL2 SDL2_image SDL2_ttf ${CG_GLEW_LIBRARY} OpenGL32 assimp)
 endif(UNIX)
 
 macro(add_lesson NUM)
@@ -36,8 +36,9 @@ file(GLOB SRC_LIBCHAPTER4
     "libs/tinyxml/*.cpp"
     "libs/tinyxml/*.h"
     "libs/libchapter4.h"
-    "res/*.vert"
-    "res/*.frag")
+    "res/*/*.vert"
+    "res/*/*.frag"
+    "res/*/*.json")
 add_library(libchapter4 ${SRC_LIBCHAPTER4})
 
 # Добавляем библиотеку Anax.
@@ -50,7 +51,7 @@ file(GLOB SRC_LIBANAX
 add_library(libanax ${SRC_LIBANAX})
 
 add_lesson(19)
-#add_lesson(20)
+add_lesson(20)
 #add_lesson(21)
 #add_lesson(22)
 #add_lesson(23)

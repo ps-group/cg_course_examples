@@ -63,18 +63,6 @@ void CWindowClient::OnKeyUp(const SDL_KeyboardEvent &event)
     m_camera.OnKeyUp(event);
 }
 
-void CWindowClient::CheckOpenGLVersion()
-{
-    // Мы требуем наличия OpenGL 2.0
-    // В OpenGL 2.0 шейдерные программы вошли в спецификацию API.
-    // Ещё в OpenGL 1.2 мультитекстурирование также вошло в спецификацию,
-    // см. http://opengl.org/registry/specs/ARB/multitexture.txt
-    if (!GLEW_VERSION_2_0)
-    {
-        throw std::runtime_error("Sorry, but OpenGL 2.0 is not available");
-    }
-}
-
 void CWindowClient::UpdateRotation(float deltaSeconds)
 {
     const float ROTATION_SPEED = 0.2f;

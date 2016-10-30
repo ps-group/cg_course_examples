@@ -2,6 +2,8 @@
 #include <glm/fwd.hpp>
 #include <cstdlib>
 
+class CTexture2D;
+
 /**
  * @class IRenderer3D - интерфейс, устанавливающий связь между
  * классами для вывода вершин и программой на GLSL.

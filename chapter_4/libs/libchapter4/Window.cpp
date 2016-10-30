@@ -6,37 +6,7 @@
 
 namespace
 {
-glm::vec2 GetMousePosition(const SDL_MouseButtonEvent &event)
-{
-    return { event.x, event.y };
-}
-
-glm::vec2 GetMousePosition(const SDL_MouseMotionEvent &event)
-{
-    return { event.x, event.y };
-}
-
-void DispatchEvent(const SDL_Event &event, IWindowClient &acceptor)
-{
-    switch (event.type)
-    {
-    case SDL_KEYDOWN:
-        acceptor.OnKeyDown(event.key);
-        break;
-    case SDL_KEYUP:
-        acceptor.OnKeyUp(event.key);
-        break;
-    case SDL_MOUSEBUTTONDOWN:
-        acceptor.OnDragBegin(GetMousePosition(event.button));
-        break;
-    case SDL_MOUSEBUTTONUP:
-        acceptor.OnDragEnd(GetMousePosition(event.button));
-        break;
-    case SDL_MOUSEMOTION:
-        acceptor.OnDragMotion(GetMousePosition(event.motion));
-        break;
-    }
-}
+const std::chrono::milliseconds FRAME_PERIOD(16);
 
 void SetupProfileAttributes(ContextProfile profile, ContextMode mode)
 {
@@ -135,7 +105,7 @@ public:
     {
     }
 
-    void Show(const std::string &title, const glm::ivec2 &size)
+    void Show(const std::string &title, const glm::ivec2 &size, bool fullscreen)
     {
 		m_size = size;
 
@@ -147,8 +117,13 @@ public:
         // Специальное значение SDL_WINDOWPOS_CENTERED вместо x и y заставит SDL2
         // разместить окно в центре монитора по осям x и y.
         // Для использования OpenGL вы ДОЛЖНЫ указать флаг SDL_WINDOW_OPENGL.
+        unsigned flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+        if (fullscreen)
+        {
+            flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+        }
         m_pWindow.reset(SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                         size.x, size.y, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE));
+                                         size.x, size.y, flags));
         if (!m_pWindow)
         {
             const std::string reason = SDL_GetError();
@@ -182,34 +157,41 @@ public:
 
     void DoMainLoop()
     {
-		const std::chrono::milliseconds FRAME_PERIOD(16);
+        if (!m_pClient)
+        {
+            throw std::logic_error("No client attached to window");
+        }
 
         SDL_Event event;
         CChronometer chronometer;
-        while (true)
+        while (!m_isTerminated)
         {
+            // Обработка событий
             while (SDL_PollEvent(&event) != 0)
             {
-                if (!ConsumeEvent(event) && m_pClient)
+                if (!ConsumeEvent(event))
                 {
                     DispatchEvent(event, *m_pClient);
                 }
             }
-            if (m_isTerminated)
-            {
-                break;
-            }
-            // Очистка буфера кадра, обновление и рисование сцены, вывод буфера кадра.
+
+            // Обновление сцены
+            m_pClient->OnUpdate(chronometer.GrabDeltaTime());
+
+            // Очистка и рисование кадра.
             Clear();
-            if (m_pClient)
-            {
-                const float deltaSeconds = chronometer.GrabDeltaTime();
-                m_pClient->OnUpdateWindow(deltaSeconds);
-            }
+            m_pClient->OnDraw();
+
+            // Перестановка буферов кадра и ожидание синхронизации FPS.
 			CUtils::ValidateOpenGLErrors();
 			SwapBuffers();
 			chronometer.WaitNextFrameTime(FRAME_PERIOD);
         }
+    }
+
+    void WarpMouse(const glm::ivec2 &newPosition)
+    {
+        SDL_WarpMouseInWindow(m_pWindow.get(), newPosition.x, newPosition.y);
     }
 
     void SetBackgroundColor(const glm::vec4 &color)
@@ -257,6 +239,28 @@ private:
         }
     }
 
+    void DispatchEvent(const SDL_Event &event, IWindowClient &acceptor)
+    {
+        switch (event.type)
+        {
+        case SDL_KEYDOWN:
+            acceptor.OnKeyDown(event.key);
+            break;
+        case SDL_KEYUP:
+            acceptor.OnKeyUp(event.key);
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+            acceptor.OnMousePress(event.button);
+            break;
+        case SDL_MOUSEBUTTONUP:
+            acceptor.OnMouseUp(event.button);
+            break;
+        case SDL_MOUSEMOTION:
+            acceptor.OnMouseMotion(event.motion);
+            break;
+        }
+    }
+
     bool m_isTerminated = false;
     ContextProfile m_profile;
     ContextMode m_contextMode;
@@ -278,7 +282,17 @@ CWindow::~CWindow()
 
 void CWindow::Show(const std::string &title, const glm::ivec2 &size)
 {
-    m_pImpl->Show(title, size);
+    m_pImpl->Show(title, size, false);
+}
+
+void CWindow::ShowFullscreen(const std::string &title)
+{
+    m_pImpl->Show(title, {800, 600}, true);
+}
+
+void CWindow::WarpMouse(const glm::ivec2 &newPosition)
+{
+    m_pImpl->WarpMouse(newPosition);
 }
 
 void CWindow::SetBackgroundColor(const glm::vec4 &color)
