@@ -273,7 +273,7 @@ CBoundingBox GetNodeBoundingBox(const aiScene& scene, const aiNode& node)
             const aiVector3D aiVertex = mesh->mVertices[vi];
             const vec3 vertex = glm::make_vec3(&aiVertex.x);
             lowerBound = glm::min(lowerBound, vertex);
-            upperBound = glm::min(upperBound, vertex);
+            upperBound = glm::max(upperBound, vertex);
         }
     }
 
