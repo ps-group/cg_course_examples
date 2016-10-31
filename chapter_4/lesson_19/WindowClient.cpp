@@ -50,6 +50,7 @@ CWindowClient::CWindowClient(CWindow &window)
 
     CSceneLoader loader(m_world);
     loader.LoadScene("res/solar_system/solar_system_2012.json");
+    loader.LoadSkybox("res/solar_system/skybox.plist");
 
     // Добавляем систему, отвечающую за изменение положения планет
     //  согласно их орбитам и прошедшему времени по законам Кеплера.
@@ -57,6 +58,9 @@ CWindowClient::CWindowClient(CWindow &window)
 
     // Добавляем систему, выполняющую вращение тел вокруг своих осей.
     m_world.addSystem(m_rotationSystem);
+
+    // Добавляем систему, выполняющую пользовательские действия.
+    m_world.addSystem(m_scriptSystem);
 
     // Добавляем систему, отвечающую за рендеринг планет.
     m_world.addSystem(m_renderSystem);
@@ -81,6 +85,7 @@ void CWindowClient::OnUpdate(float deltaSeconds)
     m_timeController.Update(deltaSeconds);
     m_keplerSystem.Update();
     m_rotationSystem.Update();
+    m_scriptSystem.Update(deltaSeconds);
 }
 
 void CWindowClient::OnDraw()

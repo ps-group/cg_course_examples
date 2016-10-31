@@ -183,11 +183,9 @@ CSceneLoader::CSceneLoader(anax::World &world)
 
 void CSceneLoader::LoadScene(const boost::filesystem::path &path)
 {
-    CAssetLoader assetLoader;
-
     // Получаем абсолютный путь к файлу описания сцены,
     //  каталог с данным файлом будет использован для поиска ресурсов.
-    const auto abspath = assetLoader.GetResourceAbspath(path);
+    const auto abspath = m_assetLoader.GetResourceAbspath(path);
     const auto resourceDir = abspath.parent_path();
 
     std::ifstream file(abspath.native());
@@ -197,6 +195,30 @@ void CSceneLoader::LoadScene(const boost::filesystem::path &path)
     }
     json sceneObj = json::parse(file);
 
-    CSceneDefinitionParser parser(m_world, assetLoader, resourceDir);
+    CSceneDefinitionParser parser(m_world, m_assetLoader, resourceDir);
     parser.ParseSpaceObjects(sceneObj["space_objects"]);
+}
+
+void CSceneLoader::LoadSkybox(const boost::filesystem::path &path)
+{
+    CTexture2DAtlas atlas(path, m_assetLoader);
+    std::vector<CFloatRect> rects;
+    rects.resize(static_cast<unsigned>(CubeFace::NumFaces));
+    rects[static_cast<unsigned>(CubeFace::Back)] = atlas.GetFrameRect("stars_bk.jpg");
+    rects[static_cast<unsigned>(CubeFace::Front)] = atlas.GetFrameRect("stars_fr.jpg");
+    rects[static_cast<unsigned>(CubeFace::Left)] = atlas.GetFrameRect("stars_lf.jpg");
+    rects[static_cast<unsigned>(CubeFace::Right)] = atlas.GetFrameRect("stars_rt.jpg");
+    rects[static_cast<unsigned>(CubeFace::Top)] = atlas.GetFrameRect("stars_up.jpg");
+    rects[static_cast<unsigned>(CubeFace::Bottom)] = atlas.GetFrameRect("stars_dn.jpg");
+
+    anax::Entity skybox = m_world.createEntity();
+    auto &mesh = skybox.addComponent<CStaticMeshComponent>();
+    mesh.m_pMesh = CTesselator::TesselateSkybox(rects);
+    mesh.m_pEmissiveMap = atlas.GetTexture();
+    mesh.m_writesDepth = false;
+
+    auto &transform = skybox.addComponent<CTransformComponent>();
+    transform.m_drawAroundCamera = true;
+
+    skybox.activate();
 }

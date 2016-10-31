@@ -5,6 +5,7 @@
 #include "TimeController.h"
 #include "KeplerLawSystem.h"
 #include "BodyRotationSystem.h"
+#include "ScriptSystem.h"
 #include <vector>
 
 class CWindowClient
@@ -33,6 +34,7 @@ private:
     CRenderSystem m_renderSystem;
     CKeplerLawSystem m_keplerSystem;
     CBodyRotationSystem m_rotationSystem;
+    CScriptSystem m_scriptSystem;
 
     bool m_didActivateCamera = false;
     CCamera m_camera;

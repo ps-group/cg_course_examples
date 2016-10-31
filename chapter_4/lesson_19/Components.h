@@ -1,7 +1,9 @@
 #pragma once
 #include "MeshP3NT2.h"
 #include "EllipticOrbit.h"
+#include <functional>
 #include <anax/Component.hpp>
+#include <anax/Entity.hpp>
 #include <glm/matrix.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -12,12 +14,23 @@ public:
     CTexture2DSharedPtr m_pDiffuseMap;
     CTexture2DSharedPtr m_pSpecularMap;
     CTexture2DSharedPtr m_pEmissiveMap;
+    bool m_writesDepth = true;
 };
 
 class CTransformComponent
         : public anax::Component
         , public CTransform3D
 {
+public:
+    bool m_drawAroundCamera = false;
+};
+
+class CScriptComponent : public anax::Component
+{
+public:
+    using UpdateFn = std::function<void(float dt, const anax::Entity &entity)>;
+
+    UpdateFn m_onUpdate;
 };
 
 class CSpaceBodyComponent : public anax::Component

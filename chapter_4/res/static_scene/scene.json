@@ -17,6 +17,13 @@
             "position": [8, 4.5, 0],
             "eulerAngles": [0, 1.57, 0],
             "size": 0.01
+        },
+        {
+            "model": "sputnik-1.3ds",
+            "position": [12.5, 2, 0],
+            "eulerAngles": [1.57, 0, 0],
+            "size": 10.0
         }
+
     ]
 }

@@ -88,7 +88,7 @@ class CTexture2DAtlas : private boost::noncopyable
 public:
     CTexture2DAtlas(const boost::filesystem::path &xmlPath, CAssetLoader &loader);
 
-    const CTexture2D &GetTexture()const;
+    const CTexture2DSharedPtr &GetTexture()const;
     CFloatRect GetFrameRect(const std::string &frameName)const;
 
 private:

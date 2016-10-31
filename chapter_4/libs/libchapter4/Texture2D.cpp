@@ -279,9 +279,9 @@ CTexture2DAtlas::CTexture2DAtlas(const path &xmlPath, CAssetLoader &loader)
     parser.Parse();
 }
 
-const CTexture2D &CTexture2DAtlas::GetTexture() const
+const CTexture2DSharedPtr &CTexture2DAtlas::GetTexture() const
 {
-    return *m_pTexture;
+    return m_pTexture;
 }
 
 CFloatRect CTexture2DAtlas::GetFrameRect(const std::string &frameName) const
