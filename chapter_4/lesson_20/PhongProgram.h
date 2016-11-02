@@ -33,6 +33,8 @@ public:
     void BindDiffuseMap(CTexture2D *pTexture, const glm::vec4 &defaultColor);
     void BindSpecularMap(CTexture2D *pTexture, const glm::vec4 &defaultColor);
     void BindEmissiveMap(CTexture2D *pTexture, const glm::vec4 &defaultColor);
+
+    void ApplyShininess(float shininess);
     void UpdateModelViewProjection();
 
 private:

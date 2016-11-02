@@ -1,6 +1,22 @@
 #include "libchapter4_private.h"
 #include "ComplexMesh.h"
 
+namespace
+{
+void ApplyMaterial(IMeshRenderer &renderer, const SMaterial &mat)
+{
+    // Если shininess меньше единицы, мы считаем его неверно заданным
+    //  и заменяем на значение по-умолчанию.
+    const float DEFAULT_SHININESS = 10;
+    const float shininess = mat.m_shininess < 1.f ? DEFAULT_SHININESS : mat.m_shininess;
+
+    renderer.ApplyShininess(shininess);
+    renderer.SetMaterialLayer(MaterialLayer::Diffuse, mat.m_pDiffuse.get(), mat.m_diffuseColor);
+    renderer.SetMaterialLayer(MaterialLayer::Specular, mat.m_pSpecular.get(), mat.m_specularColor);
+    renderer.SetMaterialLayer(MaterialLayer::Emissive, mat.m_pEmissive.get(), mat.m_emissiveColor);
+}
+}
+
 CComplexMesh::CComplexMesh()
     : m_verticies(BufferType::Attributes, BufferUsage::StaticDraw)
     , m_indicies(BufferType::Indicies, BufferUsage::StaticDraw)
@@ -25,15 +41,12 @@ void CComplexMesh::SetData(SComplexMeshData &&data)
     m_bbox = std::move(data.m_bbox);
 }
 
-void ApplyMaterial(IComplexMeshRenderer &renderer, const SMaterial &mat)
+CBoundingBox CComplexMesh::GetBoundingBox() const
 {
-    // TODO: добавить обработку `mat.m_shinness`.
-    renderer.SetMaterialLayer(IComplexMeshRenderer::Diffuse, mat.m_pDiffuse.get(), mat.m_diffuseColor);
-    renderer.SetMaterialLayer(IComplexMeshRenderer::Specular, mat.m_pSpecular.get(), mat.m_specularColor);
-    renderer.SetMaterialLayer(IComplexMeshRenderer::Emissive, mat.m_pEmissive.get(), mat.m_emissiveColor);
+    return m_bbox;
 }
 
-void CComplexMesh::Draw(IComplexMeshRenderer &renderer)
+void CComplexMesh::Draw(IMeshRenderer &renderer) const
 {
     m_verticies.Bind();
     m_indicies.Bind();
@@ -42,7 +55,7 @@ void CComplexMesh::Draw(IComplexMeshRenderer &renderer)
         renderer.SetTransform(submesh.m_transform);
         ApplyMaterial(renderer, m_materials[submesh.m_materialIndex]);
 
-        auto applyAttribute = [&](IComplexMeshRenderer::Attribute attr, int offset) {
+        auto applyAttribute = [&](VertexAttribute attr, int offset) {
             if (offset >= 0)
             {
                 const size_t bytesOffset = size_t(submesh.m_baseOffset + unsigned(offset));
@@ -54,9 +67,9 @@ void CComplexMesh::Draw(IComplexMeshRenderer &renderer)
                 renderer.UnbindAttribute(attr);
             }
         };
-        applyAttribute(IComplexMeshRenderer::Position3D, submesh.m_positionOffset);
-        applyAttribute(IComplexMeshRenderer::Normal, submesh.m_normalsOffset);
-        applyAttribute(IComplexMeshRenderer::TexCoord2D, submesh.m_textureOffset);
+        applyAttribute(VertexAttribute::Position3D, submesh.m_positionOffset);
+        applyAttribute(VertexAttribute::Normal, submesh.m_normalsOffset);
+        applyAttribute(VertexAttribute::TexCoord2D, submesh.m_textureOffset);
 
         const GLuint start = submesh.m_vertexRange.x;
         const GLuint end = submesh.m_vertexRange.y;

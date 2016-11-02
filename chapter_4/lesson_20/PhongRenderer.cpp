@@ -33,53 +33,58 @@ void CPlanetRenderer3D::SetTransform(const glm::mat4 &transform)
     m_program.UpdateModelViewProjection();
 }
 
-void CPlanetRenderer3D::BindAttribute(Attribute attribute, size_t offset, size_t stride)
+void CPlanetRenderer3D::BindAttribute(VertexAttribute attribute, size_t offset, size_t stride)
 {
     switch (attribute)
     {
-    case Position3D:
+    case VertexAttribute::Position3D:
         m_vertexAttr.EnablePointer();
         m_vertexAttr.SetVec3Offset(offset, stride, false);
         break;
-    case Normal:
+    case VertexAttribute::Normal:
         m_normalAttr.EnablePointer();
         m_normalAttr.SetVec3Offset(offset, stride, false);
         break;
-    case TexCoord2D:
+    case VertexAttribute::TexCoord2D:
         m_texCoordAttr.EnablePointer();
         m_texCoordAttr.SetVec2Offset(offset, stride);
         break;
     }
 }
 
-void CPlanetRenderer3D::UnbindAttribute(Attribute attribute)
+void CPlanetRenderer3D::UnbindAttribute(VertexAttribute attribute)
 {
     switch (attribute)
     {
-    case Position3D:
+    case VertexAttribute::Position3D:
         m_vertexAttr.DisablePointer();
         break;
-    case Normal:
+    case VertexAttribute::Normal:
         m_normalAttr.DisablePointer();
         break;
-    case TexCoord2D:
+    case VertexAttribute::TexCoord2D:
         m_texCoordAttr.DisablePointer();
         break;
     }
 }
 
-void CPlanetRenderer3D::SetMaterialLayer(Layer layer, CTexture2D *pTexture, const glm::vec4 &color)
+void CPlanetRenderer3D::SetMaterialLayer(MaterialLayer layer, CTexture2D *pTexture, const glm::vec4 &color)
 {
     switch (layer)
     {
-    case Diffuse:
+    case MaterialLayer::Diffuse:
         m_program.BindDiffuseMap(pTexture, color);
         break;
-    case Specular:
+    case MaterialLayer::Specular:
         m_program.BindSpecularMap(pTexture, color);
         break;
-    case Emissive:
+    case MaterialLayer::Emissive:
         m_program.BindEmissiveMap(pTexture, color);
         break;
     }
+}
+
+void CPlanetRenderer3D::ApplyShininess(float shininess)
+{
+    m_program.ApplyShininess(shininess);
 }

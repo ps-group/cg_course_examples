@@ -22,9 +22,9 @@ struct Material
     vec4 diffuse;
     vec4 specular;
     vec4 emissive;
+    float shininess;
 };
 
-const float SHININESS = 10.0;
 const float AMBIENT_DIFFUSE = 0.2;
 
 uniform LightSource light0;
@@ -58,7 +58,7 @@ vec3 GetLight0Direction()
         * (2.0 * lightInViewSpace.xyz - fragPosInViewSpace));
 }
 
-LightFactors GetLight0Factors()
+LightFactors GetLight0Factors(float shininess)
 {
     vec3 normal = normalize(fragNormal);
 
@@ -72,7 +72,7 @@ LightFactors GetLight0Factors()
     LightFactors result;
     result.diffuse = max(dot(normal, lightDirection), AMBIENT_DIFFUSE);
     float base = max(dot(reflectDirection, eyeDirection), 0.0);
-    result.specular = max(pow(base, SHININESS), 0.0);
+    result.specular = max(pow(base, shininess), 0.0);
 
     result.diffuse = clamp(result.diffuse, 0.0, 1.0);
     result.specular = clamp(result.specular, 0.0, 1.0);
@@ -82,7 +82,7 @@ LightFactors GetLight0Factors()
 
 void main()
 {
-    LightFactors factors = GetLight0Factors();
+    LightFactors factors = GetLight0Factors(material.shininess);
 
     // Get material diffuse color by fetching the texture
     //  and adding material diffuse color.

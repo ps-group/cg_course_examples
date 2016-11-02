@@ -3,6 +3,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include "IMesh.h"
 #include "MeshType.h"
 #include "BufferObject.h"
 #include "Texture2D.h"
@@ -48,56 +49,7 @@ struct SComplexMeshData
     CBoundingBox m_bbox;
 };
 
-/**
- * @class IComplexMeshRenderer - интерфейс, устанавливающий связь между
- * классами для вывода вершин и программой на GLSL.
- *
- * Методы интерфейса устанавливают массив атрибутов вершины,
- * используемых позднее для вызовов glDrawElements или glDrawArrays.
- *
- * Параметры методов обеспечивают работу со смешанными массивами:
- *  - offset - смещение (в байтах) от начала буфера данных в видеопамяти
- *             до первого элемента нужного типа данных.
- *  - stride - число байт между двумя элементами одного типа данных
- */
-class IComplexMeshRenderer
-{
-public:
-    enum Attribute
-    {
-        TexCoord2D,
-        Position3D,
-        Normal,
-    };
-
-    enum Layer
-    {
-        Diffuse,
-        Specular,
-        Emissive
-    };
-
-    virtual ~IComplexMeshRenderer() = default;
-
-    virtual void SetTransform(const glm::mat4 &transform) = 0;
-
-    /**
-     * Параметры обеспечивают работу со смешанными массивами:
-     *  - offset - смещение (в байтах) от начала буфера данных в видеопамяти
-     *             до первого элемента нужного типа данных.
-     *  - stride - число байт между двумя элементами одного типа данных
-     **/
-    virtual void BindAttribute(Attribute attribute, size_t offset, size_t stride) = 0;
-
-    /// Выполняет отключение вершинного атрибута.
-    virtual void UnbindAttribute(Attribute attribute) = 0;
-
-    /// Выполняет привязку текстуры, если указатель не равен нулю,
-    ///  иначе отвязывает текстуру и устанавливает вместо неё цвет color.
-    virtual void SetMaterialLayer(Layer layer, CTexture2D *pTexture, const glm::vec4 &color) = 0;
-};
-
-class CComplexMesh
+class CComplexMesh : public IMesh
 {
 public:
     CComplexMesh();
@@ -105,7 +57,8 @@ public:
     void SetData(const SComplexMeshData &data);
     void SetData(SComplexMeshData &&data);
 
-    void Draw(IComplexMeshRenderer &renderer);
+    void Draw(IMeshRenderer &renderer)const override;
+    CBoundingBox GetBoundingBox()const override;
 
 private:
     std::vector<SMaterial> m_materials;

@@ -147,6 +147,11 @@ void CPlanetProgram::BindEmissiveMap(CTexture2D *pTexture, const glm::vec4 &defa
     glActiveTexture(GL_TEXTURE0);
 }
 
+void CPlanetProgram::ApplyShininess(float shininess)
+{
+    m_program.FindUniform("material.shininess") = shininess;
+}
+
 void CPlanetProgram::UpdateModelViewProjection()
 {
     const glm::mat4 mv = m_view * m_model;
