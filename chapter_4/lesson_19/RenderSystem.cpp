@@ -1,89 +1,66 @@
 #include "stdafx.h"
 #include "RenderSystem.h"
 #include "PlanetRenderer.h"
+#include "includes/opengl-common.hpp"
+
+namespace
+{
+glm::mat4 GetEnvironmentViewMat4(const glm::mat4 &view)
+{
+    // Обнуляем перемещение в матрице афинного преобразования,
+    //  чтобы нарисовать объект, являющийся частью окружения сцены.
+    glm::mat4 result = view;
+    result[3][0] = 0;
+    result[3][1] = 0;
+    result[3][2] = 0;
+
+    return result;
+}
+}
 
 CRenderSystem::CRenderSystem()
-    : m_blackTexture(CTexture2D::no_texture_tag())
 {
 }
 
 void CRenderSystem::SetupLight0(const glm::vec4 &position, const glm::vec4 &diffuse, const glm::vec4 &specular)
 {
-    CPlanetProgram::SLightSource sunlight;
-    sunlight.position = position;
-    sunlight.diffuse = diffuse;
-    sunlight.specular = specular;
-    m_planetProgram.SetLight0(sunlight);
+    m_light0.m_position = position;
+    m_light0.m_diffuse = diffuse;
+    m_light0.m_specular = specular;
 }
 
 void CRenderSystem::Render(const glm::mat4 &view, const glm::mat4 &projection)
 {
-    m_planetProgram.SetProjection(projection);
     CPlanetRenderer3D renderer(m_planetProgram);
+    renderer.SetProjectionMat4(projection);
+    renderer.SetupLight0(m_light0.m_position, m_light0.m_diffuse, m_light0.m_specular);
 
-    // Отключаем запись в буфер глубины для рисования объектов окружения.
+    // Отключаем запись в буфер глубины для рисования объектов окружения,
+    //  также устанавливаем модифицированную матрицу преобразования
+    //  в координаты зрителя.
     glDepthMask(GL_FALSE);
-    RenderImpl(BackgroundObjects, renderer, view);
+    renderer.SetViewMat4(GetEnvironmentViewMat4(view));
+    DoRenderPass(CMeshComponent::Environment, renderer);
+
+    // Включаем обратно запись в буфер глубины для рисования объектов сцены.
     glDepthMask(GL_TRUE);
-    RenderImpl(ForegroundObjects, renderer, view);
+    renderer.SetViewMat4(view);
+    DoRenderPass(CMeshComponent::Foreground, renderer);
 }
 
-CRenderSystem::DrawPass CRenderSystem::SelectDrawPass(const anax::Entity &entity)
-{
-    const auto &mesh = entity.getComponent<CStaticMeshComponent>();
-    if (mesh.m_writesDepth)
-    {
-        return ForegroundObjects;
-    }
-    return BackgroundObjects;
-}
-
-void CRenderSystem::RenderImpl(DrawPass pass, CPlanetRenderer3D &renderer, const glm::mat4 &view)
+void CRenderSystem::DoRenderPass(CMeshComponent::Category category, CPlanetRenderer3D &renderer)
 {
     for (const auto &entity : getEntities())
     {
+        const auto &mesh = entity.getComponent<CMeshComponent>();
         // Пропускаем объекты, не попадающие в этот проход рисования.
-        if (pass != SelectDrawPass(entity))
+        if (category != mesh.m_category)
         {
             continue;
         }
 
-        const auto &mesh = entity.getComponent<CStaticMeshComponent>();
         const auto &transform = entity.getComponent<CTransformComponent>();
-        ApplyMaterial(mesh);
-        ApplyTransform(transform, view);
-        mesh.m_pMesh->Draw(renderer);
+        renderer.SetWorldMat4(transform.ToMat4());
+        renderer.Draw(mesh);
     }
-}
-
-CTexture2D &CRenderSystem::GetTextureOrBlack(const CTexture2DSharedPtr &pTexture)
-{
-    if (pTexture)
-    {
-        return *pTexture;
-    }
-    return m_blackTexture;
-}
-
-void CRenderSystem::ApplyMaterial(const CStaticMeshComponent &mesh)
-{
-    m_planetProgram.BindDiffuseMap(GetTextureOrBlack(mesh.m_pDiffuseMap));
-    m_planetProgram.BindSpecularMap(GetTextureOrBlack(mesh.m_pSpecularMap));
-    m_planetProgram.BindEmissiveMap(GetTextureOrBlack(mesh.m_pEmissiveMap));
-}
-
-void CRenderSystem::ApplyTransform(const CTransformComponent &transform, const glm::mat4 &view)
-{
-    glm::mat4 localView = view;
-    if (transform.m_drawAroundCamera)
-    {
-        // Обнуляем перемещение в матрице афинного преобразования,
-        //  чтобы нарисовать объект, находящийся вокруг зрителя.
-        localView[3][0] = 0;
-        localView[3][1] = 0;
-        localView[3][2] = 0;
-    }
-    m_planetProgram.SetView(localView);
-    m_planetProgram.SetModel(transform.ToMat4());
-    m_planetProgram.UpdateModelViewProjection();
 }

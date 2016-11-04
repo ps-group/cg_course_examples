@@ -1,9 +1,6 @@
 #include "stdafx.h"
 #include "SceneLoader.h"
 #include "json/json.hpp"
-#include "libchapter4.h"
-#include "MeshP3NT2.h"
-#include "Tesselator.h"
 #include "Components.h"
 #include <fstream>
 
@@ -85,7 +82,7 @@ public:
         : m_assetLoader(assetLoader)
         , m_world(world)
         , m_workdir(workdir)
-        , m_pSphere(CTesselator::TesselateSphere(SPHERE_PRECISION))
+        , m_sphereGeometry(CTesselator::TesselateSphere(SPHERE_PRECISION))
     {
     }
 
@@ -113,11 +110,12 @@ public:
 private:
     void AddMesh(anax::Entity &body, const json &dict)
     {
-        auto &mesh = body.addComponent<CStaticMeshComponent>();
-        mesh.m_pEmissiveMap = GetOptTexture(dict, "emissive");
-        mesh.m_pDiffuseMap = GetOptTexture(dict, "diffuse");
-        mesh.m_pSpecularMap = GetOptTexture(dict, "specular");
-        mesh.m_pMesh = m_pSphere;
+        auto &mesh = body.addComponent<CMeshComponent>();
+        mesh.m_pEmissive = GetOptTexture(dict, "emissive");
+        mesh.m_pDiffuse = GetOptTexture(dict, "diffuse");
+        mesh.m_pSpecular = GetOptTexture(dict, "specular");
+        mesh.m_geometry = m_sphereGeometry;
+        mesh.m_category = CMeshComponent::Foreground;
     }
 
     void AddSpaceBody(anax::Entity &body, const std::string &name, const json &dict)
@@ -172,7 +170,7 @@ private:
     CAssetLoader &m_assetLoader;
     anax::World &m_world;
     boost::filesystem::path m_workdir;
-    std::shared_ptr<CMeshP3NT2> m_pSphere;
+    CStaticGeometry m_sphereGeometry;
 };
 }
 
@@ -212,13 +210,11 @@ void CSceneLoader::LoadSkybox(const boost::filesystem::path &path)
     rects[static_cast<unsigned>(CubeFace::Bottom)] = atlas.GetFrameRect("stars_dn.jpg");
 
     anax::Entity skybox = m_world.createEntity();
-    auto &mesh = skybox.addComponent<CStaticMeshComponent>();
-    mesh.m_pMesh = CTesselator::TesselateSkybox(rects);
-    mesh.m_pEmissiveMap = atlas.GetTexture();
-    mesh.m_writesDepth = false;
+    auto &mesh = skybox.addComponent<CMeshComponent>();
+    mesh.m_category = CMeshComponent::Environment;
+    mesh.m_geometry = CTesselator::TesselateSkybox(rects);
+    mesh.m_pEmissive = atlas.GetTexture();
 
-    auto &transform = skybox.addComponent<CTransformComponent>();
-    transform.m_drawAroundCamera = true;
-
+    skybox.addComponent<CTransformComponent>();
     skybox.activate();
 }

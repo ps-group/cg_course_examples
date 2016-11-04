@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "SceneLoader.h"
 #include "json/json.hpp"
-#include "libchapter4.h"
 #include "Components.h"
 #include <fstream>
 
@@ -62,7 +61,7 @@ public:
     }
 
 private:
-    CComplexMeshSharedPtr LoadModelWithCache(const path &abspath)
+    CModel3DSharedPtr LoadModelWithCache(const path &abspath)
     {
         // Пытаемся извлечь модель из кеша.
         auto it = m_modelsCache.find(abspath.generic_string());
@@ -76,19 +75,17 @@ private:
         m_modelLoader.DumpInfo(abspath);
 #endif
 
-        SComplexMeshData data;
-        m_modelLoader.Load(abspath, data);
-        auto pMesh = std::make_shared<CComplexMesh>();
-        pMesh->SetData(std::move(data));
+        auto pModel = m_modelLoader.Load(abspath);
+        m_modelsCache[abspath.generic_string()] = pModel;
 
-        return pMesh;
+        return pModel;
     }
 
     void AddMesh(anax::Entity &body, const json &dict)
     {
         const std::string filename = dict.at("model").get<std::string>();
         auto &mesh = body.addComponent<CMeshComponent>();
-        mesh.m_pMesh = LoadModelWithCache(m_workdir / filename);
+        mesh.m_pModel = LoadModelWithCache(m_workdir / filename);
     }
 
     void AddTransform(anax::Entity &body, const json &dict)
@@ -106,7 +103,7 @@ private:
     anax::World &m_world;
     CModelLoader m_modelLoader;
     path m_workdir;
-    std::unordered_map<std::string, CComplexMeshSharedPtr> m_modelsCache;
+    std::unordered_map<std::string, CModel3DSharedPtr> m_modelsCache;
 };
 }
 

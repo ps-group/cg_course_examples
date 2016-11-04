@@ -9,7 +9,7 @@
         {
             "model": "phoenix_ugv.md2",
             "position": [0, 0, 0],
-            "eulerAngles": [0, 0, 0],
+            "eulerAngles": [0, 3.14, 0],
             "size": 0.1
         },
         {

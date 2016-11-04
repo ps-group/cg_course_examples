@@ -1,14 +1,15 @@
 #pragma once
-#include "libchapter4/ComplexMesh.h"
-#include "libchapter4/Transform.h"
+#include "libscene/Model3D.h"
+#include "libgeometry/Transform.h"
 #include <anax/Component.hpp>
 #include <glm/matrix.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-class CMeshComponent : public anax::Component
+class CMeshComponent
+        : public anax::Component
 {
 public:
-    CComplexMeshSharedPtr m_pMesh;
+    CModel3DSharedPtr m_pModel;
 };
 
 class CTransformComponent

@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "WindowClient.h"
+#include "includes/opengl-common.hpp"
+#include <glm/gtc/matrix_transform.hpp>
 
 using glm::mat4;
 using glm::vec3;
@@ -67,14 +69,6 @@ CWindowClient::CWindowClient(CWindow &window)
 
 void CWindowClient::OnUpdate(float deltaSeconds)
 {
-    // Активируем камеру при первом обновлении, чтобы пропустить
-    //  события MouseMove, связанные с настройкой окна.
-    if (!m_didActivateCamera)
-    {
-        m_didActivateCamera = true;
-        m_camera.SetActive(true);
-    }
-
     m_camera.Update(deltaSeconds);
 }
 

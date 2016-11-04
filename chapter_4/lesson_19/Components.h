@@ -1,20 +1,29 @@
 #pragma once
-#include "MeshP3NT2.h"
 #include "EllipticOrbit.h"
+#include "libscene/Tesselator.h"
+#include "libgeometry/Transform.h"
 #include <functional>
 #include <anax/Component.hpp>
 #include <anax/Entity.hpp>
 #include <glm/matrix.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-class CStaticMeshComponent : public anax::Component
+class CMeshComponent : public anax::Component
 {
 public:
-    std::shared_ptr<CMeshP3NT2> m_pMesh;
-    CTexture2DSharedPtr m_pDiffuseMap;
-    CTexture2DSharedPtr m_pSpecularMap;
-    CTexture2DSharedPtr m_pEmissiveMap;
-    bool m_writesDepth = true;
+    enum Category
+    {
+        // Объект заднего плана, сливающийся с окружением.
+        Environment,
+        // Объект переднего плана.
+        Foreground,
+    };
+
+    CStaticGeometry m_geometry;
+    CTexture2DSharedPtr m_pDiffuse;
+    CTexture2DSharedPtr m_pSpecular;
+    CTexture2DSharedPtr m_pEmissive;
+    Category m_category = Category::Foreground;
 };
 
 class CTransformComponent
@@ -22,7 +31,6 @@ class CTransformComponent
         , public CTransform3D
 {
 public:
-    bool m_drawAroundCamera = false;
 };
 
 class CScriptComponent : public anax::Component

@@ -2,7 +2,7 @@
 
 #include <anax/World.hpp>
 #include <boost/filesystem/path.hpp>
-#include "libchapter4/AssetLoader.h"
+#include "libscene/AssetLoader.h"
 
 class CCamera;
 

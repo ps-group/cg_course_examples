@@ -1,23 +1,32 @@
 #pragma once
-#include "libchapter4.h"
-#include "IRenderer3D.h"
+#include "libshading/IProgramAdapter.h"
+#include "Components.h"
+#include <glm/mat4x4.hpp>
 
 class CPlanetProgram;
 
-class CPlanetRenderer3D : public IRenderer3D
+class CPlanetRenderer3D
 {
 public:
-    CPlanetRenderer3D(CPlanetProgram &context);
+    CPlanetRenderer3D(const IProgramAdapter &program);
     ~CPlanetRenderer3D();
 
-    // IRenderer3D interface
-    void SetTexCoord2DOffset(size_t offset, size_t stride) override;
-    void SetPosition3DOffset(size_t offset, size_t stride) override;
-    void SetNormalOffset(size_t offset, size_t stride) override;
+    void SetupLight0(const glm::vec4 &position,
+                     const glm::vec4 &diffuse,
+                     const glm::vec4 &specular);
+    void SetWorldMat4(const glm::mat4 &value);
+    void SetViewMat4(const glm::mat4 &value);
+    void SetProjectionMat4(const glm::mat4 &value);
+    void Draw(const CMeshComponent &mesh);
 
 private:
-    CPlanetProgram &m_context;
-    CVertexAttribute m_vertexAttr;
-    CVertexAttribute m_normalAttr;
-    CVertexAttribute m_texCoordAttr;
+    CProgramUniform GetUniform(UniformId id)const;
+    void BindTextures(const CMeshComponent &mesh);
+    void BindAttributes(const SGeometryLayout &layout)const;
+
+    const IProgramAdapter &m_program;
+    glm::mat4 m_world;
+    glm::mat4 m_view;
+    glm::mat4 m_projection;
+    glm::mat4 m_normal;
 };

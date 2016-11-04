@@ -31,8 +31,15 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
 
 # Добавляем библиотеку с общим кодом - libchapter4.
 file(GLOB SRC_LIBCHAPTER4
-    "libs/libchapter4/*.cpp"
-    "libs/libchapter4/*.h"
+    "libs/includes/*.hpp"
+    "libs/libscene/*.cpp"
+    "libs/libscene/*.h"
+    "libs/libsystem/*.cpp"
+    "libs/libsystem/*.h"
+    "libs/libshading/*.cpp"
+    "libs/libshading/*.h"
+    "libs/libgeometry/*.cpp"
+    "libs/libgeometry/*.h"
     "libs/tinyxml/*.cpp"
     "libs/tinyxml/*.h"
     "libs/libchapter4.h"

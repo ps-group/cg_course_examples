@@ -1,41 +1,30 @@
 #include "stdafx.h"
 #include "RenderSystem.h"
-#include "PhongRenderer.h"
+#include "libscene/Model3DRenderer.h"
 
 CRenderSystem::CRenderSystem()
-    : m_blackTexture(CTexture2D::no_texture_tag())
 {
 }
 
 void CRenderSystem::SetupLight0(const glm::vec4 &position, const glm::vec4 &diffuse, const glm::vec4 &specular)
 {
-    CPlanetProgram::SLightSource sunlight;
-    sunlight.position = position;
-    sunlight.diffuse = diffuse;
-    sunlight.specular = specular;
-    m_planetProgram.SetLight0(sunlight);
+    m_planetProgram.Use();
+    m_planetProgram.GetUniform(UniformId::LIGHT_POSITION) = position;
+    m_planetProgram.GetUniform(UniformId::LIGHT_DIFFUSE) = diffuse;
+    m_planetProgram.GetUniform(UniformId::LIGHT_SPECULAR) = specular;
 }
 
 void CRenderSystem::Render(const glm::mat4 &view, const glm::mat4 &projection)
 {
-    m_planetProgram.SetView(view);
-    m_planetProgram.SetProjection(projection);
-
-    CPlanetRenderer3D renderer(m_planetProgram);
+    CModel3DRenderer renderer;
+    renderer.Use(m_planetProgram);
+    renderer.SetProjectionMat4(projection);
+    renderer.SetViewMat4(view);
     for (const auto &entity : getEntities())
     {
         auto &transform = entity.getComponent<CTransformComponent>();
-        renderer.SetWorldTransform(transform.ToMat4());
+        renderer.SetWorldMat4(transform.ToMat4());
         auto &mesh = entity.getComponent<CMeshComponent>();
-        mesh.m_pMesh->Draw(renderer);
+        renderer.Draw(*mesh.m_pModel);
     }
-}
-
-CTexture2D &CRenderSystem::GetTextureOrBlack(const CTexture2DSharedPtr &pTexture)
-{
-    if (pTexture)
-    {
-        return *pTexture;
-    }
-    return m_blackTexture;
 }

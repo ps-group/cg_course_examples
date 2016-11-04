@@ -15,8 +15,13 @@ public:
     void Render(const glm::mat4 &view, const glm::mat4 &projection);
 
 private:
-    CTexture2D &GetTextureOrBlack(const CTexture2DSharedPtr &pTexture);
+    struct LightSource
+    {
+        glm::vec4 m_position;
+        glm::vec4 m_diffuse;
+        glm::vec4 m_specular;
+    };
 
-    CPlanetProgram m_planetProgram;
-    CTexture2D m_blackTexture;
+    CPhongProgram m_planetProgram;
+    LightSource m_light0;
 };

@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "WindowClient.h"
+#include "includes/opengl-common.hpp"
+#include <glm/gtc/matrix_transform.hpp>
 
 using glm::mat4;
 using glm::vec3;
@@ -40,6 +42,7 @@ CWindowClient::CWindowClient(CWindow &window)
     , m_defaultVAO(CArrayObject::do_bind_tag())
     , m_keplerSystem(m_timeController)
     , m_rotationSystem(m_timeController)
+    , m_mouseGrabber(window)
     , m_camera(CAMERA_EYE)
 {
     const vec4 BLACK_RGBA = {0, 0, 0, 1};
@@ -59,9 +62,6 @@ CWindowClient::CWindowClient(CWindow &window)
     // Добавляем систему, выполняющую вращение тел вокруг своих осей.
     m_world.addSystem(m_rotationSystem);
 
-    // Добавляем систему, выполняющую пользовательские действия.
-    m_world.addSystem(m_scriptSystem);
-
     // Добавляем систему, отвечающую за рендеринг планет.
     m_world.addSystem(m_renderSystem);
 
@@ -73,19 +73,10 @@ CWindowClient::CWindowClient(CWindow &window)
 
 void CWindowClient::OnUpdate(float deltaSeconds)
 {
-    // Активируем камеру при первом обновлении, чтобы пропустить
-    //  события MouseMove, связанные с настройкой окна.
-    if (!m_didActivateCamera)
-    {
-        m_didActivateCamera = true;
-        m_camera.SetActive(true);
-    }
-
     m_camera.Update(deltaSeconds);
     m_timeController.Update(deltaSeconds);
     m_keplerSystem.Update();
     m_rotationSystem.Update();
-    m_scriptSystem.Update(deltaSeconds);
 }
 
 void CWindowClient::OnDraw()
@@ -116,7 +107,8 @@ bool CWindowClient::OnMousePress(const SDL_MouseButtonEvent &event)
 
 bool CWindowClient::OnMouseMotion(const SDL_MouseMotionEvent &event)
 {
-    return m_camera.OnMouseMotion(event);
+    return m_mouseGrabber.OnMouseMotion(event)
+            || m_camera.OnMouseMotion(event);
 }
 
 bool CWindowClient::OnMouseUp(const SDL_MouseButtonEvent &event)

@@ -1,15 +1,17 @@
 #pragma once
-#include "libchapter4.h"
+
+#include "libsystem/AbstractWindowClient.h"
+#include "libsystem/MouseGrabber.h"
+#include "libscene/ArrayObject.h"
+#include "libscene/Camera.h"
 #include "SceneLoader.h"
 #include "RenderSystem.h"
 #include "TimeController.h"
 #include "KeplerLawSystem.h"
 #include "BodyRotationSystem.h"
-#include "ScriptSystem.h"
 #include <vector>
 
-class CWindowClient
-        : public CAbstractWindowClient
+class CWindowClient : public CAbstractWindowClient
 {
 public:
     CWindowClient(CWindow &window);
@@ -34,8 +36,7 @@ private:
     CRenderSystem m_renderSystem;
     CKeplerLawSystem m_keplerSystem;
     CBodyRotationSystem m_rotationSystem;
-    CScriptSystem m_scriptSystem;
 
-    bool m_didActivateCamera = false;
+    CMouseGrabber m_mouseGrabber;
     CCamera m_camera;
 };
