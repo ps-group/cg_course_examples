@@ -11,9 +11,10 @@ class CSceneLoader
 public:
     CSceneLoader(anax::World &world);
 
+    // Загружает сцену из заданного JSON-файла
     void LoadScene(const boost::filesystem::path &path);
 
-    // Загружает SkyBox из переданного атласа.
+    // Загружает SkyBox из заданного атласа (PLIST + изображение).
     void LoadSkybox(const boost::filesystem::path &path);
 
 private:

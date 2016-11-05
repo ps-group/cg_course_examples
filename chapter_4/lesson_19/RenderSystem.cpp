@@ -1,22 +1,8 @@
 #include "stdafx.h"
 #include "RenderSystem.h"
 #include "PlanetRenderer.h"
+#include "libscene/DrawUtils.h"
 #include "includes/opengl-common.hpp"
-
-namespace
-{
-glm::mat4 GetEnvironmentViewMat4(const glm::mat4 &view)
-{
-    // Обнуляем перемещение в матрице афинного преобразования,
-    //  чтобы нарисовать объект, являющийся частью окружения сцены.
-    glm::mat4 result = view;
-    result[3][0] = 0;
-    result[3][1] = 0;
-    result[3][2] = 0;
-
-    return result;
-}
-}
 
 CRenderSystem::CRenderSystem()
 {
@@ -39,7 +25,7 @@ void CRenderSystem::Render(const glm::mat4 &view, const glm::mat4 &projection)
     //  также устанавливаем модифицированную матрицу преобразования
     //  в координаты зрителя.
     glDepthMask(GL_FALSE);
-    renderer.SetViewMat4(GetEnvironmentViewMat4(view));
+    renderer.SetViewMat4(CDrawUtils::GetEnvironmentViewMat4(view));
     DoRenderPass(CMeshComponent::Environment, renderer);
 
     // Включаем обратно запись в буфер глубины для рисования объектов сцены.

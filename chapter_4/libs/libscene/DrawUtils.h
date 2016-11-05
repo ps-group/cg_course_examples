@@ -14,7 +14,12 @@ public:
     // |            \
     // |             \
     // http://stackoverflow.com/questions/23210843/
-    static glm::mat4 GetNormalMatrix(const glm::mat4 &modelView);
+    static glm::mat4 GetNormalMat4(const glm::mat4 &modelView);
+
+    // Модифицирует матрицу преобразования в координаты наблюдателя сцены,
+    //  чтобы объект оказался размещённым вокруг камеры,
+    //  как часть окружения.
+    static glm::mat4 GetEnvironmentViewMat4(const glm::mat4 &view);
 
     // Выполняет glDrawRangeElements для заданного размещения
     //  вершин и индексов в памяти. Перед вызовом следует:

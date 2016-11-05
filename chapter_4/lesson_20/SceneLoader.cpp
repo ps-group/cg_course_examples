@@ -85,6 +85,7 @@ private:
     {
         const std::string filename = dict.at("model").get<std::string>();
         auto &mesh = body.addComponent<CMeshComponent>();
+        mesh.m_category = CMeshComponent::Foreground;
         mesh.m_pModel = LoadModelWithCache(m_workdir / filename);
     }
 
@@ -114,11 +115,9 @@ CSceneLoader::CSceneLoader(anax::World &world)
 
 void CSceneLoader::LoadScene(const boost::filesystem::path &path)
 {
-    CAssetLoader assetLoader;
-
     // Получаем абсолютный путь к файлу описания сцены,
     //  каталог с данным файлом будет использован для поиска ресурсов.
-    const auto abspath = assetLoader.GetResourceAbspath(path);
+    const auto abspath = m_assetLoader.GetResourceAbspath(path);
     const auto resourceDir = abspath.parent_path();
 
     std::ifstream file(abspath.native());
@@ -128,6 +127,35 @@ void CSceneLoader::LoadScene(const boost::filesystem::path &path)
     }
     json sceneObj = json::parse(file);
 
-    CSceneDefinitionParser parser(m_world, assetLoader, resourceDir);
+    CSceneDefinitionParser parser(m_world, m_assetLoader, resourceDir);
     parser.ParseObjects(sceneObj["objects"]);
+}
+
+void CSceneLoader::LoadSkybox(const boost::filesystem::path &path)
+{
+    CTexture2DAtlas atlas(path, m_assetLoader);
+    std::vector<CFloatRect> rects;
+    rects.resize(static_cast<unsigned>(CubeFace::NumFaces));
+    rects[static_cast<unsigned>(CubeFace::Back)] = atlas.GetFrameRect("skybox-back.jpg");
+    rects[static_cast<unsigned>(CubeFace::Front)] = atlas.GetFrameRect("skybox-forward.jpg");
+    rects[static_cast<unsigned>(CubeFace::Left)] = atlas.GetFrameRect("skybox-left.jpg");
+    rects[static_cast<unsigned>(CubeFace::Right)] = atlas.GetFrameRect("skybox-right.jpg");
+    rects[static_cast<unsigned>(CubeFace::Top)] = atlas.GetFrameRect("skybox-top.jpg");
+    rects[static_cast<unsigned>(CubeFace::Bottom)] = atlas.GetFrameRect("skybox-bottom.jpg");
+
+    const CStaticGeometry cube = CTesselator::TesselateSkybox(rects);
+
+    auto pModel = std::make_shared<CModel3D>();
+    pModel->m_pGeometry = cube.m_pGeometry;
+    pModel->m_meshes.emplace_back();
+    pModel->m_meshes.back().m_layout = cube.m_layout;
+    pModel->m_materials.emplace_back();
+    pModel->m_materials.back().pEmissive = atlas.GetTexture();
+
+    anax::Entity skybox = m_world.createEntity();
+    auto &mesh = skybox.addComponent<CMeshComponent>();
+    mesh.m_category = CMeshComponent::Environment;
+    mesh.m_pModel = pModel;
+    skybox.addComponent<CTransformComponent>();
+    skybox.activate();
 }

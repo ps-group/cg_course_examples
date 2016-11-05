@@ -23,9 +23,21 @@ GLenum MapPrimitiveType(PrimitiveType primitive)
 }
 }
 
-glm::mat4 CDrawUtils::GetNormalMatrix(const glm::mat4 &modelView)
+glm::mat4 CDrawUtils::GetNormalMat4(const glm::mat4 &modelView)
 {
     return glm::transpose(glm::inverse(modelView));
+}
+
+glm::mat4 CDrawUtils::GetEnvironmentViewMat4(const glm::mat4 &view)
+{
+    // Обнуляем перемещение в матрице афинного преобразования,
+    //  чтобы нарисовать объект, являющийся частью окружения сцены.
+    glm::mat4 result = view;
+    result[3][0] = 0;
+    result[3][1] = 0;
+    result[3][2] = 0;
+
+    return result;
 }
 
 void CDrawUtils::DrawRangeElements(const SGeometryLayout &layout)

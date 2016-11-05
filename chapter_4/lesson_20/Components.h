@@ -9,6 +9,15 @@ class CMeshComponent
         : public anax::Component
 {
 public:
+    enum Category
+    {
+        // Объект заднего плана, сливающийся с окружением.
+        Environment,
+        // Объект переднего плана.
+        Foreground,
+    };
+
+    Category m_category;
     CModel3DSharedPtr m_pModel;
 };
 

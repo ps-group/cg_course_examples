@@ -63,7 +63,7 @@ CProgramUniform CModel3DRenderer::GetUniform(UniformId id) const
 void CModel3DRenderer::ApplyModelView(const glm::mat4 &local)
 {
     const glm::mat4 worldMatrix = m_view * m_world * local;
-    const glm::mat4 normalMatrix = CDrawUtils::GetNormalMatrix(worldMatrix);
+    const glm::mat4 normalMatrix = CDrawUtils::GetNormalMat4(worldMatrix);
     GetUniform(UniformId::MATRIX_WORLDVIEW) = worldMatrix;
     GetUniform(UniformId::MATRIX_NORMALWORLDVIEW) = normalMatrix;
 }

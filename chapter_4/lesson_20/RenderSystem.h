@@ -3,6 +3,8 @@
 #include "PhongProgram.h"
 #include <anax/System.hpp>
 
+class CModel3DRenderer;
+
 class CRenderSystem
         : public anax::System<anax::Requires<CMeshComponent, CTransformComponent>>
 {
@@ -21,6 +23,8 @@ private:
         glm::vec4 m_diffuse;
         glm::vec4 m_specular;
     };
+
+    void DoRenderPass(CMeshComponent::Category category, CModel3DRenderer &renderer);
 
     CPhongProgram m_planetProgram;
     LightSource m_light0;

@@ -16,6 +16,7 @@ const vec4 SUNLIGHT_DIRECTION = {0, -1, 0, 0};
 const vec4 WHITE_RGBA = {1, 1, 1, 1};
 const vec4 FADED_WHITE_RGBA = {0.3f, 0.3f, 0.3f, 1.0f};
 const char SCENE_JSON[] = "res/static_scene/scene.json";
+const char SKYBOX_PLIST[] = "res/static_scene/skybox-stone-and-sky.plist";
 
 void SetupOpenGLState()
 {
@@ -57,6 +58,7 @@ CWindowClient::CWindowClient(CWindow &window)
 
     CSceneLoader loader(m_world);
     loader.LoadScene(SCENE_JSON);
+    loader.LoadSkybox(SKYBOX_PLIST);
 
     // Добавляем систему, отвечающую за рендеринг планет.
     m_world.addSystem(m_renderSystem);

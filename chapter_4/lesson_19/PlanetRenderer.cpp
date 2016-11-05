@@ -47,7 +47,7 @@ void CPlanetRenderer3D::Draw(const CMeshComponent &mesh)
     GetUniform(UniformId::MATRIX_VIEW) = m_view;
     GetUniform(UniformId::MATRIX_WORLDVIEW) = modelView;
     GetUniform(UniformId::MATRIX_NORMALWORLDVIEW)
-            = CDrawUtils::GetNormalMatrix(modelView);
+            = CDrawUtils::GetNormalMat4(modelView);
 
     mesh.m_geometry.m_pGeometry->Bind();
     BindTextures(mesh);
