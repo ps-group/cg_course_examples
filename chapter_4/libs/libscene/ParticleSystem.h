@@ -17,7 +17,6 @@ public:
     void SetEmitter(std::unique_ptr<CParticleEmitter> && pEmitter);
     void SetGravity(const glm::vec3 &gravity);
     void SetParticleTexture(const CTexture2DSharedPtr &pTexture);
-    void SetWorldViewMat4();
 
     // @param dt - разница во времени с предыдущим вызовом Advance.
     void Advance(float dt);

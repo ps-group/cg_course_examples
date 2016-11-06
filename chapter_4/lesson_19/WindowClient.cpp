@@ -15,7 +15,6 @@ const vec3 CAMERA_UP = {0, 1, 0};
 const vec4 WHITE_RGBA = {1, 1, 1, 1};
 const vec4 FADED_WHITE_RGBA = {0.3f, 0.3f, 0.3f, 1.0f};
 const char SCENE_JSON[] = "res/particle_system/scene.json";
-const char PARTICLE_IMAGE[] = "res/particle_system/sparkle.png";
 
 void SetupOpenGLState()
 {
@@ -54,6 +53,7 @@ CWindowClient::CWindowClient(CWindow &window)
 
     m_camera.SetMoveSpeed(CAM_SPEED);
 
+#if 0
     // -------------------------------------------------------------
     // TODO: move to CSceneLoader
     CAssetLoader loader;
@@ -81,10 +81,10 @@ CWindowClient::CWindowClient(CWindow &window)
     entity.activate();
     // -------------------------------------------------------------
 
-#if 0
+#else
+
     CSceneLoader loader(m_world);
     loader.LoadScene(SCENE_JSON);
-    loader.LoadSkybox(SKYBOX_PLIST);
 #endif
 
     // Добавляем систему, отвечающую за рендеринг планет.

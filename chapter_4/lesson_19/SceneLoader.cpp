@@ -4,10 +4,9 @@
 #include "Components.h"
 #include <fstream>
 
-#if 0
-
 using namespace nlohmann;
 using namespace boost::filesystem;
+using glm::vec2;
 using glm::vec3;
 
 namespace
@@ -39,56 +38,88 @@ vec3 ReadOptionalVec3(const json &dict, const std::string &key, const vec3 &defa
     return result;
 }
 
+vec2 ReadRange(const json &dict, const std::string &key)
+{
+    const auto &value = dict.at(key);
+    if (!value.is_array())
+    {
+        throw std::runtime_error("range value '" + key + "' is not an array");
+    }
+
+    vec2 result;
+    result.x = value.at(0).get<float>();
+    result.y = value.at(1).get<float>();
+
+    if (result.y <= result.x)
+    {
+        throw std::runtime_error("min <= max in range '" + key + "'");
+    }
+
+    return result;
+}
+
 class CSceneDefinitionParser
 {
 public:
     CSceneDefinitionParser(anax::World &world, CAssetLoader &assetLoader,
                            const boost::filesystem::path &workdir)
         : m_world(world)
-        , m_modelLoader(assetLoader)
+        , m_assetLoader(assetLoader)
         , m_workdir(workdir)
     {
     }
 
-    void ParseObjects(const json &array)
+    void ParseParticleSystems(const json &array)
     {
         for (const json &object : array)
         {
             anax::Entity body = m_world.createEntity();
-            AddMesh(body, object);
+            AddParticleSystem(body, object);
             AddTransform(body, object);
-
             body.activate();
         };
     }
 
 private:
-    CModel3DSharedPtr LoadModelWithCache(const path &abspath)
+    std::shared_ptr<CParticleSystem> LoadParticleSystem(const json &dict)
     {
-        // Пытаемся извлечь модель из кеша.
-        auto it = m_modelsCache.find(abspath.generic_string());
-        if (it != m_modelsCache.end())
-        {
-            return it->second;
-        }
+        const path texture = m_workdir / dict.at("texture").get<std::string>();
+        const vec3 gravity = ReadOptionalVec3(dict, "gravity", vec3(0));
 
-        // В отладочном режиме выводим информацию о модели.
-#if !defined(NDEBUG)
-        m_modelLoader.DumpInfo(abspath);
-#endif
+        auto pSystem = std::make_shared<CParticleSystem>();
+        pSystem->SetParticleTexture(m_assetLoader.LoadTexture(texture));
+        pSystem->SetEmitter(LoadParticleEmitter(dict.at("emitter")));
+        pSystem->SetGravity(gravity);
 
-        auto pModel = m_modelLoader.Load(abspath);
-        m_modelsCache[abspath.generic_string()] = pModel;
-
-        return pModel;
+        return pSystem;
     }
 
-    void AddMesh(anax::Entity &body, const json &dict)
+    std::unique_ptr<CParticleEmitter> LoadParticleEmitter(const json &dict)
     {
-        const std::string filename = dict.at("model").get<std::string>();
-        auto &mesh = body.addComponent<CMeshComponent>();
-        mesh.m_category = CMeshComponent::Foreground;
-        mesh.m_pModel = LoadModelWithCache(m_workdir / filename);
+        const vec3 position = ReadOptionalVec3(dict, "position", vec3(0, 1, 0));
+        const vec3 direction = ReadOptionalVec3(dict, "direction", vec3(0, 1, 0));
+        const float maxDistance = dict.at("maxDistance").get<float>();
+        const float maxDeviationAngle = dict.at("maxDeviationAngle").get<float>();
+        const vec2 emitIntervalRange = ReadRange(dict, "emitIntervalRange");
+        const vec2 lifetimeRange = ReadRange(dict, "lifetimeRange");
+        const vec2 speedRange = ReadRange(dict, "speedRange");
+
+        auto pEmitter = std::make_unique<CParticleEmitter>();
+        pEmitter->SetPosition(position);
+        pEmitter->SetMaxDistance(maxDistance);
+        pEmitter->SetDirection(direction);
+        pEmitter->SetMaxDeviationAngle(maxDeviationAngle);
+        pEmitter->SetEmitIntervalRange(emitIntervalRange.x, emitIntervalRange.y);
+        pEmitter->SetLifetimeRange(lifetimeRange.x, lifetimeRange.y);
+        pEmitter->SetSpeedRange(speedRange.x, speedRange.y);
+
+        return pEmitter;
+    }
+
+    void AddParticleSystem(anax::Entity &body, const json &dict)
+    {
+        auto &com = body.addComponent<CParticleComponent>();
+        com.m_pSystem = LoadParticleSystem(dict);
     }
 
     void AddTransform(anax::Entity &body, const json &dict)
@@ -104,7 +135,7 @@ private:
     }
 
     anax::World &m_world;
-    CModelLoader m_modelLoader;
+    CAssetLoader &m_assetLoader;
     path m_workdir;
     std::unordered_map<std::string, CModel3DSharedPtr> m_modelsCache;
 };
@@ -130,9 +161,10 @@ void CSceneLoader::LoadScene(const boost::filesystem::path &path)
     json sceneObj = json::parse(file);
 
     CSceneDefinitionParser parser(m_world, m_assetLoader, resourceDir);
-    parser.ParseObjects(sceneObj["objects"]);
+    parser.ParseParticleSystems(sceneObj["particleSystems"]);
 }
 
+#if 0
 void CSceneLoader::LoadSkybox(const boost::filesystem::path &path)
 {
     CTexture2DAtlas atlas(path, m_assetLoader);
@@ -161,5 +193,4 @@ void CSceneLoader::LoadSkybox(const boost::filesystem::path &path)
     skybox.addComponent<CTransformComponent>();
     skybox.activate();
 }
-
 #endif
