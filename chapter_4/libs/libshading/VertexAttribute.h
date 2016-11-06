@@ -15,6 +15,11 @@ public:
     void EnablePointer();
     void DisablePointer();
 
+    // Устанавливает частоту наложения атрибута в решиме "draw instanced"
+    //  - 0 (по умолчанию) - атрибут сопутствует каждой вершине
+    //  - 1 (по умолчанию) - атрибут меняется только при смене экземпляра
+    void SetDivisor(unsigned divisor);
+
     // Патаметр needClamp - отвечает за покомпонентное нормирование
     //   атрибутов к `1.0`, что может пригодиться для передаче цвета (color).
     void SetVec3Offset(size_t offset, size_t stride, bool needClamp);

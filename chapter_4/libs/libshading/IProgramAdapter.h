@@ -39,7 +39,7 @@ enum class AttributeId
     // Битангенциальная касательная (vec3)
     BITANGENT,
     // Позиция экземпляра объекта (vec3), см. на тему "OpenGL instancing"
-    INSTANCE_POSITION_3D,
+    INSTANCE_POSITION,
 };
 
 class IProgramAdapter

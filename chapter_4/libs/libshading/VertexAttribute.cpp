@@ -21,6 +21,11 @@ void CVertexAttribute::DisablePointer()
     glDisableVertexAttribArray(GLuint(m_location));
 }
 
+void CVertexAttribute::SetDivisor(unsigned divisor)
+{
+    glVertexAttribDivisor(GLuint(m_location), divisor);
+}
+
 void CVertexAttribute::SetVec3Offset(size_t offset, size_t stride, bool needClamp)
 {
     const GLboolean normalize = needClamp ? GL_TRUE : GL_FALSE;

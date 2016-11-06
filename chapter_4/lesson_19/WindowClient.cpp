@@ -9,14 +9,13 @@ using glm::vec4;
 
 namespace
 {
-const vec3 CAMERA_EYE = {0, 10, 20};
-const vec3 CAMERA_AT = {0, 0, 0};
+const vec3 CAMERA_EYE = {0, -10, 20};
+const vec3 CAMERA_AT = {0, 10, 0};
 const vec3 CAMERA_UP = {0, 1, 0};
-const vec4 SUNLIGHT_DIRECTION = {0, -1, 0, 0};
 const vec4 WHITE_RGBA = {1, 1, 1, 1};
 const vec4 FADED_WHITE_RGBA = {0.3f, 0.3f, 0.3f, 1.0f};
-const char SCENE_JSON[] = "res/static_scene/scene.json";
-const char SKYBOX_PLIST[] = "res/static_scene/skybox-stone-and-sky.plist";
+const char SCENE_JSON[] = "res/particle_system/scene.json";
+const char PARTICLE_IMAGE[] = "res/particle_system/sparkle.png";
 
 void SetupOpenGLState()
 {
@@ -54,14 +53,45 @@ CWindowClient::CWindowClient(CWindow &window)
     SetupOpenGLState();
 
     m_camera.SetMoveSpeed(CAM_SPEED);
-    m_renderSystem.SetupLight0(SUNLIGHT_DIRECTION, WHITE_RGBA, FADED_WHITE_RGBA);
 
+    // -------------------------------------------------------------
+    // TODO: move to CSceneLoader
+    CAssetLoader loader;
+    auto pTexture = loader.LoadTexture(PARTICLE_IMAGE);
+
+    auto pEmitter = std::make_unique<CParticleEmitter>();
+    pEmitter->SetDirection(glm::vec3(0, 1, 0));
+    pEmitter->SetEmitIntervalRange(0.001f, 0.002f);
+    pEmitter->SetLifetimeRange(2.f, 3.f);
+    pEmitter->SetMaxDeviationAngle(float(0.3 * M_PI));
+    pEmitter->SetMaxDistance(1.f);
+    pEmitter->SetPosition(glm::vec3(0, 0, 0));
+    pEmitter->SetSpeedRange(8.f, 15.f);
+
+    auto pSystem = std::make_shared<CParticleSystem>();
+    pSystem->SetEmitter(std::move(pEmitter));
+    pSystem->SetGravity(glm::vec3(0, -0.2f, 0));
+    pSystem->SetParticleTexture(pTexture);
+
+    auto entity = m_world.createEntity();
+    auto &particleCom = entity.addComponent<CParticleComponent>();
+    particleCom.m_pSystem = pSystem;
+    auto &transformCom = entity.addComponent<CTransformComponent>();
+    (void)transformCom;
+    entity.activate();
+    // -------------------------------------------------------------
+
+#if 0
     CSceneLoader loader(m_world);
     loader.LoadScene(SCENE_JSON);
     loader.LoadSkybox(SKYBOX_PLIST);
+#endif
 
     // Добавляем систему, отвечающую за рендеринг планет.
     m_world.addSystem(m_renderSystem);
+
+    // Добавляем систему, отвечающую за обновление систем частиц
+    m_world.addSystem(m_updateSystem);
 
     // После активации новых сущностей или деактивации,
     //  а при добавления новых систем следует
@@ -72,6 +102,7 @@ CWindowClient::CWindowClient(CWindow &window)
 void CWindowClient::OnUpdate(float deltaSeconds)
 {
     m_camera.Update(deltaSeconds);
+    m_updateSystem.Update(deltaSeconds);
 }
 
 void CWindowClient::OnDraw()
