@@ -16,6 +16,7 @@ CParticleProgram::CParticleProgram()
         { UniformId::TEX_EMISSIVE, "emissiveMap" },
         { UniformId::MATRIX_PROJECTION, "projection" },
         { UniformId::MATRIX_WORLDVIEW, "modelView" },
+        { UniformId::TRANSFORM_SCALE, "sizeScale" },
     };
     SetUniformNames(uniforms);
 

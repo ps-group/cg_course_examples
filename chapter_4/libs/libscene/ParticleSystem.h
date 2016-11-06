@@ -28,12 +28,14 @@ public:
 
 private:
     void BindParticlePositions(IProgramAdapter &program, const glm::mat4 &worldView);
+    void UpdateParticlePositions(const glm::mat4 &worldView);
 
     std::unique_ptr<CParticleEmitter> m_pEmitter;
     std::vector<CParticle> m_particles;
     glm::vec3 m_gravity;
 
     // Данные для рисования
+    bool m_isDirty = false;
     CTexture2DSharedPtr m_pTexture;
     CBufferObject m_spriteGeometry;
     CBufferObject m_particlePositions;

@@ -75,6 +75,10 @@ void CParticleSystem::Advance(float dt)
         return !particle.IsAlive();
     });
     m_particles.erase(newEnd, m_particles.end());
+
+    // Устанавливаем флаг, указывающий, что позиции частиц в видеопамяти
+    //  следует обновить.
+    m_isDirty = true;
 }
 
 void CParticleSystem::Draw(IProgramAdapter &program, const glm::mat4 &worldView)
@@ -97,27 +101,41 @@ void CParticleSystem::Draw(IProgramAdapter &program, const glm::mat4 &worldView)
     glDrawArraysInstanced(GL_TRIANGLES, 0, vertexCount, instanceCount);
 }
 
-// Привязывает буфер с позициями частиц, копирует в него данные
-//  и связываем с атрибутом шейдера.
+// Привязывает буфер с позициями частиц,
+//  при необходимости обновляет его,
+//  затем связывает с атрибутом шейдера.
 void CParticleSystem::BindParticlePositions(IProgramAdapter &program, const glm::mat4 &worldView)
 {
     m_particlePositions.Bind();
 
-    std::vector<vec3> positions(m_particles.size());
-    std::transform(m_particles.begin(), m_particles.end(),
-                   positions.begin(), [](const CParticle &particle) {
-        return particle.GetPosition();
-    });
-    std::sort(positions.begin(), positions.end(), [&](const vec3 &a, vec3 &b) {
-        const vec3 viewA = vec3(worldView * vec4(a, 1.0));
-        const vec3 viewB = vec3(worldView * vec4(b, 1.0));
-
-        return glm::length(viewA) > glm::length(viewB);
-    });
-    m_particlePositions.Copy(positions);
+    if (m_isDirty)
+    {
+        UpdateParticlePositions(worldView);
+        m_isDirty = false;
+    }
 
     CVertexAttribute positionAttr = program.GetAttribute(AttributeId::INSTANCE_POSITION);
     positionAttr.EnablePointer();
     positionAttr.SetDivisor(1);
     positionAttr.SetVec3Offset(0, sizeof(vec3), false);
+}
+
+void CParticleSystem::UpdateParticlePositions(const glm::mat4 &worldView)
+{
+    // Собираем массив позиций частиц
+    std::vector<vec3> positions(m_particles.size());
+    std::transform(m_particles.begin(), m_particles.end(),
+                   positions.begin(), [](const CParticle &particle) {
+        return particle.GetPosition();
+    });
+
+    // Сортируем частицы в порядке удалённости от камеры
+    std::sort(positions.begin(), positions.end(), [&](const vec3 &a, vec3 &b) {
+        const vec3 viewA = vec3(worldView * vec4(a, 1.0));
+        const vec3 viewB = vec3(worldView * vec4(b, 1.0));
+        return viewA.z < viewB.z;
+    });
+
+    // Отправляем данные на видеокарту
+    m_particlePositions.Copy(positions);
 }

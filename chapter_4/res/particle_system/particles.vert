@@ -10,22 +10,15 @@ out vec2 fragTextureUV;
 
 uniform mat4 modelView;
 uniform mat4 projection;
+uniform vec3 sizeScale;
 
 void main(void)
 {
-    // Modified transformation from object local coords to camera
-    //  which does translate and scale, but doesn't rotate.
-    mat4 billboardModelView = modelView;
-    billboardModelView[0][1] = 0;
-    billboardModelView[0][2] = 0;
-    billboardModelView[1][2] = 0;
-    billboardModelView[1][0] = 0;
-    billboardModelView[2][0] = 0;
-    billboardModelView[2][1] = 0;
-
+    // Particle should be always oriented to viewer,
+    //  but particle system size scale still applies.
     vec4 particleCenter = modelView * vec4(particlePosition, 1.0);
-    vec4 vertexOffset = billboardModelView * vec4(textureUV.x, textureUV.y, 0.0, 0.0);
-    vec4 vertexPos = particleCenter + vertexOffset;
+    vec2 offset = textureUV * sizeScale.xy;
+    vec4 vertexPos = particleCenter + vec4(offset.x, offset.y, 0.0, 0.0);
 
     // Normalize UV from [-1..1] to [0..1]
     fragTextureUV = 0.5 * textureUV + vec2(0.5);

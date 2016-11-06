@@ -24,6 +24,8 @@ enum class UniformId : unsigned
     MATRIX_PROJECTION, // mat4
     MATRIX_WORLDVIEW, // mat4
     MATRIX_NORMALWORLDVIEW, // mat4
+    // Отдельные элементы преобразований
+    TRANSFORM_SCALE, // vec3
 };
 
 enum class AttributeId
