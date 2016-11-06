@@ -7,8 +7,8 @@ int main(int, char *[])
     try
     {
         CWindow window(ContextProfile::RobustOpenGL_3_2, ContextMode::Debug);
-        window.ShowFullscreen("Demo #19 (Particle Systems)");
-//        window.Show("Demo #19 (Particle Systems)", {800, 600});
+//        window.ShowFullscreen("Demo #19 (Particle Systems)");
+        window.Show("Demo #19 (Particle Systems)", {800, 600});
         CWindowClient client(window);
         window.DoMainLoop();
     }

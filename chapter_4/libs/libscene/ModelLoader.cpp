@@ -1,6 +1,7 @@
 #include "ModelLoader.h"
 #include "AssetLoader.h"
 #include <sstream>
+#include <iostream>
 
 // Для импорта используем библиотеку Assimp
 //  см. http://assimp.sourceforge.net/

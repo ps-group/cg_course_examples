@@ -40,6 +40,11 @@ glm::mat4 CDrawUtils::GetEnvironmentViewMat4(const glm::mat4 &view)
     return result;
 }
 
+glm::vec3 CDrawUtils::TransformPoint(const glm::vec3 &point, const glm::mat4 &mat)
+{
+    return glm::vec3(mat * glm::vec4(point, 1.f));
+}
+
 void CDrawUtils::DrawRangeElements(const SGeometryLayout &layout)
 {
     const GLenum primitive = MapPrimitiveType(layout.m_primitive);

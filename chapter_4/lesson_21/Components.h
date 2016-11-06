@@ -1,12 +1,11 @@
 #pragma once
 #include "EllipticOrbit.h"
+#include "libscene/ParticleSystem.h"
 #include "libscene/Tesselator.h"
 #include "libgeometry/Transform.h"
 #include <functional>
 #include <anax/Component.hpp>
 #include <anax/Entity.hpp>
-#include <glm/matrix.hpp>
-#include <glm/gtc/quaternion.hpp>
 
 class CMeshComponent : public anax::Component
 {
@@ -26,19 +25,18 @@ public:
     Category m_category = Category::Foreground;
 };
 
+class CParticleComponent
+        : public anax::Component
+{
+public:
+    std::shared_ptr<CParticleSystem> m_pSystem;
+};
+
 class CTransformComponent
         : public anax::Component
         , public CTransform3D
 {
 public:
-};
-
-class CScriptComponent : public anax::Component
-{
-public:
-    using UpdateFn = std::function<void(float dt, const anax::Entity &entity)>;
-
-    UpdateFn m_onUpdate;
 };
 
 class CSpaceBodyComponent : public anax::Component

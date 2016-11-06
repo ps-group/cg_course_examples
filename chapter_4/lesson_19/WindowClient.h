@@ -4,8 +4,8 @@
 #include "libscene/ArrayObject.h"
 #include "libscene/Camera.h"
 #include "SceneLoader.h"
-#include "RenderSystem.h"
-#include "UpdateSystem.h"
+#include "ParticleRenderSystem.h"
+#include "ParticleUpdateSystem.h"
 #include <vector>
 
 class CWindowClient
@@ -30,8 +30,8 @@ private:
     //  http://stackoverflow.com/questions/13403807/
     CArrayObject m_defaultVAO;
     anax::World m_world;
-    CRenderSystem m_renderSystem;
-    CUpdateSystem m_updateSystem;
+    CParticleRenderSystem m_renderSystem;
+    CParticleUpdateSystem m_updateSystem;
 
     CMouseGrabber m_mouseGrabber;
     CCamera m_camera;

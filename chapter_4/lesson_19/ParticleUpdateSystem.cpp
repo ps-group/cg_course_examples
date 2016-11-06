@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "UpdateSystem.h"
+#include "ParticleUpdateSystem.h"
 
-void CUpdateSystem::Update(float deltaSec)
+void CParticleUpdateSystem::Update(float deltaSec)
 {
     for (auto &entity : getEntities())
     {

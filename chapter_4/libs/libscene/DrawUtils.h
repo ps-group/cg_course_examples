@@ -21,6 +21,9 @@ public:
     //  как часть окружения.
     static glm::mat4 GetEnvironmentViewMat4(const glm::mat4 &view);
 
+    // Применяет трансформацию, заданную в `mat`, к точке point.
+    static glm::vec3 TransformPoint(const glm::vec3 &point, const glm::mat4 &mat);
+
     // Выполняет glDrawRangeElements для заданного размещения
     //  вершин и индексов в памяти. Перед вызовом следует:
     // - привязать буферы геометрических данных

@@ -2,7 +2,7 @@
 #include "Components.h"
 #include <anax/System.hpp>
 
-class CUpdateSystem
+class CParticleUpdateSystem
         : public anax::System<anax::Requires<CParticleComponent>>
 {
 public:

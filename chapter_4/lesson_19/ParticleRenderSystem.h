@@ -5,14 +5,16 @@
 
 class CModel3DRenderer;
 
-class CRenderSystem
+class CParticleRenderSystem
         : public anax::System<anax::Requires<CParticleComponent, CTransformComponent>>
 {
 public:
-    CRenderSystem();
+    CParticleRenderSystem();
 
     void Render(const glm::mat4 &view, const glm::mat4 &projection);
 
 private:
+    std::vector<anax::Entity> GetEntitesSortedByDepth(const glm::mat4 &view)const;
+
     CParticleProgram m_particleProgram;
 };
