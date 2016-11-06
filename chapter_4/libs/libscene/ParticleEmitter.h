@@ -75,9 +75,8 @@ public:
     // Задаёт центр источника частиц.
     void SetPosition(const glm::vec3 &value);
 
-    // Задаёт максимальное расстояние места появления частицы
-    //   от центра источника.
-    void SetMaxDistance(float value);
+    // Задаёт разброс расстояния от места появления частицы до центра источника.
+    void SetDistanceRange(float minValue, float maxValue);
 
     // Задаёт направление вылета частиц.
     void SetDirection(const glm::vec3 &value);

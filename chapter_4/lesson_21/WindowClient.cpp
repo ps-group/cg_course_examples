@@ -9,7 +9,7 @@ using glm::vec4;
 
 namespace
 {
-const glm::vec3 CAMERA_EYE = { 0, 5, 10 };
+const glm::vec3 CAMERA_EYE = { 0, 1, 2 };
 const glm::vec4 SUNLIGHT_POSITION = {0, 0, 0, 1};
 const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
 const glm::vec4 FADED_WHITE_RGBA = {0.3f, 0.3f, 0.3f, 1.0f};
@@ -62,8 +62,14 @@ CWindowClient::CWindowClient(CWindow &window)
     // Добавляем систему, выполняющую вращение тел вокруг своих осей.
     m_world.addSystem(m_rotationSystem);
 
+    // Добавляем систему, отвечающую за обновление систем частиц
+    m_world.addSystem(m_particleUpdateSystem);
+
     // Добавляем систему, отвечающую за рендеринг планет.
     m_world.addSystem(m_renderSystem);
+
+    // Добавляем систему, отвечающую за рендеринг систем частиц
+    m_world.addSystem(m_particleRenderSystem);
 
     // После активации новых сущностей или деактивации,
     //  а при добавления новых систем следует
@@ -77,6 +83,7 @@ void CWindowClient::OnUpdate(float deltaSeconds)
     m_timeController.Update(deltaSeconds);
     m_keplerSystem.Update();
     m_rotationSystem.Update();
+    m_particleUpdateSystem.Update(deltaSeconds);
 }
 
 void CWindowClient::OnDraw()
@@ -84,10 +91,11 @@ void CWindowClient::OnDraw()
     const glm::ivec2 windowSize = GetWindow().GetWindowSize();
 
     const mat4 view = m_camera.GetViewMat4();
-    const mat4 proj = MakeProjectionMatrix(windowSize);
+    const mat4 projection = MakeProjectionMatrix(windowSize);
 
     glViewport(0, 0, windowSize.x, windowSize.y);
-    m_renderSystem.Render(view, proj);
+    m_renderSystem.Render(view, projection);
+    m_particleRenderSystem.Render(view, projection);
 }
 
 bool CWindowClient::OnKeyDown(const SDL_KeyboardEvent &event)

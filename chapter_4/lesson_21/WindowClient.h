@@ -5,10 +5,12 @@
 #include "libscene/ArrayObject.h"
 #include "libscene/Camera.h"
 #include "SceneLoader.h"
-#include "RenderSystem.h"
 #include "TimeController.h"
 #include "KeplerLawSystem.h"
 #include "BodyRotationSystem.h"
+#include "ParticleUpdateSystem.h"
+#include "RenderSystem.h"
+#include "ParticleRenderSystem.h"
 #include <vector>
 
 class CWindowClient : public CAbstractWindowClient
@@ -33,9 +35,12 @@ private:
     CArrayObject m_defaultVAO;
     anax::World m_world;
     CTimeController m_timeController;
-    CRenderSystem m_renderSystem;
     CKeplerLawSystem m_keplerSystem;
     CBodyRotationSystem m_rotationSystem;
+    CParticleUpdateSystem m_particleUpdateSystem;
+
+    CRenderSystem m_renderSystem;
+    CParticleRenderSystem m_particleRenderSystem;
 
     CMouseGrabber m_mouseGrabber;
     CCamera m_camera;

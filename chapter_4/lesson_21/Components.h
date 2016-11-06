@@ -25,11 +25,12 @@ public:
     Category m_category = Category::Foreground;
 };
 
-class CParticleComponent
+class CParticleSystemComponent
         : public anax::Component
 {
 public:
     std::shared_ptr<CParticleSystem> m_pSystem;
+    float m_particleScale = 1.f;
 };
 
 class CTransformComponent

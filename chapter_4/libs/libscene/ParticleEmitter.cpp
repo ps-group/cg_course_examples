@@ -64,9 +64,9 @@ void CParticleEmitter::SetPosition(const glm::vec3 &value)
     m_position = value;
 }
 
-void CParticleEmitter::SetMaxDistance(float value)
+void CParticleEmitter::SetDistanceRange(float minValue, float maxValue)
 {
-    m_distanceRange.param(linear_random_float::param_type(0.f, value));
+    m_distanceRange.param(linear_random_float::param_type(minValue, maxValue));
 }
 
 void CParticleEmitter::SetDirection(const glm::vec3 &value)

@@ -24,12 +24,14 @@ void CParticleRenderSystem::Render(const glm::mat4 &view, const glm::mat4 &proje
     for (const auto &entity : entities)
     {
         const auto &transform = entity.getComponent<CTransformComponent>();
-        const glm::mat4 worldView = view * transform.ToMat4();
-        m_particleProgram.GetUniform(UniformId::MATRIX_WORLDVIEW) = worldView;
-        m_particleProgram.GetUniform(UniformId::TRANSFORM_SCALE) = transform.m_sizeScale;
+        const auto &system = entity.getComponent<CParticleSystemComponent>();
 
-        const auto &mesh = entity.getComponent<CParticleSystemComponent>();
-        mesh.m_pSystem->Draw(m_particleProgram, worldView);
+        const glm::mat4 worldView = view * transform.ToMat4();
+        const glm::vec3 scale = system.m_particleScale * transform.m_sizeScale;
+        m_particleProgram.GetUniform(UniformId::MATRIX_WORLDVIEW) = worldView;
+        m_particleProgram.GetUniform(UniformId::TRANSFORM_SCALE) = scale;
+
+        system.m_pSystem->Draw(m_particleProgram, worldView);
     }
 
     texCoordAttr.DisablePointer();

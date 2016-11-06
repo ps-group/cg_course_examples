@@ -3,7 +3,7 @@
 #include "libgeometry/Transform.h"
 #include <anax/Component.hpp>
 
-class CParticleComponent
+class CParticleSystemComponent
         : public anax::Component
 {
 public:

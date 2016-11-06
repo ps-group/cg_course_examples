@@ -98,17 +98,17 @@ private:
     {
         const vec3 position = ReadOptionalVec3(dict, "position", vec3(0, 1, 0));
         const vec3 direction = ReadOptionalVec3(dict, "direction", vec3(0, 1, 0));
-        const float maxDistance = dict.at("maxDistance").get<float>();
         const float maxDeviationAngle = dict.at("maxDeviationAngle").get<float>();
+        const vec2 distanceRange = ReadRange(dict, "distanceRange");
         const vec2 emitIntervalRange = ReadRange(dict, "emitIntervalRange");
         const vec2 lifetimeRange = ReadRange(dict, "lifetimeRange");
         const vec2 speedRange = ReadRange(dict, "speedRange");
 
         auto pEmitter = std::make_unique<CParticleEmitter>();
         pEmitter->SetPosition(position);
-        pEmitter->SetMaxDistance(maxDistance);
         pEmitter->SetDirection(direction);
         pEmitter->SetMaxDeviationAngle(maxDeviationAngle);
+        pEmitter->SetDistanceRange(distanceRange.x, distanceRange.y);
         pEmitter->SetEmitIntervalRange(emitIntervalRange.x, emitIntervalRange.y);
         pEmitter->SetLifetimeRange(lifetimeRange.x, lifetimeRange.y);
         pEmitter->SetSpeedRange(speedRange.x, speedRange.y);
@@ -118,7 +118,7 @@ private:
 
     void AddParticleSystem(anax::Entity &body, const json &dict)
     {
-        auto &com = body.addComponent<CParticleComponent>();
+        auto &com = body.addComponent<CParticleSystemComponent>();
         com.m_pSystem = LoadParticleSystem(dict);
     }
 

@@ -5,6 +5,9 @@
 #include <fstream>
 
 using namespace nlohmann;
+using namespace boost::filesystem;
+using glm::vec2;
+using glm::vec3;
 
 namespace
 {
@@ -24,6 +27,27 @@ double ReadOptionalNumber(const json &dict, const std::string &key, double defau
         return it->get<double>();
     }
     return defaultValue;
+}
+
+// Считывает диапазон значений в формате [min (число), max (число)]
+vec2 ReadRange(const json &dict, const std::string &key)
+{
+    const auto &value = dict.at(key);
+    if (!value.is_array())
+    {
+        throw std::runtime_error("range value '" + key + "' is not an array");
+    }
+
+    vec2 result;
+    result.x = value.at(0).get<float>();
+    result.y = value.at(1).get<float>();
+
+    if (result.y <= result.x)
+    {
+        throw std::runtime_error("min <= max in range '" + key + "'");
+    }
+
+    return result;
 }
 
 // Считывает угод в одном из форматов:
@@ -51,9 +75,9 @@ double ReadAngle(const json &dict, const std::string &key)
 // Считывает vec3 в одном из форматов:
 //  - число
 //  - массив [x, y, z]
-glm::vec3 ReadOptionalVec3(const json &dict, const std::string &key, const glm::vec3 &defaultValue)
+vec3 ReadOptionalVec3(const json &dict, const std::string &key, const vec3 &defaultValue)
 {
-    glm::vec3 result = defaultValue;
+    vec3 result = defaultValue;
 
     const auto it = dict.find(key);
     if (it != dict.end())
@@ -67,7 +91,7 @@ glm::vec3 ReadOptionalVec3(const json &dict, const std::string &key, const glm::
         }
         if (value.is_number())
         {
-            result = glm::vec3(value.get<float>());
+            result = vec3(value.get<float>());
         }
     }
 
@@ -97,6 +121,12 @@ public:
             AddSpaceBody(body, name, bodyObj);
             AddTransform(body, bodyObj);
 
+            const auto particlesIt = bodyObj.find("particleSystem");
+            if (particlesIt != bodyObj.end())
+            {
+                AddParticleSystem(body, particlesIt.value());
+            }
+
             const auto orbitIt = bodyObj.find("orbit");
             if (orbitIt != bodyObj.end())
             {
@@ -108,6 +138,48 @@ public:
     }
 
 private:
+    std::shared_ptr<CParticleSystem> LoadParticleSystem(const json &dict)
+    {
+        const path texture = m_workdir / dict.at("texture").get<std::string>();
+        const vec3 gravity = ReadOptionalVec3(dict, "gravity", vec3(0));
+
+        auto pSystem = std::make_shared<CParticleSystem>();
+        pSystem->SetParticleTexture(m_assetLoader.LoadTexture(texture));
+        pSystem->SetEmitter(LoadParticleEmitter(dict.at("emitter")));
+        pSystem->SetGravity(gravity);
+
+        return pSystem;
+    }
+
+    std::unique_ptr<CParticleEmitter> LoadParticleEmitter(const json &dict)
+    {
+        const vec3 position = ReadOptionalVec3(dict, "position", vec3(0, 1, 0));
+        const vec3 direction = ReadOptionalVec3(dict, "direction", vec3(0, 1, 0));
+        const float maxDeviationAngle = dict.at("maxDeviationAngle").get<float>();
+        const vec2 distanceRange = ReadRange(dict, "distanceRange");
+        const vec2 emitIntervalRange = ReadRange(dict, "emitIntervalRange");
+        const vec2 lifetimeRange = ReadRange(dict, "lifetimeRange");
+        const vec2 speedRange = ReadRange(dict, "speedRange");
+
+        auto pEmitter = std::make_unique<CParticleEmitter>();
+        pEmitter->SetPosition(position);
+        pEmitter->SetDirection(direction);
+        pEmitter->SetMaxDeviationAngle(maxDeviationAngle);
+        pEmitter->SetDistanceRange(distanceRange.x, distanceRange.y);
+        pEmitter->SetEmitIntervalRange(emitIntervalRange.x, emitIntervalRange.y);
+        pEmitter->SetLifetimeRange(lifetimeRange.x, lifetimeRange.y);
+        pEmitter->SetSpeedRange(speedRange.x, speedRange.y);
+
+        return pEmitter;
+    }
+
+    void AddParticleSystem(anax::Entity &body, const json &dict)
+    {
+        auto &com = body.addComponent<CParticleSystemComponent>();
+        com.m_pSystem = LoadParticleSystem(dict);
+        com.m_particleScale = dict.at("particleScale").get<float>();
+    }
+
     void AddMesh(anax::Entity &body, const json &dict)
     {
         auto &mesh = body.addComponent<CMeshComponent>();
@@ -135,8 +207,8 @@ private:
     void AddTransform(anax::Entity &body, const json &dict)
     {
         auto &com = body.addComponent<CTransformComponent>();
-        com.m_sizeScale = ReadOptionalVec3(dict, "scale", glm::vec3(1));
-        com.m_position = ReadOptionalVec3(dict, "position", glm::vec3(0));
+        com.m_sizeScale = ReadOptionalVec3(dict, "scale", vec3(1));
+        com.m_position = ReadOptionalVec3(dict, "position", vec3(0));
     }
 
     void AddOrbit(anax::Entity &body, const json &dict)

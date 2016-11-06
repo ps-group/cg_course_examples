@@ -90,12 +90,13 @@ void CParticleSystem::Draw(IProgramAdapter &program, const glm::mat4 &worldView)
         throw std::runtime_error("No texture set for particle system");
     }
     m_pTexture->Bind();
+
+    // Обновляем и привязываем буфер с позициями частиц
     BindParticlePositions(program, worldView);
 
     // Привязываем буфер с вершинами прямоугольного спрайта.
     m_spriteGeometry.Bind();
     CVertexAttribute texCoordAttr = program.GetAttribute(AttributeId::TEX_COORD_UV);
-    texCoordAttr.EnablePointer();
     texCoordAttr.SetVec2Offset(0, sizeof(vec2));
 
     const GLsizei vertexCount = GLsizei(SPRITE_VERTEX_COUNT);
@@ -117,8 +118,6 @@ void CParticleSystem::BindParticlePositions(IProgramAdapter &program, const glm:
     }
 
     CVertexAttribute positionAttr = program.GetAttribute(AttributeId::INSTANCE_POSITION);
-    positionAttr.EnablePointer();
-    positionAttr.SetDivisor(1);
     positionAttr.SetVec3Offset(0, sizeof(vec3), false);
 }
 

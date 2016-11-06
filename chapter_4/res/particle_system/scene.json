@@ -6,7 +6,7 @@
             "texture": "Burst.png",
             "emitter": {
                 "position": [0, 0, 0],
-                "maxDistance": 1,
+                "distanceRange": [0, 1],
                 "direction": [0, 1, 0],
                 "maxDeviationAngle": 1,
                 "emitIntervalRange": [0.002, 0.004],
@@ -21,7 +21,7 @@
             "texture": "BoilingFoam.png",
             "emitter": {
                 "position": [0, 0, 0],
-                "maxDistance": 2,
+                "distanceRange": [0, 2],
                 "direction": [1, -0.5, 0],
                 "maxDeviationAngle": 0.3,
                 "emitIntervalRange": [0.003, 0.005],
@@ -35,10 +35,10 @@
             "texture": "BoilingFoam.png",
             "emitter": {
                 "position": [0, 0, 0],
-                "maxDistance": 2,
+                "distanceRange": [5, 5.1],
                 "direction": [0, -1, 0],
                 "maxDeviationAngle": 3.14,
-                "emitIntervalRange": [0.001, 0.002],
+                "emitIntervalRange": [0.003, 0.004],
                 "lifetimeRange": [3, 3.1],
                 "speedRange": [2, 2.1]
             }
