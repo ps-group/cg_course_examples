@@ -26,68 +26,6 @@ T *AddItemsToWrite(std::vector<T> &data, size_t count)
     return (data.data() + oldSize);
 }
 
-class CMaterialReader
-{
-public:
-    CMaterialReader(const aiMaterial& srcMat, const path &resourceDir,
-                    CAssetLoader &assetLoader)
-        : m_srcMat(srcMat)
-        , m_resourceDir(resourceDir)
-        , m_assetLoader(assetLoader)
-    {
-    }
-
-    // Если в материале задан указанный цвет,
-    //  возвращает его нормализованное к диапазону [0..1] значение в RGBA.
-    // Иначе возвращает defaultValue
-    vec4 GetColor(const char *key, unsigned type, unsigned index)
-    {
-        aiColor3D color(0, 0, 0);
-        if (AI_SUCCESS == m_srcMat.Get(key, type, index, color))
-        {
-            return glm::clamp(vec4(color.r, color.g, color.b, 1), vec4(0), vec4(1));
-        }
-        return vec4(0);
-    }
-
-    float GetFloat(const char *key, unsigned type, unsigned index)
-    {
-        float value = 0;
-        if (AI_SUCCESS == m_srcMat.Get(key, type, index, value))
-        {
-            return value;
-        }
-        return 0.f;
-    }
-
-    unsigned GetUnsigned(const char *key, unsigned type, unsigned index)
-    {
-        unsigned value = 0;
-        if (AI_SUCCESS == m_srcMat.Get(key, type, index, value))
-        {
-            return value;
-        }
-        return 0;
-    }
-
-    // Возвращает указатель на текстуру, расположенную в директории модели.
-    CTexture2DSharedPtr GetTexture(const char *key, unsigned type, unsigned index)
-    {
-        aiString filename;
-        if (AI_SUCCESS == m_srcMat.Get(key, type, index, filename))
-        {
-            path abspath = m_resourceDir / filename.data;
-            return m_assetLoader.LoadTexture(abspath);
-        }
-        return nullptr;
-    }
-
-private:
-    const aiMaterial& m_srcMat;
-    path m_resourceDir;
-    CAssetLoader &m_assetLoader;
-};
-
 // Накапливает информацию о сетках треугольников и геометрии.
 class CMeshAccumulator
 {
@@ -307,63 +245,6 @@ private:
     std::unordered_map<unsigned, glm::mat4> m_meshTransforms;
 };
 
-bool CanBePhongShaded(unsigned shadingMode)
-{
-    switch (shadingMode)
-    {
-    case 0:
-    case aiShadingMode_Phong:
-    case aiShadingMode_Blinn:
-    case aiShadingMode_Gouraud:
-    case aiShadingMode_Flat:
-        return true;
-    default:
-        return false;
-    }
-}
-
-void LoadMaterials(const path &resourceDir, CAssetLoader &assetLoader,
-                   const aiScene &scene, std::vector<SPhongMaterial> &materials)
-{
-    const float DEFAULT_SHININESS = 30;
-
-    materials.resize(scene.mNumMaterials);
-    for (unsigned mi = 0; mi < scene.mNumMaterials; ++mi)
-    {
-        CMaterialReader reader(*(scene.mMaterials[mi]), resourceDir, assetLoader);
-        SPhongMaterial &material = materials[mi];
-
-        // TODO: реализовать новые модели освещения
-        //       например, aiShadingMode_CookTorrance, aiShadingMode_Toon.
-        const unsigned shadingMode = reader.GetUnsigned(AI_MATKEY_SHADING_MODEL);
-        if (!CanBePhongShaded(shadingMode))
-        {
-            throw std::runtime_error("Given shading model was not implemented");
-        }
-
-        material.shininess = reader.GetFloat(AI_MATKEY_SHININESS);
-        if (material.shininess < 1.f)
-        {
-            material.shininess = DEFAULT_SHININESS;
-        }
-        material.pDiffuse = reader.GetTexture(AI_MATKEY_TEXTURE_DIFFUSE(0));
-        if (!material.pDiffuse)
-        {
-            material.diffuseColor = reader.GetColor(AI_MATKEY_COLOR_DIFFUSE);
-        }
-        material.pSpecular = reader.GetTexture(AI_MATKEY_TEXTURE_SPECULAR(0));
-        if (!material.pSpecular)
-        {
-            material.specularColor = reader.GetColor(AI_MATKEY_COLOR_SPECULAR);
-        }
-        material.pEmissive = reader.GetTexture(AI_MATKEY_TEXTURE_EMISSIVE(0));
-        if (!material.pEmissive)
-        {
-            material.emissiveColor = reader.GetColor(AI_MATKEY_COLOR_EMISSIVE);
-        }
-    }
-}
-
 // Проверяет целостность данных сетки треугольников.
 // Выбрасывает std::runtime_error, если в данные закралась ошибка.
 void VerifyModel3D(CStaticModel3D &model)
@@ -408,7 +289,8 @@ CStaticModel3DPtr CStaticModelLoader::Load(const boost::filesystem::path &path)
     auto pModel = std::make_shared<CStaticModel3D>();
     pModel->m_meshes = accumulator.TakeMeshes();
     pModel->m_pGeometry = accumulator.MakeGeometry();
-    LoadMaterials(abspath.parent_path(), m_assetLoader, scene, pModel->m_materials);
+    CAssimpUtils::LoadMaterials(abspath.parent_path(), m_assetLoader,
+                                scene, pModel->m_materials);
     VerifyModel3D(*pModel);
 
     return pModel;

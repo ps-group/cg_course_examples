@@ -9,16 +9,29 @@
 
 #include <boost/filesystem/path.hpp>
 
+class CAssetLoader;
+struct SPhongMaterial;
+
 class CAssimpUtils
 {
 public:
     CAssimpUtils() = delete;
 
+    // Открывает сцену из заданного файла
+    // Если файла нет, бросает исключение
     // Памятью для хранения возвращаемой сцены владеет importer.
     static const aiScene &OpenScene(const boost::filesystem::path &path,
                                     Assimp::Importer &importer);
 
+    // Выводит подробную информацию о ранее открытой сцене
     static void DumpSceneInfo(const aiScene &scene);
 
+    // Открывает сцену и выводит подробную информацию о ней
     static void DumpSceneInfo(const boost::filesystem::path &path);
+
+    // Загружает материалы сцены в переданный массив.
+    static void LoadMaterials(const boost::filesystem::path &resourceDir,
+                              CAssetLoader &assetLoader,
+                              const aiScene &scene,
+                              std::vector<SPhongMaterial> &materials);
 };
