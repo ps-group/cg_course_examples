@@ -3,8 +3,6 @@
 #include "ParticleProgram.h"
 #include <anax/System.hpp>
 
-class CStaticModel3DRenderer;
-
 class CParticleRenderSystem
         : public anax::System<anax::Requires<CParticleSystemComponent, CTransformComponent>>
 {

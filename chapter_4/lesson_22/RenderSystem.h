@@ -3,7 +3,7 @@
 #include "PhongProgram.h"
 #include <anax/System.hpp>
 
-class CStaticModel3DRenderer;
+class CSkeletalModel3DRenderer;
 
 class CRenderSystem
         : public anax::System<anax::Requires<CMeshComponent, CTransformComponent>>
@@ -24,7 +24,7 @@ private:
         glm::vec4 m_specular;
     };
 
-    void DoRenderPass(CMeshComponent::Category category, CStaticModel3DRenderer &renderer);
+    void DoRenderPass(CMeshComponent::Category category, CSkeletalModel3DRenderer &renderer);
 
     CPhongProgram m_planetProgram;
     LightSource m_light0;
