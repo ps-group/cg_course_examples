@@ -55,9 +55,6 @@ void CParticleSystem::SetParticleTexture(const CTexture2DSharedPtr &pTexture)
 
 void CParticleSystem::Advance(float dt)
 {
-#ifndef NDEBUG
-    std::cerr << "Particle count: " << unsigned(m_particles.size()) << std::endl;
-#endif
     // Генерируем новые частицы (за 1 кадр может появиться несколько частиц).
     m_pEmitter->Advance(dt);
     while (m_pEmitter->IsEmitReady())

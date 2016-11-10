@@ -1,0 +1,16 @@
+{
+    "objects": [
+        {
+            "model": "human.dae",
+            "position": [-4, 0, 0],
+            "eulerAngles": [0, 0, 0],
+            "size": 2
+        },
+        {
+            "model": "human.bvh",
+            "position": [4, 0, 0],
+            "eulerAngles": [0, 0, 0],
+            "size": 2
+        }
+    ]
+}

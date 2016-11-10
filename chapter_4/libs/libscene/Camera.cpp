@@ -67,20 +67,20 @@ vec3 GetMoveDirection(const std::set<unsigned> & keysPressed)
 // См. http://www.gamedev.ru/code/forum/?id=43526
 vec3 GetRightDirection(const vec3 &up, const vec3 &forward)
 {
-    return glm::cross(up, forward);
+    return glm::normalize(glm::cross(up, forward));
 }
 
 // По причинам, описанным выше, добавляем
 //  знак минус к векторному произведению.
 vec3 GetForwardDirection(const vec3 &up, const vec3 &right)
 {
-    return -glm::cross(up, right);
+    return -glm::normalize(glm::cross(up, right));
 }
 
 // По причинам, описанным выше, мы не инвертируем векторное произведение.
 vec3 GetUpDirection(const vec3 &forward, const vec3 &right)
 {
-    return glm::cross(forward, right);
+    return glm::normalize(glm::cross(forward, right));
 }
 }
 
