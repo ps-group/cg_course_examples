@@ -7,8 +7,8 @@
 #include "libscene/Camera.h"
 #include "libscene/Geometry.h"
 #include "libscene/Tesselator.h"
-#include "libscene/Model3D.h"
-#include "libscene/Model3DRenderer.h"
+#include "libscene/StaticModel3D.h"
+#include "libscene/StaticModel3DRenderer.h"
 
 #include "libscene/AssetLoader.h"
-#include "libscene/ModelLoader.h"
+#include "libscene/StaticModelLoader.h"

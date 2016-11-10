@@ -1,4 +1,4 @@
-#include "ModelLoader.h"
+#include "StaticModelLoader.h"
 #include "AssetLoader.h"
 #include "AssimpUtils.h"
 
@@ -122,7 +122,7 @@ public:
             throw std::runtime_error("Only triangle meshes are supported");
         }
         const unsigned meshNo = unsigned(m_meshes.size());
-        CMesh3D mesh3d;
+        CStaticMesh3D mesh3d;
         mesh3d.m_materialIndex = mesh.mMaterialIndex;
         try
         {
@@ -140,7 +140,7 @@ public:
         m_meshes.push_back(mesh3d);
     }
 
-    std::vector<CMesh3D> &&TakeMeshes()
+    std::vector<CStaticMesh3D> &&TakeMeshes()
     {
         return std::move(m_meshes);
     }
@@ -302,7 +302,7 @@ private:
         }
     }
 
-    std::vector<CMesh3D> m_meshes;
+    std::vector<CStaticMesh3D> m_meshes;
     SGeometryData<uint8_t, uint32_t> m_geometry;
     std::unordered_map<unsigned, glm::mat4> m_meshTransforms;
 };
@@ -366,9 +366,9 @@ void LoadMaterials(const path &resourceDir, CAssetLoader &assetLoader,
 
 // Проверяет целостность данных сетки треугольников.
 // Выбрасывает std::runtime_error, если в данные закралась ошибка.
-void VerifyModel3D(CModel3D &model)
+void VerifyModel3D(CStaticModel3D &model)
 {
-    for (const CMesh3D &mesh : model.m_meshes)
+    for (const CStaticMesh3D &mesh : model.m_meshes)
     {
         if (mesh.m_materialIndex >= model.m_materials.size())
         {
@@ -380,12 +380,12 @@ void VerifyModel3D(CModel3D &model)
 }
 
 
-CModelLoader::CModelLoader(CAssetLoader &assetLoader)
+CStaticModelLoader::CStaticModelLoader(CAssetLoader &assetLoader)
     : m_assetLoader(assetLoader)
 {
 }
 
-CModel3DSharedPtr CModelLoader::Load(const boost::filesystem::path &path)
+CStaticModel3DPtr CStaticModelLoader::Load(const boost::filesystem::path &path)
 {
     const boost::filesystem::path abspath = m_assetLoader.GetResourceAbspath(path);
 
@@ -405,7 +405,7 @@ CModel3DSharedPtr CModelLoader::Load(const boost::filesystem::path &path)
         accumulator.Add(*(scene.mMeshes[mi]));
     }
 
-    auto pModel = std::make_shared<CModel3D>();
+    auto pModel = std::make_shared<CStaticModel3D>();
     pModel->m_meshes = accumulator.TakeMeshes();
     pModel->m_pGeometry = accumulator.MakeGeometry();
     LoadMaterials(abspath.parent_path(), m_assetLoader, scene, pModel->m_materials);

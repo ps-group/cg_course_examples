@@ -61,7 +61,7 @@ public:
     }
 
 private:
-    CModel3DSharedPtr LoadModelWithCache(const path &abspath)
+    CStaticModel3DPtr LoadModelWithCache(const path &abspath)
     {
         // Пытаемся извлечь модель из кеша.
         auto it = m_modelsCache.find(abspath.generic_string());
@@ -97,9 +97,9 @@ private:
     }
 
     anax::World &m_world;
-    CModelLoader m_modelLoader;
+    CStaticModelLoader m_modelLoader;
     path m_workdir;
-    std::unordered_map<std::string, CModel3DSharedPtr> m_modelsCache;
+    std::unordered_map<std::string, CStaticModel3DPtr> m_modelsCache;
 };
 }
 
@@ -140,7 +140,7 @@ void CSceneLoader::LoadSkybox(const boost::filesystem::path &path)
 
     const CStaticGeometry cube = CTesselator::TesselateSkybox(rects);
 
-    auto pModel = std::make_shared<CModel3D>();
+    auto pModel = std::make_shared<CStaticModel3D>();
     pModel->m_pGeometry = cube.m_pGeometry;
     pModel->m_meshes.emplace_back();
     pModel->m_meshes.back().m_layout = cube.m_layout;

@@ -1,6 +1,6 @@
-#include "Model3DRenderer.h"
+#include "StaticModel3DRenderer.h"
 #include "Geometry.h"
-#include "Model3D.h"
+#include "StaticModel3D.h"
 #include "DrawUtils.h"
 #include "libshading/ProgramUniform.h"
 #include "libshading/VertexAttribute.h"
@@ -9,22 +9,22 @@
 #include "includes/opengl-common.hpp"
 
 
-void CModel3DRenderer::SetWorldMat4(const glm::mat4 &value)
+void CStaticModel3DRenderer::SetWorldMat4(const glm::mat4 &value)
 {
     m_world = value;
 }
 
-void CModel3DRenderer::SetViewMat4(const glm::mat4 &value)
+void CStaticModel3DRenderer::SetViewMat4(const glm::mat4 &value)
 {
     m_view = value;
 }
 
-void CModel3DRenderer::SetProjectionMat4(const glm::mat4 &value)
+void CStaticModel3DRenderer::SetProjectionMat4(const glm::mat4 &value)
 {
     m_projection = value;
 }
 
-void CModel3DRenderer::Use(IProgramAdapter &program)
+void CStaticModel3DRenderer::Use(IProgramAdapter &program)
 {
     m_pProgram = &program;
     m_pProgram->Use();
@@ -33,7 +33,7 @@ void CModel3DRenderer::Use(IProgramAdapter &program)
     GetUniform(UniformId::TEX_EMISSIVE) = 2; // GL_TEXTURE2
 }
 
-void CModel3DRenderer::Draw(CModel3D &model)
+void CStaticModel3DRenderer::Draw(CStaticModel3D &model)
 {
     if (!m_pProgram)
     {
@@ -43,7 +43,7 @@ void CModel3DRenderer::Draw(CModel3D &model)
     GetUniform(UniformId::MATRIX_VIEW) = m_view;
 
     model.m_pGeometry->Bind();
-    for (CMesh3D &mesh : model.m_meshes)
+    for (CStaticMesh3D &mesh : model.m_meshes)
     {
         ApplyModelView(mesh.m_local);
         ApplyMaterial(model.m_materials[mesh.m_materialIndex]);
@@ -52,7 +52,7 @@ void CModel3DRenderer::Draw(CModel3D &model)
     }
 }
 
-CProgramUniform CModel3DRenderer::GetUniform(UniformId id) const
+CProgramUniform CStaticModel3DRenderer::GetUniform(UniformId id) const
 {
     return m_pProgram->GetUniform(id);
 }
@@ -60,7 +60,7 @@ CProgramUniform CModel3DRenderer::GetUniform(UniformId id) const
 // Получает матрицу преобразования к локальным координатам модели
 //  и настраивает матрицы преобразования
 //  от коодинат сетки к коодинатам камеры.
-void CModel3DRenderer::ApplyModelView(const glm::mat4 &local)
+void CStaticModel3DRenderer::ApplyModelView(const glm::mat4 &local)
 {
     const glm::mat4 worldMatrix = m_view * m_world * local;
     const glm::mat4 normalMatrix = CDrawUtils::GetNormalMat4(worldMatrix);
@@ -70,7 +70,7 @@ void CModel3DRenderer::ApplyModelView(const glm::mat4 &local)
 
 // Применяет текстуры, цвет и shininess материала
 //  к uniform-переменным шейдера и состоянию OpenGL.
-void CModel3DRenderer::ApplyMaterial(const SPhongMaterial &material) const
+void CStaticModel3DRenderer::ApplyMaterial(const SPhongMaterial &material) const
 {
     GetUniform(UniformId::MATERIAL_SHININESS) = material.shininess;
     GetUniform(UniformId::MATERIAL_DIFFUSE) = material.diffuseColor;
@@ -90,7 +90,7 @@ void CModel3DRenderer::ApplyMaterial(const SPhongMaterial &material) const
 
 // Выполняет привязку смещений и параметров атрибутов вершин
 //  к атрибутным переменным шейдера.
-void CModel3DRenderer::BindAttributes(const SGeometryLayout &layout) const
+void CStaticModel3DRenderer::BindAttributes(const SGeometryLayout &layout) const
 {
     auto bind = [&](AttributeId attr, size_t offset, unsigned numComponents, bool needClamp) {
         CVertexAttribute attrVar = m_pProgram->GetAttribute(attr);

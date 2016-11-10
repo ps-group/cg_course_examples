@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "RenderSystem.h"
-#include "libscene/Model3DRenderer.h"
+#include "libscene/StaticModel3DRenderer.h"
 #include "libscene/DrawUtils.h"
 #include "includes/opengl-common.hpp"
 
@@ -18,7 +18,7 @@ void CRenderSystem::SetupLight0(const glm::vec4 &position, const glm::vec4 &diff
 
 void CRenderSystem::Render(const glm::mat4 &view, const glm::mat4 &projection)
 {
-    CModel3DRenderer renderer;
+    CStaticModel3DRenderer renderer;
     renderer.Use(m_planetProgram);
     renderer.SetProjectionMat4(projection);
 
@@ -35,7 +35,7 @@ void CRenderSystem::Render(const glm::mat4 &view, const glm::mat4 &projection)
     DoRenderPass(CMeshComponent::Foreground, renderer);
 }
 
-void CRenderSystem::DoRenderPass(CMeshComponent::Category category, CModel3DRenderer &renderer)
+void CRenderSystem::DoRenderPass(CMeshComponent::Category category, CStaticModel3DRenderer &renderer)
 {
     for (const auto &entity : getEntities())
     {

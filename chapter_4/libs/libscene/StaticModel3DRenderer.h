@@ -1,15 +1,15 @@
 #pragma once
 #include <glm/mat4x4.hpp>
 
-class CMesh3D;
-class CModel3D;
+class CStaticMesh3D;
+class CStaticModel3D;
 class IProgramAdapter;
 class CProgramUniform;
 struct SPhongMaterial;
 struct SGeometryLayout;
 enum class UniformId : unsigned;
 
-class CModel3DRenderer
+class CStaticModel3DRenderer
 {
 public:
     void SetWorldMat4(const glm::mat4 &value);
@@ -17,7 +17,7 @@ public:
     void SetProjectionMat4(const glm::mat4 &value);
     void Use(IProgramAdapter &program);
 
-    void Draw(CModel3D &model);
+    void Draw(CStaticModel3D &model);
 
 private:
     CProgramUniform GetUniform(UniformId id)const;

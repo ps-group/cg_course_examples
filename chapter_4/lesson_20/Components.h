@@ -1,5 +1,5 @@
 #pragma once
-#include "libscene/Model3D.h"
+#include "libscene/StaticModel3D.h"
 #include "libgeometry/Transform.h"
 #include <anax/Component.hpp>
 #include <glm/matrix.hpp>
@@ -18,7 +18,7 @@ public:
     };
 
     Category m_category;
-    CModel3DSharedPtr m_pModel;
+    CStaticModel3DPtr m_pModel;
 };
 
 class CTransformComponent

@@ -7,10 +7,10 @@
 #include "BufferObject.h"
 #include "Texture2D.h"
 
-class CModel3D;
-using CModel3DSharedPtr = std::shared_ptr<CModel3D>;
+class CStaticModel3D;
+using CStaticModel3DPtr = std::shared_ptr<CStaticModel3D>;
 
-class CMesh3D
+class CStaticMesh3D
 {
 public:
     // Размещение данных сетки примитивов в памяти модели.
@@ -21,10 +21,10 @@ public:
     unsigned m_materialIndex = 0;
 };
 
-class CModel3D
+class CStaticModel3D
 {
 public:
     std::vector<SPhongMaterial> m_materials;
-    std::vector<CMesh3D> m_meshes;
+    std::vector<CStaticMesh3D> m_meshes;
     CGeometrySharedPtr m_pGeometry;
 };

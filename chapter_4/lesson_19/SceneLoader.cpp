@@ -137,7 +137,7 @@ private:
     anax::World &m_world;
     CAssetLoader &m_assetLoader;
     path m_workdir;
-    std::unordered_map<std::string, CModel3DSharedPtr> m_modelsCache;
+    std::unordered_map<std::string, CStaticModel3DPtr> m_modelsCache;
 };
 }
 
