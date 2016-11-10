@@ -105,7 +105,7 @@ void CSkeletalModel3DRenderer::BindAttributes(const SGeometryLayout &layout) con
                 const size_t bytesOffset = size_t(layout.m_baseVertexOffset + unsigned(offset));
                 const size_t bytesStride = size_t(layout.m_vertexSize);
                 attrVar.EnablePointer();
-                attrVar.SetOffset(bytesOffset, bytesStride, numComponents, needClamp);
+                attrVar.SetFloatsOffset(bytesOffset, bytesStride, numComponents, needClamp);
             }
         }
     };

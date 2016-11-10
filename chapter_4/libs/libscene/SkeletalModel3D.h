@@ -10,6 +10,16 @@
 class CSkeletalModel3D;
 using CSkeletalModel3DPtr = std::shared_ptr<CSkeletalModel3D>;
 
+// Представляет кость скелета модели.
+// В разных треугольных сетках кость может появляться несколько раз
+//  с одинаковым значением `name`, но с разным `offsetMat4`.
+class CSkeletalBone3D
+{
+public:
+    std::string m_name;
+    glm::mat4 m_offsetMat4;
+};
+
 class CSkeletalMesh3D
 {
 public:
@@ -19,6 +29,8 @@ public:
     glm::mat4 m_local;
     // Номер материала в материалах модели.
     unsigned m_materialIndex = 0;
+    // Список костей, взаимодействующих с данной сеткой.
+    std::vector<CSkeletalBone3D> m_bones;
 };
 
 class CSkeletalModel3D

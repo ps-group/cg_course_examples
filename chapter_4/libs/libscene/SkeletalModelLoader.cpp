@@ -9,6 +9,10 @@ using glm::vec4;
 
 namespace
 {
+const size_t BONES_PER_VERTEX = SGeometryLayout::BONES_PER_VERTEX;
+const size_t MAX_BONES_COUNT = std::numeric_limits<uint8_t>::max();
+const float EPSILON = std::numeric_limits<float>::epsilon();
+
 // Возвращает количество байт, занятых массивом.
 template<class T>
 size_t GetBytesCount(const std::vector<T> &data)
@@ -25,6 +29,49 @@ T *AddItemsToWrite(std::vector<T> &data, size_t count)
 
     return (data.data() + oldSize);
 }
+
+struct СVertexSkinning
+{
+    uint8_t indexes[BONES_PER_VERTEX];
+    float weights[BONES_PER_VERTEX];
+
+    // Конструктор заполняет структуру нулями.
+    СVertexSkinning()
+    {
+        std::memset(indexes, 0, sizeof(indexes));
+        std::memset(weights, 0, sizeof(weights));
+    }
+
+    // Добавляет вес и индекс кости, от которой зависит вершина.
+    void AddWeight(unsigned boneId, float weight)
+    {
+        // Индекс кости сохраняется в uint8_t,
+        //  поэтому более 256 костей в модели быть не должно.
+        if (boneId > MAX_BONES_COUNT)
+        {
+            throw std::runtime_error("Implementation doesn't support more than "
+                                     + std::to_string(MAX_BONES_COUNT)
+                                     + " bones");
+        }
+
+        for (size_t i = 0; i < BONES_PER_VERTEX; ++i)
+        {
+            // Ищем кость с нулевым весом и заполняем её.
+            if (weights[i] <= EPSILON)
+            {
+                weights[i] = weight;
+                indexes[i] = uint8_t(boneId);
+                return;
+            }
+        }
+
+        // Если вершина уже зависит от максимального числа костей,
+        //  бросаем исключение.
+        throw std::runtime_error("Implementation doesn't support more than "
+                                 + std::to_string(BONES_PER_VERTEX)
+                                 + "bones per vertex");
+    }
+};
 
 // Накапливает информацию о сетках треугольников и геометрии.
 class CMeshAccumulator
@@ -71,7 +118,14 @@ public:
             throw std::out_of_range("Submesh #" + std::to_string(meshNo)
                                     + " has no transform");
         }
+
+        // Преобразуем данные о костях в форму, в которой вершина хранит данные
+        //  о креплении к костям, а не кость хранит данные о прикрелённых
+        //  вершинах.
+        CollectPerVertexSkinning(mesh, mesh3d.m_bones);
+
         SetupBytesLayout(mesh, mesh3d.m_layout);
+
         CopyVertexes(mesh, mesh3d.m_layout);
         CopyIndexes(mesh);
 
@@ -155,6 +209,13 @@ private:
             layout.m_bitangent = layout.m_vertexSize;
             layout.m_vertexSize += sizeof(aiVector3D);
         }
+        if (mesh.HasBones())
+        {
+            layout.m_boneIndexes = layout.m_vertexSize;
+            layout.m_vertexSize += sizeof(uint8_t[SGeometryLayout::BONES_PER_VERTEX]);
+            layout.m_boneWeights = layout.m_vertexSize;
+            layout.m_vertexSize += sizeof(glm::ivec4);
+        }
     }
 
     void CopyVertexes(const aiMesh& mesh, SGeometryLayout &layout)
@@ -163,33 +224,57 @@ private:
         //  затем формируем указатель для начала записи данных.
         const size_t dataSize = layout.m_vertexCount * layout.m_vertexSize;
         uint8_t *pDest = AddItemsToWrite(m_geometry.m_vertexData, dataSize);
+
         for (unsigned i = 0, n = mesh.mNumVertices; i < n; i += 1)
         {
-            // Копируем нормали и вершины
+            // Копируем вершины (обязательный атрибут)
             std::memcpy(pDest + layout.m_position3D,
-                        &mesh.mVertices[i].x, sizeof(aiVector3D));
+                        &mesh.mVertices[i].x,
+                        sizeof(aiVector3D));
+
+            // Копируем нормали (обязательный атрибут)
             std::memcpy(pDest + layout.m_normal,
-                        &mesh.mNormals[i].x, sizeof(aiVector3D));
+                        &mesh.mNormals[i].x,
+                        sizeof(aiVector3D));
 
             // Копируем текстурные координаты
             if (layout.m_texCoord2D != SGeometryLayout::UNSET)
             {
                 std::memcpy(pDest + layout.m_texCoord2D,
-                            &mesh.mTextureCoords[0][i].x, sizeof(aiVector2D));
+                            &mesh.mTextureCoords[0][i].x,
+                            sizeof(aiVector2D));
             }
 
             // Копируем тангенциальные координаты
             if (layout.m_tangent != SGeometryLayout::UNSET)
             {
                 std::memcpy(pDest + layout.m_tangent,
-                            &mesh.mTangents[i].x, sizeof(aiVector3D));
+                            &mesh.mTangents[i].x,
+                            sizeof(aiVector3D));
             }
 
             // Копируем тангенциальные координаты
             if (layout.m_bitangent != SGeometryLayout::UNSET)
             {
                 std::memcpy(pDest + layout.m_bitangent,
-                            &mesh.mBitangents[i].x, sizeof(aiVector3D));
+                            &mesh.mBitangents[i].x,
+                            sizeof(aiVector3D));
+            }
+
+            // Копируем веса костей
+            if (layout.m_boneWeights != SGeometryLayout::UNSET)
+            {
+                std::memcpy(pDest + layout.m_boneWeights,
+                            &m_meshSkinning[i].weights,
+                            sizeof(float) * BONES_PER_VERTEX);
+            }
+
+            // Копируем индексы костей
+            if (layout.m_boneIndexes != SGeometryLayout::UNSET)
+            {
+                std::memcpy(pDest + layout.m_boneIndexes,
+                            &m_meshSkinning[i].indexes,
+                            sizeof(uint8_t) * BONES_PER_VERTEX);
             }
 
             // Сдвигаем указатель на данные.
@@ -215,12 +300,8 @@ private:
     //  собирающая трансформации подсеток сцены.
     void CollectTransformsImpl(const aiNode &node, const glm::mat4 &parentTransform)
     {
-        const auto localMat4 = glm::make_mat4(&node.mTransformation.a1);
-
-        // В OpenGL матрицы по умолчанию принимаются в виде
-        //  "столбец за столбцом", а не "строка за строкой",
-        //  поэтому мы транспонируем матрицу локального преобразования.
-        const auto globalMat4 = parentTransform * glm::transpose(localMat4);
+        const glm::mat4 globalMat4 = parentTransform
+                * CAssimpUtils::ConvertMat4(node.mTransformation);
 
         for (unsigned mi = 0; mi < node.mNumMeshes; ++mi)
         {
@@ -240,9 +321,36 @@ private:
         }
     }
 
+    // Собирает информацию о костях треугольной сетки,
+    //  а тажке об их воздействии на вершины.
+    void CollectPerVertexSkinning(const aiMesh &mesh, std::vector<CSkeletalBone3D> &bones)
+    {
+        // Очищаем массив данных о скининге вершин.
+        m_meshSkinning.clear();
+
+        // Заполняем массивы пустыми данными нужном в количестве.
+        m_meshSkinning.resize(mesh.mNumVertices);
+        bones.resize(mesh.mNumBones);
+
+        for (unsigned boneId = 0; boneId < mesh.mNumBones; ++boneId)
+        {
+            const aiBone &bone = *mesh.mBones[boneId];
+            bones[boneId].m_name = bone.mName.C_Str();
+            bones[boneId].m_offsetMat4 = CAssimpUtils::ConvertMat4(bone.mOffsetMatrix);
+
+            for (unsigned wi = 0; wi < bone.mNumWeights; ++wi)
+            {
+                const aiVertexWeight &weight = bone.mWeights[wi];
+                СVertexSkinning &skinning = m_meshSkinning.at(weight.mVertexId);
+                skinning.AddWeight(boneId, weight.mWeight);
+            }
+        }
+    }
+
     std::vector<CSkeletalMesh3D> m_meshes;
     SGeometryData<uint8_t, uint32_t> m_geometry;
     std::unordered_map<unsigned, glm::mat4> m_meshTransforms;
+    std::vector<СVertexSkinning> m_meshSkinning;
 };
 
 // Проверяет целостность данных сетки треугольников.

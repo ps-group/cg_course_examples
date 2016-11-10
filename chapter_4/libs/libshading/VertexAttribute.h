@@ -20,15 +20,21 @@ public:
     //  - 1 (по умолчанию) - атрибут меняется только при смене экземпляра
     void SetDivisor(unsigned divisor);
 
-    // Патаметр needClamp - отвечает за покомпонентное нормирование
-    //   атрибутов к `1.0`, что может пригодиться для передаче цвета (color).
+    // Устанавливает смещение атрибута типа vec3
+    // Параметр needClamp - отвечает за покомпонентное нормирование
+    //   атрибутов к `1.0`, что может быть полезным для передачи цвета (color).
     void SetVec3Offset(size_t offset, size_t stride, bool needClamp);
 
+    // Устанавливает смещение атрибута типа vec2
     void SetVec2Offset(size_t offset, size_t stride);
 
-    // Патаметр needClamp - отвечает за покомпонентное нормирование
-    //   атрибутов к `1.0`, что может пригодиться для передаче цвета (color).
-    void SetOffset(size_t offset, size_t stride, unsigned numComponents, bool needClamp);
+    // Устанавливает смещение атрибута типа `float[numComponents]`
+    // Параметр needClamp - отвечает за покомпонентное нормирование
+    //   атрибутов к `1.0`, что может быть полезным для передачи цвета (color).
+    void SetFloatsOffset(size_t offset, size_t stride, unsigned numComponents, bool needClamp);
+
+    // Устанавливает смещение атрибута типа `uint8_t[numComponents]`
+    void SetUint8Offset(size_t offset, size_t stride, unsigned numComponents);
 
 private:
     int m_location = -1;

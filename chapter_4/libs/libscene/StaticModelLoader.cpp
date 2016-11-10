@@ -215,12 +215,8 @@ private:
     //  собирающая трансформации подсеток сцены.
     void CollectTransformsImpl(const aiNode &node, const glm::mat4 &parentTransform)
     {
-        const auto localMat4 = glm::make_mat4(&node.mTransformation.a1);
-
-        // В OpenGL матрицы по умолчанию принимаются в виде
-        //  "столбец за столбцом", а не "строка за строкой",
-        //  поэтому мы транспонируем матрицу локального преобразования.
-        const auto globalMat4 = parentTransform * glm::transpose(localMat4);
+        const glm::mat4 globalMat4 = parentTransform
+                * CAssimpUtils::ConvertMat4(node.mTransformation);
 
         for (unsigned mi = 0; mi < node.mNumMeshes; ++mi)
         {

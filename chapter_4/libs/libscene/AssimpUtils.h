@@ -6,6 +6,7 @@
 #include <assimp/types.h>
 #include <assimp/postprocess.h>
 #include <assimp/Importer.hpp>
+#include <glm/fwd.hpp>
 
 #include <boost/filesystem/path.hpp>
 
@@ -34,4 +35,6 @@ public:
                               CAssetLoader &assetLoader,
                               const aiScene &scene,
                               std::vector<SPhongMaterial> &materials);
+
+    static glm::mat4 ConvertMat4(const aiMatrix4x4 &value);
 };

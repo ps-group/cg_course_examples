@@ -40,9 +40,15 @@ void CVertexAttribute::SetVec2Offset(size_t offset, size_t stride)
                           GLsizei(stride), reinterpret_cast<const void *>(offset));
 }
 
-void CVertexAttribute::SetOffset(size_t offset, size_t stride, unsigned numComponents, bool needClamp)
+void CVertexAttribute::SetFloatsOffset(size_t offset, size_t stride, unsigned numComponents, bool needClamp)
 {
     const GLboolean normalize = needClamp ? GL_TRUE : GL_FALSE;
     glVertexAttribPointer(GLuint(m_location), GLint(numComponents), GL_FLOAT, normalize,
                           GLsizei(stride), reinterpret_cast<const void *>(offset));
+}
+
+void CVertexAttribute::SetUint8Offset(size_t offset, size_t stride, unsigned numComponents)
+{
+    glVertexAttribIPointer(GLuint(m_location), GLint(numComponents), GL_UNSIGNED_BYTE,
+                           GLsizei(stride), reinterpret_cast<const void *>(offset));
 }

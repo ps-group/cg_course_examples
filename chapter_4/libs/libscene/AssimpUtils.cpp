@@ -334,3 +334,11 @@ void CAssimpUtils::LoadMaterials(const path &resourceDir,
         }
     }
 }
+
+glm::mat4 CAssimpUtils::ConvertMat4(const aiMatrix4x4 &value)
+{
+    // В OpenGL матрицы по умолчанию принимаются в виде
+    //  "столбец за столбцом", а не "строка за строкой", поэтому мы
+    //  создаём матрицу из массива float и затем транспонируем её.
+    return glm::transpose(glm::make_mat4(&value.a1));
+}
