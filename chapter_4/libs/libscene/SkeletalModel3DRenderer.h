@@ -21,7 +21,7 @@ public:
 
 private:
     CProgramUniform GetUniform(UniformId id)const;
-    void ApplyModelView(const glm::mat4 &local);
+    void SetupTransforms();
     void ApplyMaterial(const SPhongMaterial &material)const;
     void BindAttributes(const SGeometryLayout &layout)const;
 

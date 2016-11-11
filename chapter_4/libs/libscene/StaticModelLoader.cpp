@@ -47,9 +47,9 @@ public:
 
     // Обходит все узлы сцены и запоминает суммарную трансформацию
     //  для каждой подсетки.
-    void CollectTransforms(const aiScene& scene)
+    void VisitNodeTree(const aiScene& scene)
     {
-        CollectTransformsImpl(*scene.mRootNode, glm::mat4());
+        VisitNode(*scene.mRootNode, glm::mat4());
     }
 
     // Добавляет сетку треугольников в общий набор данных.
@@ -213,7 +213,7 @@ private:
 
     // Рекурсивно вызываемая функция,
     //  собирающая трансформации подсеток сцены.
-    void CollectTransformsImpl(const aiNode &node, const glm::mat4 &parentTransform)
+    void VisitNode(const aiNode &node, const glm::mat4 &parentTransform)
     {
         const glm::mat4 globalMat4 = parentTransform
                 * CAssimpUtils::ConvertMat4(node.mTransformation);
@@ -232,7 +232,7 @@ private:
         }
         for (unsigned ci = 0; ci < node.mNumChildren; ++ci)
         {
-            CollectTransformsImpl(*node.mChildren[ci], globalMat4);
+            VisitNode(*node.mChildren[ci], globalMat4);
         }
     }
 
@@ -276,7 +276,7 @@ CStaticModel3DPtr CStaticModelLoader::Load(const boost::filesystem::path &path)
 
     CMeshAccumulator accumulator;
     accumulator.CollectBoundingBox(scene);
-    accumulator.CollectTransforms(scene);
+    accumulator.VisitNodeTree(scene);
     for (unsigned mi = 0; mi < scene.mNumMeshes; ++mi)
     {
         accumulator.Add(*(scene.mMeshes[mi]));

@@ -8,7 +8,6 @@
 #include "includes/glm-common.hpp"
 #include "includes/opengl-common.hpp"
 
-
 void CSkeletalModel3DRenderer::SetWorldMat4(const glm::mat4 &value)
 {
     m_world = value;
@@ -39,13 +38,12 @@ void CSkeletalModel3DRenderer::Draw(CSkeletalModel3D &model)
     {
         throw std::runtime_error("Cannot draw 3D model while no program set");
     }
-    GetUniform(UniformId::MATRIX_PROJECTION) = m_projection;
-    GetUniform(UniformId::MATRIX_VIEW) = m_view;
+    SetupTransforms();
 
     model.m_pGeometry->Bind();
     for (CSkeletalMesh3D &mesh : model.m_meshes)
     {
-        ApplyModelView(mesh.m_local);
+        // TODO: apply bones & skinning
         ApplyMaterial(model.m_materials[mesh.m_materialIndex]);
         BindAttributes(mesh.m_layout);
         CDrawUtils::DrawRangeElements(mesh.m_layout);
@@ -57,13 +55,16 @@ CProgramUniform CSkeletalModel3DRenderer::GetUniform(UniformId id) const
     return m_pProgram->GetUniform(id);
 }
 
-// Получает матрицу преобразования к локальным координатам модели
-//  и настраивает матрицы преобразования
-//  от коодинат сетки к коодинатам камеры.
-void CSkeletalModel3DRenderer::ApplyModelView(const glm::mat4 &local)
+// Настраивает матрицы
+//  - преобразования от коодинат сетки к коодинатам камеры,
+//  - преобразования от мировых координат к координатам камеры,
+//  - перспективного преобразования
+void CSkeletalModel3DRenderer::SetupTransforms()
 {
-    const glm::mat4 worldMatrix = m_view * m_world * local;
+    const glm::mat4 worldMatrix = m_view * m_world;
     const glm::mat4 normalMatrix = CDrawUtils::GetNormalMat4(worldMatrix);
+    GetUniform(UniformId::MATRIX_PROJECTION) = m_projection;
+    GetUniform(UniformId::MATRIX_VIEW) = m_view;
     GetUniform(UniformId::MATRIX_WORLDVIEW) = worldMatrix;
     GetUniform(UniformId::MATRIX_NORMALWORLDVIEW) = normalMatrix;
 }

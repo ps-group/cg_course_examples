@@ -92,11 +92,11 @@ public:
         m_geometry.m_bbox = GetNodeBBox(scene, *scene.mRootNode);
     }
 
-    // Обходит все узлы сцены и запоминает суммарную трансформацию
-    //  для каждой подсетки.
-    void CollectTransforms(const aiScene& scene)
+    // Обходит все узлы сцены и воссоздаёт иерархию узлов CSkeletalNode.
+    void VisitNodeTree(const aiScene& scene)
     {
-        CollectTransformsImpl(*scene.mRootNode, glm::mat4());
+        m_rootNode = std::make_unique<CSkeletalNode>();
+        VisitNode(*scene.mRootNode, *m_rootNode);
     }
 
     // Добавляет сетку треугольников в общий набор данных.
@@ -106,18 +106,13 @@ public:
         {
             throw std::runtime_error("Only triangle meshes are supported");
         }
-        const unsigned meshNo = unsigned(m_meshes.size());
+        if (mesh.mNumBones == 0)
+        {
+            throw std::runtime_error("Only meshes with bones are supported");
+        }
+
         CSkeletalMesh3D mesh3d;
         mesh3d.m_materialIndex = mesh.mMaterialIndex;
-        try
-        {
-            mesh3d.m_local = m_meshTransforms.at(meshNo);
-        }
-        catch (const std::out_of_range &)
-        {
-            throw std::out_of_range("Submesh #" + std::to_string(meshNo)
-                                    + " has no transform");
-        }
 
         // Преобразуем данные о костях в форму, в которой вершина хранит данные
         //  о креплении к костям, а не кость хранит данные о прикрелённых
@@ -135,6 +130,11 @@ public:
     std::vector<CSkeletalMesh3D> &&TakeMeshes()
     {
         return std::move(m_meshes);
+    }
+
+    CSkeletalNodePtr &&TakeRoot()
+    {
+        return std::move(m_rootNode);
     }
 
     CGeometrySharedPtr MakeGeometry()const
@@ -195,6 +195,12 @@ private:
         layout.m_normal = layout.m_vertexSize;
         layout.m_vertexSize += sizeof(aiVector3D);
 
+        // Анимированная модель обязана иметь кости.
+        layout.m_boneIndexes = layout.m_vertexSize;
+        layout.m_vertexSize += sizeof(uint8_t[SGeometryLayout::BONES_PER_VERTEX]);
+        layout.m_boneWeights = layout.m_vertexSize;
+        layout.m_vertexSize += sizeof(glm::ivec4);
+
         // Текстурные координаты UV - опциональный атрибут
         if (mesh.HasTextureCoords(0))
         {
@@ -208,13 +214,6 @@ private:
             layout.m_vertexSize += sizeof(aiVector3D);
             layout.m_bitangent = layout.m_vertexSize;
             layout.m_vertexSize += sizeof(aiVector3D);
-        }
-        if (mesh.HasBones())
-        {
-            layout.m_boneIndexes = layout.m_vertexSize;
-            layout.m_vertexSize += sizeof(uint8_t[SGeometryLayout::BONES_PER_VERTEX]);
-            layout.m_boneWeights = layout.m_vertexSize;
-            layout.m_vertexSize += sizeof(glm::ivec4);
         }
     }
 
@@ -297,59 +296,55 @@ private:
     }
 
     // Рекурсивно вызываемая функция,
-    //  собирающая трансформации подсеток сцены.
-    void CollectTransformsImpl(const aiNode &node, const glm::mat4 &parentTransform)
-    {
-        const glm::mat4 globalMat4 = parentTransform
-                * CAssimpUtils::ConvertMat4(node.mTransformation);
-
-        for (unsigned mi = 0; mi < node.mNumMeshes; ++mi)
-        {
-            const unsigned meshNo = node.mMeshes[mi];
-            if (m_meshTransforms.count(meshNo))
-            {
-                // В данном загрузчике модели не будет обработана ситуация,
-                //  когда несколько узлов совместно используют одну сетку.
-                throw std::runtime_error("Mesh #" + std::to_string(meshNo)
-                                         + " used twice in node tree");
-            }
-            m_meshTransforms[meshNo] = globalMat4;
-        }
-        for (unsigned ci = 0; ci < node.mNumChildren; ++ci)
-        {
-            CollectTransformsImpl(*node.mChildren[ci], globalMat4);
-        }
-    }
-
-    // Собирает информацию о костях треугольной сетки,
-    //  а тажке об их воздействии на вершины.
-    void CollectPerVertexSkinning(const aiMesh &mesh, std::vector<CSkeletalBone3D> &bones)
+    //  собирающая информацию о скининке вершин сетки,
+    //  и составляющее отображение номеров костей на кости.
+    void CollectPerVertexSkinning(const aiMesh &mesh,
+                                  std::vector<const CSkeletalNode *> &bones)
     {
         // Очищаем массив данных о скининге вершин.
         m_meshSkinning.clear();
+        bones.clear();
 
         // Заполняем массивы пустыми данными нужном в количестве.
-        m_meshSkinning.resize(mesh.mNumVertices);
-        bones.resize(mesh.mNumBones);
+        m_meshSkinning.resize(mesh.mNumVertices, СVertexSkinning());
+        bones.resize(mesh.mNumBones, nullptr);
 
         for (unsigned boneId = 0; boneId < mesh.mNumBones; ++boneId)
         {
-            const aiBone &bone = *mesh.mBones[boneId];
-            bones[boneId].m_name = bone.mName.C_Str();
-            bones[boneId].m_offsetMat4 = CAssimpUtils::ConvertMat4(bone.mOffsetMatrix);
+            const aiBone &srcBone = *mesh.mBones[boneId];
+            const std::string boneName = srcBone.mName.C_Str();
 
-            for (unsigned wi = 0; wi < bone.mNumWeights; ++wi)
+            // Заносим узел в массив узлов, воздействующих на сетку.
+            bones[boneId] = m_nodeNameMapping.at(boneName);
+
+            for (unsigned wi = 0; wi < srcBone.mNumWeights; ++wi)
             {
-                const aiVertexWeight &weight = bone.mWeights[wi];
+                const aiVertexWeight &weight = srcBone.mWeights[wi];
                 СVertexSkinning &skinning = m_meshSkinning.at(weight.mVertexId);
                 skinning.AddWeight(boneId, weight.mWeight);
             }
         }
     }
 
+    // Рекурсивно вызываемая функция,
+    //  собирающая трансформации подсеток сцены.
+    void VisitNode(const aiNode &srcNode, CSkeletalNode &node)
+    {
+        node.m_localMat4 = CAssimpUtils::ConvertMat4(srcNode.mTransformation);
+        node.m_children.resize(srcNode.mNumChildren);
+        node.m_name = srcNode.mName.C_Str();
+        for (unsigned ci = 0; ci < srcNode.mNumChildren; ++ci)
+        {
+            node.m_children[ci] = std::make_unique<CSkeletalNode>();
+            VisitNode(*srcNode.mChildren[ci], *node.m_children[ci]);
+        }
+        m_nodeNameMapping[node.m_name] = &node;
+    }
+
     std::vector<CSkeletalMesh3D> m_meshes;
     SGeometryData<uint8_t, uint32_t> m_geometry;
-    std::unordered_map<unsigned, glm::mat4> m_meshTransforms;
+    CSkeletalNodePtr m_rootNode;
+    std::unordered_map<std::string, const CSkeletalNode*> m_nodeNameMapping;
     std::vector<СVertexSkinning> m_meshSkinning;
 };
 
@@ -388,7 +383,7 @@ CSkeletalModel3DPtr CSkeletalModelLoader::Load(const boost::filesystem::path &pa
 
     CMeshAccumulator accumulator;
     accumulator.CollectBoundingBox(scene);
-    accumulator.CollectTransforms(scene);
+    accumulator.VisitNodeTree(scene);
     for (unsigned mi = 0; mi < scene.mNumMeshes; ++mi)
     {
         accumulator.Add(*(scene.mMeshes[mi]));
@@ -396,6 +391,7 @@ CSkeletalModel3DPtr CSkeletalModelLoader::Load(const boost::filesystem::path &pa
 
     auto pModel = std::make_shared<CSkeletalModel3D>();
     pModel->m_meshes = accumulator.TakeMeshes();
+    pModel->m_rootNode = accumulator.TakeRoot();
     pModel->m_pGeometry = accumulator.MakeGeometry();
     CAssimpUtils::LoadMaterials(abspath.parent_path(), m_assetLoader,
                                 scene, pModel->m_materials);

@@ -123,6 +123,7 @@ SDLSurfacePtr CUtils::RenderUtf8Text(TTF_Font &font, const std::string &text, co
 
     return SDLSurfacePtr(TTF_RenderUTF8_Blended(&font, text.c_str(), rgbaColor));
 }
+
 CChronometer::CChronometer()
 	: m_lastTime(system_clock::now())
 {
@@ -130,14 +131,14 @@ CChronometer::CChronometer()
 
 float CChronometer::GrabDeltaTime()
 {
-	auto newTime = system_clock::now();
-	auto timePassed = duration_cast<milliseconds>(newTime - m_lastTime);
-	m_lastTime = newTime;
-	return 0.001f * float(timePassed.count());
+    auto newTime = system_clock::now();
+    auto timePassed = duration_cast<milliseconds>(newTime - m_lastTime);
+    m_lastTime = newTime;
+    return 0.001f * float(timePassed.count());
 };
 
 void CChronometer::WaitNextFrameTime(const milliseconds &framePeriod)
 {
-	system_clock::time_point nextFrameTime = m_lastTime + framePeriod;
-	std::this_thread::sleep_until(nextFrameTime);
+    system_clock::time_point nextFrameTime = m_lastTime + framePeriod;
+    std::this_thread::sleep_until(nextFrameTime);
 }
