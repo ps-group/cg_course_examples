@@ -1,11 +1,11 @@
 #include "stdafx.h"
-#include "PhongProgram.h"
+#include "SkeletalAnimationProgram.h"
 
-CPhongProgram::CPhongProgram()
+CSkeletalAnimationProgram::CSkeletalAnimationProgram()
 {
     CAssetLoader loader;
-    const auto vertShader = loader.LoadFileAsString("res/static_scene/phong.vert");
-    const auto fragShader = loader.LoadFileAsString("res/static_scene/phong.frag");
+    const auto vertShader = loader.LoadFileAsString("res/skeleton_animation/phong_with_animation.vert");
+    const auto fragShader = loader.LoadFileAsString("res/skeleton_animation/phong.frag");
     m_program.CompileShader(vertShader, ShaderType::Vertex);
     m_program.CompileShader(fragShader, ShaderType::Fragment);
     m_program.Link();
@@ -27,6 +27,7 @@ CPhongProgram::CPhongProgram()
         { UniformId::MATRIX_PROJECTION, "projection" },
         { UniformId::MATRIX_WORLDVIEW, "modelView" },
         { UniformId::MATRIX_NORMALWORLDVIEW, "normalModelView" },
+        { UniformId::BONE_TRANSFORM_ARRAY, "boneTransforms" },
     };
     SetUniformNames(uniforms);
 
@@ -36,11 +37,13 @@ CPhongProgram::CPhongProgram()
         { AttributeId::POSITION, "vertex" },
         { AttributeId::NORMAL, "normal" },
         { AttributeId::TEX_COORD_UV, "textureUV" },
+        { AttributeId::BONE_INDICIES, "boneIds" },
+        { AttributeId::BONE_WEIGHTS, "boneWeights" },
     };
     SetAttributeNames(attributes);
 }
 
-const CShaderProgram &CPhongProgram::GetProgram() const
+const CShaderProgram &CSkeletalAnimationProgram::GetProgram() const
 {
     return m_program;
 }

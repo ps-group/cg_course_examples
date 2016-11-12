@@ -19,6 +19,15 @@ enum class PrimitiveType
     TriangleStrip,
 };
 
+namespace Limits
+{
+// Максимальное число костей, от которых зависит вершина
+static const size_t BONES_PER_VERTEX = 4;
+
+// Максимальное число костей в одной модели.
+static const size_t MAX_BONES_COUNT = std::numeric_limits<uint8_t>::max();
+}
+
 // Гибкая шаблонная структура для хранения вершинных данных,
 //  индесов вершин и ограничивающего параллелипипеда.
 template <class TV, class TI>
@@ -37,8 +46,6 @@ struct SGeometryLayout
 {
     // Специальное значение, означающее, что атрибут отсутствует.
     static const size_t UNSET = size_t(-1);
-    // Максимальное число костей, от которых зависит вершина
-    static const size_t BONES_PER_VERTEX = 4;
 
     // Тип хранимых примитивов.
     PrimitiveType m_primitive = PrimitiveType::Points;

@@ -9,8 +9,8 @@ using glm::vec4;
 
 namespace
 {
-const size_t BONES_PER_VERTEX = SGeometryLayout::BONES_PER_VERTEX;
-const size_t MAX_BONES_COUNT = std::numeric_limits<uint8_t>::max();
+const size_t BONES_PER_VERTEX = Limits::BONES_PER_VERTEX;
+const size_t MAX_BONES_COUNT = Limits::MAX_BONES_COUNT;
 const float EPSILON = std::numeric_limits<float>::epsilon();
 
 // Возвращает количество байт, занятых массивом.
@@ -197,7 +197,7 @@ private:
 
         // Анимированная модель обязана иметь кости.
         layout.m_boneIndexes = layout.m_vertexSize;
-        layout.m_vertexSize += sizeof(uint8_t[SGeometryLayout::BONES_PER_VERTEX]);
+        layout.m_vertexSize += sizeof(uint8_t[BONES_PER_VERTEX]);
         layout.m_boneWeights = layout.m_vertexSize;
         layout.m_vertexSize += sizeof(glm::ivec4);
 
@@ -315,7 +315,9 @@ private:
             const std::string boneName = srcBone.mName.C_Str();
 
             // Заносим узел в массив узлов, воздействующих на сетку.
-            bones[boneId] = m_nodeNameMapping.at(boneName);
+            CSkeletalNode *pNode = m_nodeNameMapping.at(boneName);
+            pNode->m_boneOffset = CAssimpUtils::ConvertMat4(srcBone.mOffsetMatrix);
+            bones[boneId] = pNode;
 
             for (unsigned wi = 0; wi < srcBone.mNumWeights; ++wi)
             {
@@ -330,7 +332,7 @@ private:
     //  собирающая трансформации подсеток сцены.
     void VisitNode(const aiNode &srcNode, CSkeletalNode &node)
     {
-        node.m_localMat4 = CAssimpUtils::ConvertMat4(srcNode.mTransformation);
+        node.m_transform = CAssimpUtils::DecomposeTransform3D(srcNode.mTransformation);
         node.m_children.resize(srcNode.mNumChildren);
         node.m_name = srcNode.mName.C_Str();
         for (unsigned ci = 0; ci < srcNode.mNumChildren; ++ci)
@@ -344,7 +346,7 @@ private:
     std::vector<CSkeletalMesh3D> m_meshes;
     SGeometryData<uint8_t, uint32_t> m_geometry;
     CSkeletalNodePtr m_rootNode;
-    std::unordered_map<std::string, const CSkeletalNode*> m_nodeNameMapping;
+    std::unordered_map<std::string, CSkeletalNode*> m_nodeNameMapping;
     std::vector<СVertexSkinning> m_meshSkinning;
 };
 

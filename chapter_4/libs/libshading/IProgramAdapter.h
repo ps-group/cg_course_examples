@@ -26,6 +26,8 @@ enum class UniformId : unsigned
     MATRIX_NORMALWORLDVIEW, // mat4
     // Отдельные элементы преобразований
     TRANSFORM_SCALE, // vec3
+    // Массив трансформаций костей.
+    BONE_TRANSFORM_ARRAY, // массив mat4[]
 };
 
 enum class AttributeId
@@ -42,6 +44,12 @@ enum class AttributeId
     BITANGENT,
     // Позиция экземпляра объекта (vec3), см. на тему "OpenGL instancing"
     INSTANCE_POSITION,
+    // Индексы костей, влияющих на вершину (uvec4),
+    //  используются для скининга в скелетной анимации
+    BONE_INDICIES,
+    // Веса костей, влияющих на вершину,
+    //  используются для скининга в скелетной анимации
+    BONE_WEIGHTS,
 };
 
 class IProgramAdapter

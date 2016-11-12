@@ -71,3 +71,12 @@ void CProgramUniform::operator =(const glm::mat4 &value)
         glUniformMatrix4fv(m_location, 1, false, glm::value_ptr(value));
     }
 }
+
+void CProgramUniform::operator =(const std::vector<glm::mat4> &value)
+{
+    if ((m_location != -1) && !value.empty())
+    {
+        const GLsizei count = GLsizei(value.size());
+        glUniformMatrix4fv(m_location, count, false, glm::value_ptr(value[0]));
+    }
+}

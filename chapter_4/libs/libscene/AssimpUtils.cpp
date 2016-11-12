@@ -4,6 +4,7 @@
 #include "AssetLoader.h"
 #include <sstream>
 #include <iostream>
+#include <glm/gtx/matrix_decompose.hpp>
 
 using boost::filesystem::path;
 using glm::vec2;
@@ -54,7 +55,9 @@ public:
             return;
         }
         m_indentLevel += 1;
-        PrintNodeInfo(pNode->mName.C_Str(), pNode->mTransformation);
+
+        const std::string meshIds = JoinMeshIds(*pNode);
+        PrintNodeInfo(pNode->mName.C_Str(), pNode->mTransformation, meshIds);
         for (unsigned i = 0, n = pNode->mNumChildren; i < n; ++i)
         {
             Inspect(pNode->mChildren[i]);
@@ -63,10 +66,33 @@ public:
     }
 
 private:
-    void PrintNodeInfo(const std::string &name, const aiMatrix4x4 &transform)
+    std::string JoinMeshIds(const aiNode &node)const
     {
+        if (node.mNumMeshes == 0)
+        {
+            return std::string();
+        }
+
+        std::vector<unsigned> ids(node.mMeshes, node.mMeshes + node.mNumMeshes);
+
+        std::string text = "(mesh ids";
+        for (unsigned mesh : ids)
+        {
+            text += " ";
+            text += std::to_string(mesh);
+        }
+        text += ") ";
+
+        return text;
+    }
+
+    void PrintNodeInfo(const std::string &name,
+                       const aiMatrix4x4 &transform,
+                       const std::string &meshIds)
+    {
+
         const std::string indent(2 * m_indentLevel, ' ');
-        std::cerr << indent << "Node " << name << std::endl;
+        std::cerr << indent << "Node " << meshIds << name << std::endl;
         PrintAiMatrix4(indent, transform);
     }
 
@@ -341,4 +367,82 @@ glm::mat4 CAssimpUtils::ConvertMat4(const aiMatrix4x4 &value)
     //  "столбец за столбцом", а не "строка за строкой", поэтому мы
     //  создаём матрицу из массива float и затем транспонируем её.
     return glm::transpose(glm::make_mat4(&value.a1));
+}
+
+void PrintGlmMatrix4(const std::string &indent, const glm::mat4 &transform)
+{
+    const unsigned SIZE = 4;
+    for (unsigned row = 0; row < SIZE; ++row)
+    {
+        std::cerr << indent << "[ ";
+        for (unsigned column = 0; column < SIZE; ++column)
+        {
+            const float value = transform[column][row];
+            std::cerr << value << " ";
+        }
+        std::cerr << "]" << std::endl;
+    }
+}
+
+CTransform3D CAssimpUtils::DecomposeTransform3D(const aiMatrix4x4 &value)
+{
+    const float EPSILON = 0.0001f;
+    const glm::mat4 affinityMat4 = ConvertMat4(value);
+
+    glm::vec3 skew;
+    glm::vec4 perspective;
+    CTransform3D transform;
+    bool ok = glm::decompose(affinityMat4,
+                             transform.m_sizeScale,
+                             transform.m_orientation,
+                             transform.m_position,
+                             skew,
+                             perspective);
+
+    transform.m_orientation = glm::conjugate(transform.m_orientation);
+
+    if (!ok)
+    {
+        throw std::runtime_error("aiMatrix4x4 decomposition failed");
+    }
+    if (glm::length(skew) >= EPSILON)
+    {
+        throw std::runtime_error("Cannot convert aiMatrix4x4 to CTransform3D: skew transform exists");
+    }
+    if (glm::length(perspective - vec4(0, 0, 0, 1)) >= EPSILON)
+    {
+        throw std::runtime_error("Cannot convert aiMatrix4x4 to CTransform3D: matrix is not affinity");
+    }
+
+    // Проверяем в режиме отладки, совпадает ли исходное
+    //  преобразование с декомпозированным.
+#ifndef NDEBUG
+    const float MAX_MISMATCH = 0.001f;
+    const glm::mat4 reassembledMat4 = transform.ToMat4();
+
+    for (unsigned col = 0; col < 4; ++col)
+    {
+        for (unsigned row = 0; row < 4; ++row)
+        {
+            const float diff = affinityMat4[col][row] - reassembledMat4[col][row];
+            if (fabsf(diff) > MAX_MISMATCH)
+            {
+                std::cerr <<  "Numbers at row #"
+                           << std::to_string(row)
+                           << ", col #"
+                           << std::to_string(col)
+                           << " mismatch, diff = "
+                           << std::to_string(diff) << std::endl;
+
+
+                PrintGlmMatrix4("  ", affinityMat4);
+                PrintGlmMatrix4("  ", reassembledMat4);
+                assert(false);
+            }
+        }
+    }
+
+#endif
+
+    return transform;
 }

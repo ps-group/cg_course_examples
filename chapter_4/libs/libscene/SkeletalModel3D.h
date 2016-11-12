@@ -6,6 +6,7 @@
 #include "Geometry.h"
 #include "BufferObject.h"
 #include "Texture2D.h"
+#include "../libgeometry/Transform.h"
 
 class CSkeletalModel3D;
 using CSkeletalModel3DPtr = std::shared_ptr<CSkeletalModel3D>;
@@ -21,7 +22,10 @@ public:
     std::string m_name;
     // Матрица перехода из системы координат родительского узла
     //  в систему координат узла.
-    glm::mat4 m_localMat4;
+    glm::mat4 m_boneOffset;
+    // Трансформация данного узла,
+    //  задающая переход в координаты родительского узла.
+    CTransform3D m_transform;
     // Список дочерних узлов (возможно, играющих роль костей).
     std::vector<CSkeletalNodePtr> m_children;
 };

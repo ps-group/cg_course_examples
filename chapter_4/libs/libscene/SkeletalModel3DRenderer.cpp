@@ -8,6 +8,8 @@
 #include "includes/glm-common.hpp"
 #include "includes/opengl-common.hpp"
 
+using glm::mat4;
+
 void CSkeletalModel3DRenderer::SetWorldMat4(const glm::mat4 &value)
 {
     m_world = value;
@@ -40,10 +42,13 @@ void CSkeletalModel3DRenderer::Draw(CSkeletalModel3D &model)
     }
     SetupTransforms();
 
+    // Обновляем трансформации костей по именам.
+    UpdateBoneTransformsCache(model);
+
     model.m_pGeometry->Bind();
     for (CSkeletalMesh3D &mesh : model.m_meshes)
     {
-        // TODO: apply bones & skinning
+        SetupBoneTransforms(mesh);
         ApplyMaterial(model.m_materials[mesh.m_materialIndex]);
         BindAttributes(mesh.m_layout);
         CDrawUtils::DrawRangeElements(mesh.m_layout);
@@ -61,12 +66,59 @@ CProgramUniform CSkeletalModel3DRenderer::GetUniform(UniformId id) const
 //  - перспективного преобразования
 void CSkeletalModel3DRenderer::SetupTransforms()
 {
-    const glm::mat4 worldMatrix = m_view * m_world;
-    const glm::mat4 normalMatrix = CDrawUtils::GetNormalMat4(worldMatrix);
+    const mat4 worldMat4 = m_view * m_world;
+    const mat4 normalMat4 = CDrawUtils::GetNormalMat4(worldMat4);
     GetUniform(UniformId::MATRIX_PROJECTION) = m_projection;
     GetUniform(UniformId::MATRIX_VIEW) = m_view;
-    GetUniform(UniformId::MATRIX_WORLDVIEW) = worldMatrix;
-    GetUniform(UniformId::MATRIX_NORMALWORLDVIEW) = normalMatrix;
+    GetUniform(UniformId::MATRIX_WORLDVIEW) = worldMat4;
+    GetUniform(UniformId::MATRIX_NORMALWORLDVIEW) = normalMat4;
+}
+
+void CSkeletalModel3DRenderer::UpdateBoneTransformsCache(const CSkeletalModel3D &model)
+{
+    if (model.m_rootNode == nullptr)
+    {
+        throw std::runtime_error("Cannot render skeletal model with null root node");
+    }
+
+    const mat4 rootMat4 = model.m_rootNode->m_transform.ToMat4();
+    const mat4 inverseRootMat4 = glm::inverse(rootMat4);
+
+    m_boneTransformsCache.clear();
+    VisitNode(*model.m_rootNode, inverseRootMat4);
+}
+
+void CSkeletalModel3DRenderer::SetupBoneTransforms(const CSkeletalMesh3D &mesh)
+{
+    std::vector<mat4> data(mesh.m_bones.size());
+    std::transform(mesh.m_bones.begin(), mesh.m_bones.end(),
+                   data.begin(), [&](const CSkeletalNode *pNode) {
+        return m_boneTransformsCache[pNode->m_name];
+    });
+
+    GetUniform(UniformId::BONE_TRANSFORM_ARRAY) = data;
+}
+
+void CSkeletalModel3DRenderer::VisitNode(const CSkeletalNode &node,
+                                         const glm::mat4 &parentMat4)
+{
+    // Преобразование вершины от координат узла (кости) к координатам модели,
+    //  с учётом динамически изменяемой трансформации кости.
+    const mat4 nodeMat4 = parentMat4 * node.m_transform.ToMat4();
+
+    // Общее преобразовани сначала помещает вершину в коодинаты узла (кости),
+    //  и затем преобразует обратно в координаты модели.
+    const mat4 transform = nodeMat4 * node.m_boneOffset;
+
+    // Запоминаем трансформацию из системы коодинат модели
+    //  в систему координат кости.
+    m_boneTransformsCache[node.m_name] = transform;
+
+    // Посещаем все дочерние узлы графа сцены данной модели.
+    for (const auto &pChild : node.m_children)
+    {
+        VisitNode(*pChild, nodeMat4);
+    }
 }
 
 // Применяет текстуры, цвет и shininess материала
@@ -93,26 +145,37 @@ void CSkeletalModel3DRenderer::ApplyMaterial(const SPhongMaterial &material) con
 //  к атрибутным переменным шейдера.
 void CSkeletalModel3DRenderer::BindAttributes(const SGeometryLayout &layout) const
 {
-    auto bind = [&](AttributeId attr, size_t offset, unsigned numComponents, bool needClamp) {
+    auto bindFloat = [&](AttributeId attr, size_t offset, unsigned numComponents) {
         CVertexAttribute attrVar = m_pProgram->GetAttribute(attr);
-        if (attrVar.IsValid())
+        if (offset == SGeometryLayout::UNSET)
         {
-            if (offset == SGeometryLayout::UNSET)
-            {
-                attrVar.DisablePointer();
-            }
-            else
-            {
-                const size_t bytesOffset = size_t(layout.m_baseVertexOffset + unsigned(offset));
-                const size_t bytesStride = size_t(layout.m_vertexSize);
-                attrVar.EnablePointer();
-                attrVar.SetFloatsOffset(bytesOffset, bytesStride, numComponents, needClamp);
-            }
+            attrVar.DisablePointer();
+        }
+        else
+        {
+            const size_t bytesOffset = size_t(layout.m_baseVertexOffset + unsigned(offset));
+            const size_t bytesStride = size_t(layout.m_vertexSize);
+            attrVar.EnablePointer();
+            attrVar.SetFloatsOffset(bytesOffset, bytesStride, numComponents, false);
         }
     };
-    bind(AttributeId::POSITION, layout.m_position3D, 3, false);
-    bind(AttributeId::NORMAL, layout.m_normal, 3, false);
-    bind(AttributeId::TANGENT, layout.m_tangent, 3, false);
-    bind(AttributeId::BITANGENT, layout.m_bitangent, 3, false);
-    bind(AttributeId::TEX_COORD_UV, layout.m_texCoord2D, 2, true);
+    auto bindUint8 = [&](AttributeId attr, size_t offset, unsigned numComponents) {
+        CVertexAttribute attrVar = m_pProgram->GetAttribute(attr);
+        if (offset == SGeometryLayout::UNSET)
+        {
+            attrVar.DisablePointer();
+        }
+        else
+        {
+            const size_t bytesOffset = size_t(layout.m_baseVertexOffset + unsigned(offset));
+            const size_t bytesStride = size_t(layout.m_vertexSize);
+            attrVar.EnablePointer();
+            attrVar.SetUint8Offset(bytesOffset, bytesStride, numComponents);
+        }
+    };
+    bindFloat(AttributeId::POSITION, layout.m_position3D, 3);
+    bindFloat(AttributeId::NORMAL, layout.m_normal, 3);
+    bindFloat(AttributeId::TEX_COORD_UV, layout.m_texCoord2D, 2);
+    bindUint8(AttributeId::BONE_INDICIES, layout.m_boneIndexes, 4);
+    bindFloat(AttributeId::BONE_WEIGHTS, layout.m_boneWeights, 4);
 }

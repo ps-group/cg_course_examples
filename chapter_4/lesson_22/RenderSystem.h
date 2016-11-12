@@ -1,6 +1,6 @@
 #pragma once
 #include "Components.h"
-#include "PhongProgram.h"
+#include "SkeletalAnimationProgram.h"
 #include <anax/System.hpp>
 
 class CSkeletalModel3DRenderer;
@@ -26,6 +26,6 @@ private:
 
     void DoRenderPass(CMeshComponent::Category category, CSkeletalModel3DRenderer &renderer);
 
-    CPhongProgram m_planetProgram;
+    CSkeletalAnimationProgram m_planetProgram;
     LightSource m_light0;
 };

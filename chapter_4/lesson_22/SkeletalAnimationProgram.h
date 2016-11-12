@@ -2,10 +2,10 @@
 #include "libshading/ShaderProgram.h"
 #include "libshading/AbstractProgramAdapter.h"
 
-class CPhongProgram : public CAbstractProgramAdapter
+class CSkeletalAnimationProgram : public CAbstractProgramAdapter
 {
 public:
-    CPhongProgram();
+    CSkeletalAnimationProgram();
 
     // CAbstractProgramAdapter interface
 protected:

@@ -94,24 +94,19 @@ void CStaticModel3DRenderer::BindAttributes(const SGeometryLayout &layout) const
 {
     auto bind = [&](AttributeId attr, size_t offset, unsigned numComponents, bool needClamp) {
         CVertexAttribute attrVar = m_pProgram->GetAttribute(attr);
-        if (attrVar.IsValid())
+        if (offset == SGeometryLayout::UNSET)
         {
-            if (offset == SGeometryLayout::UNSET)
-            {
-                attrVar.DisablePointer();
-            }
-            else
-            {
-                const size_t bytesOffset = size_t(layout.m_baseVertexOffset + unsigned(offset));
-                const size_t bytesStride = size_t(layout.m_vertexSize);
-                attrVar.EnablePointer();
-                attrVar.SetFloatsOffset(bytesOffset, bytesStride, numComponents, needClamp);
-            }
+            attrVar.DisablePointer();
+        }
+        else
+        {
+            const size_t bytesOffset = size_t(layout.m_baseVertexOffset + unsigned(offset));
+            const size_t bytesStride = size_t(layout.m_vertexSize);
+            attrVar.EnablePointer();
+            attrVar.SetFloatsOffset(bytesOffset, bytesStride, numComponents, needClamp);
         }
     };
     bind(AttributeId::POSITION, layout.m_position3D, 3, false);
     bind(AttributeId::NORMAL, layout.m_normal, 3, false);
-    bind(AttributeId::TANGENT, layout.m_tangent, 3, false);
-    bind(AttributeId::BITANGENT, layout.m_bitangent, 3, false);
-    bind(AttributeId::TEX_COORD_UV, layout.m_texCoord2D, 2, true);
+    bind(AttributeId::TEX_COORD_UV, layout.m_texCoord2D, 2, false);
 }
