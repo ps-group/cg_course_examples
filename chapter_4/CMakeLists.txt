@@ -6,6 +6,7 @@ include(../cmake/PrecompiledHeader.cmake)
 include(../cmake/win32_paths.cmake)
 
 if(UNIX)
+    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/libs/glm-0.9.8.2")
     set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra -Wno-unused-parameter")
     set(PROJECT_LIBS SDL2 SDL2_image SDL2_ttf GL GLEW GLU boost_filesystem boost_system assimp)
