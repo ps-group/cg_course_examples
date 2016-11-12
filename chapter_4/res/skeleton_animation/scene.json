@@ -1,16 +1,17 @@
 {
     "objects": [
         {
-            "model": "human.dae",
+            "model": "human-man.dae",
             "position": [-4, 0, 0],
-            "eulerAngles": [0, 0, 0],
+            "eulerAngles": [-1.57, 0, 0],
             "size": 2
         },
         {
-            "model": "human.bvh",
+            "model": "guard/boblampclean.md5mesh",
             "position": [4, 0, 0],
-            "eulerAngles": [0, 0, 0],
-            "size": 2
+            "eulerAngles": [-1.57, 0, 0],
+            "size": 0.2
         }
+
     ]
 }
