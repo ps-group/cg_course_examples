@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glm/vec3.hpp>
+#include "ValueRange.h"
 
 // Представляет ограничивающий параллелипипед, выравненный по осям координат
 //  англ. Axis Aligned Bounding Box, или просто AABB.
@@ -15,6 +15,5 @@ public:
     void Unite(const glm::vec3 &lowerBounds, const glm::vec3 &upperBounds);
 
 private:
-    glm::vec3 m_lowerBounds;
-    glm::vec3 m_upperBounds;
+    CValueRange<glm::vec3> m_bounds;
 };

@@ -13,70 +13,66 @@ bool CVertexAttribute::IsValid() const
 
 void CVertexAttribute::EnablePointer()
 {
-    if (!IsValid())
+    if (m_location != -1)
     {
-        return;
+        glEnableVertexAttribArray(GLuint(m_location));
     }
-    glEnableVertexAttribArray(GLuint(m_location));
 }
 
 void CVertexAttribute::DisablePointer()
 {
-    if (!IsValid())
+    if (m_location != -1)
     {
-        return;
+        glDisableVertexAttribArray(GLuint(m_location));
     }
-    glDisableVertexAttribArray(GLuint(m_location));
 }
 
 void CVertexAttribute::SetDivisor(unsigned divisor)
 {
-    if (!IsValid())
+    if (m_location != -1)
     {
-        return;
+        glVertexAttribDivisor(GLuint(m_location), divisor);
     }
-    glVertexAttribDivisor(GLuint(m_location), divisor);
 }
 
 void CVertexAttribute::SetVec3Offset(size_t offset, size_t stride, bool needClamp)
 {
-    if (!IsValid())
+    if (m_location != -1)
     {
-        return;
+        const GLboolean normalize = needClamp ? GL_TRUE : GL_FALSE;
+        glVertexAttribPointer(GLuint(m_location), 3, GL_FLOAT, normalize,
+                              GLsizei(stride), reinterpret_cast<const void *>(offset));
     }
-    const GLboolean normalize = needClamp ? GL_TRUE : GL_FALSE;
-    glVertexAttribPointer(GLuint(m_location), 3, GL_FLOAT, normalize,
-                          GLsizei(stride), reinterpret_cast<const void *>(offset));
 }
 
 void CVertexAttribute::SetVec2Offset(size_t offset, size_t stride)
 {
-    if (!IsValid())
+    if (m_location != -1)
     {
-        return;
+        const GLboolean normalize = GL_FALSE;
+        glVertexAttribPointer(GLuint(m_location), 2,
+                              GL_FLOAT, normalize, GLsizei(stride),
+                              reinterpret_cast<const void *>(offset));
     }
-    const GLboolean normalize = GL_FALSE;
-    glVertexAttribPointer(GLuint(m_location), 2, GL_FLOAT, normalize,
-                          GLsizei(stride), reinterpret_cast<const void *>(offset));
 }
 
 void CVertexAttribute::SetFloatsOffset(size_t offset, size_t stride, unsigned numComponents, bool needClamp)
 {
-    if (!IsValid())
+    if (m_location != -1)
     {
-        return;
+        const GLboolean normalize = needClamp ? GL_TRUE : GL_FALSE;
+        glVertexAttribPointer(GLuint(m_location), GLint(numComponents),
+                              GL_FLOAT, normalize, GLsizei(stride),
+                              reinterpret_cast<const void *>(offset));
     }
-    const GLboolean normalize = needClamp ? GL_TRUE : GL_FALSE;
-    glVertexAttribPointer(GLuint(m_location), GLint(numComponents), GL_FLOAT, normalize,
-                          GLsizei(stride), reinterpret_cast<const void *>(offset));
 }
 
 void CVertexAttribute::SetUint8Offset(size_t offset, size_t stride, unsigned numComponents)
 {
-    if (!IsValid())
+    if (m_location != -1)
     {
-        return;
+        glVertexAttribIPointer(GLuint(m_location), GLint(numComponents),
+                               GL_UNSIGNED_BYTE, GLsizei(stride),
+                               reinterpret_cast<const void *>(offset));
     }
-    glVertexAttribIPointer(GLuint(m_location), GLint(numComponents), GL_UNSIGNED_BYTE,
-                           GLsizei(stride), reinterpret_cast<const void *>(offset));
 }
