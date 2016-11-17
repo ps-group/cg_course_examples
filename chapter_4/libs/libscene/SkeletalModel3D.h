@@ -41,11 +41,40 @@ public:
     std::vector<const CSkeletalNode*> m_bones;
 };
 
+class CNodeAnimation
+{
+public:
+    // Типы для хранения ключевых точек на шкале времени.
+    using Vec3Keyframe = std::pair<double, glm::vec3>;
+    using QuatKeyframe = std::pair<double, glm::quat>;
+
+    // Узел, на который действует анимация.
+    CSkeletalNode *m_pNode = nullptr;
+
+    // Значения размера, ориентации и позиции в ключевые моменты времени,
+    //  переназначают собственную трансформацию узла.
+    std::vector<Vec3Keyframe> m_positionKeyframes;
+    std::vector<QuatKeyframe> m_rotationKeyframes;
+    std::vector<Vec3Keyframe> m_scaleKeyframes;
+};
+
+// FIXME: поддержка прямой анимации полигональных сеток не реализована.
+// FIXME: свойства группы aiAnimBehaviour не сохраняются при загрузке.
+class CModelAnimation
+{
+public:
+    std::string m_name;
+    double m_duration;
+    double m_ticksPerSecond;
+    std::vector<CNodeAnimation> m_channels;
+};
+
 class CSkeletalModel3D
 {
 public:
     std::vector<SPhongMaterial> m_materials;
     std::vector<CSkeletalMesh3D> m_meshes;
+    std::vector<CModelAnimation> m_animations;
     CSkeletalNodePtr m_rootNode;
     CGeometrySharedPtr m_pGeometry;
 };

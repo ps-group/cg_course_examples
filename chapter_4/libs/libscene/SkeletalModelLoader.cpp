@@ -97,6 +97,7 @@ public:
     {
         m_rootNode = std::make_unique<CSkeletalNode>();
         VisitNode(*scene.mRootNode, *m_rootNode);
+        LoadAnimations(scene);
     }
 
     // Добавляет сетку треугольников в общий набор данных.
@@ -130,6 +131,11 @@ public:
     std::vector<CSkeletalMesh3D> &&TakeMeshes()
     {
         return std::move(m_meshes);
+    }
+
+    std::vector<CModelAnimation> &&TakeAnimations()
+    {
+        return std::move(m_animations);
     }
 
     CSkeletalNodePtr &&TakeRoot()
@@ -343,7 +349,69 @@ private:
         m_nodeNameMapping[node.m_name] = &node;
     }
 
+    void LoadAnimations(const aiScene &scene)
+    {
+        m_animations.resize(scene.mNumAnimations);
+        for (unsigned ai = 0; ai < scene.mNumAnimations; ++ai)
+        {
+            const aiAnimation &srcAnim = *scene.mAnimations[ai];
+            CModelAnimation &anim = m_animations[ai];
+            if (srcAnim.mNumMeshChannels != 0)
+            {
+                throw std::runtime_error("Mesh animation channels not implemented");
+            }
+
+            anim.m_name = srcAnim.mName.C_Str();
+            anim.m_duration = srcAnim.mDuration;
+            anim.m_ticksPerSecond = srcAnim.mTicksPerSecond;
+            anim.m_channels.resize(srcAnim.mNumChannels);
+
+            for (unsigned ci = 0; ci < srcAnim.mNumChannels; ++ci)
+            {
+                CopyNodeAnimation(*srcAnim.mChannels[ci], anim.m_channels[ci]);
+            }
+        }
+    }
+
+    void CopyNodeAnimation(const aiNodeAnim &srcAnim, CNodeAnimation &anim)
+    {
+        // Запоминаем узел, который будет анимирован.
+        const std::string nodeName = srcAnim.mNodeName.C_Str();
+        anim.m_pNode = m_nodeNameMapping.at(nodeName);
+
+        // Копируем ключевые точки изменения размера.
+        anim.m_scaleKeyframes.resize(srcAnim.mNumScalingKeys);
+        for (unsigned ki = 0; ki < srcAnim.mNumScalingKeys; ++ki)
+        {
+            const auto &keyframe = srcAnim.mScalingKeys[ki];
+            anim.m_scaleKeyframes[ki] = {
+                keyframe.mTime, glm::make_vec3(&keyframe.mValue.x),
+            };
+        }
+
+        // Копируем ключевые точки вращения.
+        anim.m_rotationKeyframes.resize(srcAnim.mNumRotationKeys);
+        for (unsigned ki = 0; ki < srcAnim.mNumRotationKeys; ++ki)
+        {
+            const auto &keyframe = srcAnim.mRotationKeys[ki];
+            anim.m_rotationKeyframes[ki] = {
+                keyframe.mTime, glm::make_quat(&keyframe.mValue.x),
+            };
+        }
+
+        // Копируем ключевые точки перемещения.
+        anim.m_positionKeyframes.resize(srcAnim.mNumPositionKeys);
+        for (unsigned ki = 0; ki < srcAnim.mNumPositionKeys; ++ki)
+        {
+            const auto &keyframe = srcAnim.mPositionKeys[ki];
+            anim.m_positionKeyframes[ki] = {
+                keyframe.mTime, glm::make_vec3(&keyframe.mValue.x),
+            };
+        }
+    }
+
     std::vector<CSkeletalMesh3D> m_meshes;
+    std::vector<CModelAnimation> m_animations;
     SGeometryData<uint8_t, uint32_t> m_geometry;
     CSkeletalNodePtr m_rootNode;
     std::unordered_map<std::string, CSkeletalNode*> m_nodeNameMapping;

@@ -297,6 +297,7 @@ void CAssimpUtils::DumpSceneInfo(const aiScene &scene)
         materialInspector.Inspect(mi, *(scene.mMaterials[mi]));
     }
 
+    // Вывод информации о костях.
     for (unsigned mi = 0; mi < scene.mNumMeshes; ++mi)
     {
         const auto *pMesh = scene.mMeshes[mi];
@@ -314,6 +315,18 @@ void CAssimpUtils::DumpSceneInfo(const aiScene &scene)
                 PrintAiMatrix4("  ", pBone->mOffsetMatrix);
             }
         }
+    }
+
+    // Вывод информации об анимациях
+    for (unsigned ai = 0; ai < scene.mNumAnimations; ++ai)
+    {
+        const aiAnimation &anim = *scene.mAnimations[ai];
+        std::cerr << "Animation '" << anim.mName.C_Str()
+                  << "' has duration = " << anim.mDuration << " ticks"
+                  << " and ticks/sec = " << anim.mTicksPerSecond
+                  << ", " << anim.mNumMeshChannels << " mesh channels"
+                  << ", " << anim.mNumChannels << " node channels"
+                  << std::endl;
     }
 }
 
