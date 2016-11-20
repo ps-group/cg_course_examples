@@ -5,6 +5,7 @@
 #include "libscene/Camera.h"
 #include "SceneLoader.h"
 #include "RenderSystem.h"
+#include "AnimationSystem.h"
 #include <vector>
 
 class CWindowClient
@@ -30,6 +31,7 @@ private:
     CArrayObject m_defaultVAO;
     anax::World m_world;
     CRenderSystem m_renderSystem;
+    CAnimationSystem m_animationSystem;
 
     CMouseGrabber m_mouseGrabber;
     CCamera m_camera;

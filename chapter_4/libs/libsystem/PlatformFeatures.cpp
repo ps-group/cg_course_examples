@@ -21,4 +21,5 @@ bool CPlatformFeatures::HasExtension(ExtensionId id)
     }
 
 #endif
+    return false;
 }

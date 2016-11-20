@@ -6,6 +6,7 @@ using boost::filesystem::path;
 using glm::vec2;
 using glm::vec3;
 using glm::vec4;
+using glm::quat;
 
 namespace
 {
@@ -30,13 +31,13 @@ T *AddItemsToWrite(std::vector<T> &data, size_t count)
     return (data.data() + oldSize);
 }
 
-struct СVertexSkinning
+struct CVertexSkinning
 {
     uint8_t indexes[BONES_PER_VERTEX];
     float weights[BONES_PER_VERTEX];
 
     // Конструктор заполняет структуру нулями.
-    СVertexSkinning()
+    CVertexSkinning()
     {
         std::memset(indexes, 0, sizeof(indexes));
         std::memset(weights, 0, sizeof(weights));
@@ -312,7 +313,7 @@ private:
         bones.clear();
 
         // Заполняем массивы пустыми данными нужном в количестве.
-        m_meshSkinning.resize(mesh.mNumVertices, СVertexSkinning());
+        m_meshSkinning.resize(mesh.mNumVertices, CVertexSkinning());
         bones.resize(mesh.mNumBones, nullptr);
 
         for (unsigned boneId = 0; boneId < mesh.mNumBones; ++boneId)
@@ -328,7 +329,7 @@ private:
             for (unsigned wi = 0; wi < srcBone.mNumWeights; ++wi)
             {
                 const aiVertexWeight &weight = srcBone.mWeights[wi];
-                СVertexSkinning &skinning = m_meshSkinning.at(weight.mVertexId);
+                CVertexSkinning &skinning = m_meshSkinning.at(weight.mVertexId);
                 skinning.AddWeight(boneId, weight.mWeight);
             }
         }
@@ -395,7 +396,7 @@ private:
         {
             const auto &keyframe = srcAnim.mRotationKeys[ki];
             anim.m_rotationKeyframes[ki] = {
-                keyframe.mTime, glm::make_quat(&keyframe.mValue.x),
+                keyframe.mTime, CAssimpUtils::ConvertQuat(keyframe.mValue),
             };
         }
 
@@ -415,7 +416,7 @@ private:
     SGeometryData<uint8_t, uint32_t> m_geometry;
     CSkeletalNodePtr m_rootNode;
     std::unordered_map<std::string, CSkeletalNode*> m_nodeNameMapping;
-    std::vector<СVertexSkinning> m_meshSkinning;
+    std::vector<CVertexSkinning> m_meshSkinning;
 };
 
 // Проверяет целостность данных сетки треугольников.
@@ -461,6 +462,7 @@ CSkeletalModel3DPtr CSkeletalModelLoader::Load(const boost::filesystem::path &pa
 
     auto pModel = std::make_shared<CSkeletalModel3D>();
     pModel->m_meshes = accumulator.TakeMeshes();
+    pModel->m_animations = accumulator.TakeAnimations();
     pModel->m_rootNode = accumulator.TakeRoot();
     pModel->m_pGeometry = accumulator.MakeGeometry();
     CAssimpUtils::LoadMaterials(abspath.parent_path(), m_assetLoader,

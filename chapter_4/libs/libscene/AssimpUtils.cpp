@@ -382,6 +382,19 @@ glm::mat4 CAssimpUtils::ConvertMat4(const aiMatrix4x4 &value)
     return glm::transpose(glm::make_mat4(&value.a1));
 }
 
+glm::quat CAssimpUtils::ConvertQuat(const aiQuaternion &quat)
+{
+    // Чтобы правильно преобразовать кватернионы из правосторонней системы
+    //  координат, преобразуем кватернион в матрицу 3x3,
+    //  переводим матрицу в формат OpenGL и затем преобразуем
+    //  матрицу 3x3 в кватернион.
+
+    const aiMatrix3x3 aiMat3 = quat.GetMatrix();
+    const glm::mat3 glmMat3 = glm::transpose(glm::make_mat3(&aiMat3.a1));
+
+    return glm::quat_cast(glmMat3);
+}
+
 void PrintGlmMatrix4(const std::string &indent, const glm::mat4 &transform)
 {
     const unsigned SIZE = 4;
@@ -426,36 +439,6 @@ CTransform3D CAssimpUtils::DecomposeTransform3D(const aiMatrix4x4 &value)
     {
         throw std::runtime_error("Cannot convert aiMatrix4x4 to CTransform3D: matrix is not affinity");
     }
-
-    // Проверяем в режиме отладки, совпадает ли исходное
-    //  преобразование с декомпозированным.
-#ifndef NDEBUG
-    const float MAX_MISMATCH = 0.001f;
-    const glm::mat4 reassembledMat4 = transform.ToMat4();
-
-    for (unsigned col = 0; col < 4; ++col)
-    {
-        for (unsigned row = 0; row < 4; ++row)
-        {
-            const float diff = affinityMat4[col][row] - reassembledMat4[col][row];
-            if (fabsf(diff) > MAX_MISMATCH)
-            {
-                std::cerr <<  "Numbers at row #"
-                           << std::to_string(row)
-                           << ", col #"
-                           << std::to_string(col)
-                           << " mismatch, diff = "
-                           << std::to_string(diff) << std::endl;
-
-
-                PrintGlmMatrix4("  ", affinityMat4);
-                PrintGlmMatrix4("  ", reassembledMat4);
-                assert(false);
-            }
-        }
-    }
-
-#endif
 
     return transform;
 }

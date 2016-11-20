@@ -53,7 +53,7 @@ public:
         for (const json &object : array)
         {
             anax::Entity body = m_world.createEntity();
-            AddMesh(body, object);
+            AddAnimatedMesh(body, object);
             AddTransform(body, object);
 
             body.activate();
@@ -76,12 +76,15 @@ private:
         return pModel;
     }
 
-    void AddMesh(anax::Entity &body, const json &dict)
+    void AddAnimatedMesh(anax::Entity &body, const json &dict)
     {
         const std::string filename = dict.at("model").get<std::string>();
         auto &mesh = body.addComponent<CMeshComponent>();
         mesh.m_category = CMeshComponent::Foreground;
         mesh.m_pModel = LoadModelWithCache(m_workdir / filename);
+
+        auto &animation = body.addComponent<CAnimateComponent>();
+        animation.SetModel(mesh.m_pModel);
     }
 
     void AddTransform(anax::Entity &body, const json &dict)

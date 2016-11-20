@@ -11,6 +11,7 @@
 #include "libscene/StaticModel3DRenderer.h"
 #include "libscene/SkeletalModel3D.h"
 #include "libscene/SkeletalModel3DRenderer.h"
+#include "libscene/SkeletalAnimator.h"
 
 #include "libscene/AssetLoader.h"
 #include "libscene/StaticModelLoader.h"

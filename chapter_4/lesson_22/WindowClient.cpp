@@ -60,8 +60,11 @@ CWindowClient::CWindowClient(CWindow &window)
     loader.LoadScene(SCENE_JSON);
 //    loader.LoadSkybox(SKYBOX_PLIST);
 
-    // Добавляем систему, отвечающую за рендеринг планет.
+    // Добавляем систему, отвечающую за рендеринг моделей.
     m_world.addSystem(m_renderSystem);
+
+    // Добавляем систему, отвечающую за проигрывание анимаций.
+    m_world.addSystem(m_animationSystem);
 
     // После активации новых сущностей или деактивации,
     //  а при добавления новых систем следует
@@ -72,6 +75,7 @@ CWindowClient::CWindowClient(CWindow &window)
 void CWindowClient::OnUpdate(float deltaSeconds)
 {
     m_camera.Update(deltaSeconds);
+    m_animationSystem.Update(deltaSeconds);
 }
 
 void CWindowClient::OnDraw()

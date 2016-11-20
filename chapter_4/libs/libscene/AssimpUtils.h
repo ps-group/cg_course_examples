@@ -42,6 +42,10 @@ public:
     //  в размещении в памяти делятся на колонки, а не на строки.
     static glm::mat4 ConvertMat4(const aiMatrix4x4 &value);
 
+    // Конвертирует кватернион формата libassimp
+    //  в кватернион формата OpenGL/GLM.
+    static glm::quat ConvertQuat(const aiQuaternion &quat);
+
     // Конвертирует матрицу формата libassimp в CTransform3D.
     // Выбрасывает исключение, если преобразование, заданное матрицей,
     //  не является афинным, либо если имеется преобразование скоса (skew).

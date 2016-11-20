@@ -44,15 +44,23 @@ public:
 class CNodeAnimation
 {
 public:
+    template <class T>
+    struct Keyframe
+    {
+        double time;
+        T value;
+    };
+
     // Типы для хранения ключевых точек на шкале времени.
-    using Vec3Keyframe = std::pair<double, glm::vec3>;
-    using QuatKeyframe = std::pair<double, glm::quat>;
+    using Vec3Keyframe = Keyframe<glm::vec3>;
+    using QuatKeyframe = Keyframe<glm::quat>;
 
     // Узел, на который действует анимация.
     CSkeletalNode *m_pNode = nullptr;
 
     // Значения размера, ориентации и позиции в ключевые моменты времени,
     //  переназначают собственную трансформацию узла.
+    // Ключевые точки отсортированы в хронологическом порядке.
     std::vector<Vec3Keyframe> m_positionKeyframes;
     std::vector<QuatKeyframe> m_rotationKeyframes;
     std::vector<Vec3Keyframe> m_scaleKeyframes;
