@@ -14,38 +14,54 @@ else(UNIX)
     add_definitions(-DGLEW_STATIC=1)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4201 /wd4324")
     set(CG_GLEW_LIBRARY optimized glew32s debug glew32sd)
-    set(PROJECT_LIBS SDL2main SDL2 SDL2_image SDL2_ttf ${CG_GLEW_LIBRARY} OpenGL32 assimp)
+    set(PROJECT_LIBS SDL2main SDL2 SDL2_image SDL2_ttf ${CG_GLEW_LIBRARY} OpenGL32 assimp-vc140-mt)
 endif(UNIX)
 
 macro(add_lesson NUM)
     file(GLOB SRC_LESSON_${NUM} "lesson_${NUM}/*.cpp" "lesson_${NUM}/*.h")
     add_executable(lesson_${NUM} ${SRC_LESSON_${NUM}})
-    target_link_libraries(lesson_${NUM} libchapter4 libanax ${PROJECT_LIBS})
+    target_link_libraries(lesson_${NUM} libcommons libsystem libgeometry libshading libscene libanax ${PROJECT_LIBS})
 endmacro(add_lesson)
 
 # Добавляем 'libs' в пути поиска заголовочных файлов.
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
 
-# Добавляем библиотеку с общим кодом - libchapter4.
-file(GLOB SRC_LIBCHAPTER4
+# Добавляем библиотеку libcommons с набором сторонних библиотек и ресурсов
+file(GLOB SRC_LIBCOMMONS
     "libs/includes/*.hpp"
-    "libs/libscene/*.cpp"
-    "libs/libscene/*.h"
-    "libs/libsystem/*.cpp"
-    "libs/libsystem/*.h"
-    "libs/libshading/*.cpp"
-    "libs/libshading/*.h"
-    "libs/libgeometry/*.cpp"
-    "libs/libgeometry/*.h"
+    "libs/json/*.hpp"
     "libs/tinyxml/*.cpp"
     "libs/tinyxml/*.h"
-    "libs/libchapter4.h"
     "res/*/*.vert"
     "res/*/*.frag"
     "res/*/*.json")
-add_library(libchapter4 ${SRC_LIBCHAPTER4})
+add_library(libcommons ${SRC_LIBCOMMONS})
 
-# Добавляем библиотеку Anax.
+# Добавляем библиотеку с общим кодом - libsystem.
+file(GLOB SRC_LIBSYSTEM
+    "libs/libsystem/*.cpp"
+    "libs/libsystem/*.h")
+add_library(libsystem ${SRC_LIBSYSTEM})
+
+# Добавляем библиотеку с общим кодом - libgeometry.
+file(GLOB SRC_LIBGEOMETRY
+    "libs/libgeometry/*.cpp"
+    "libs/libgeometry/*.h")
+add_library(libgeometry ${SRC_LIBGEOMETRY})
+
+# Добавляем библиотеку с общим кодом - libshading.
+file(GLOB SRC_LIBSHADING
+    "libs/libshading/*.cpp"
+    "libs/libshading/*.h")
+add_library(libshading ${SRC_LIBSHADING})
+
+# Добавляем библиотеку с общим кодом - libscene.
+file(GLOB SRC_LIBSCENE
+    "libs/libscene/*.cpp"
+    "libs/libscene/*.h")
+add_library(libscene ${SRC_LIBSCENE})
+
+# Добавляем стороннюю библиотеку Anax.
 file(GLOB SRC_LIBANAX
     "libs/anax/*.cpp"
     "libs/anax/*.hpp"
@@ -54,6 +70,10 @@ file(GLOB SRC_LIBANAX
     "libs/anax/util/*.hpp")
 add_library(libanax ${SRC_LIBANAX})
 
+if(MSVC)
+target_compile_options(libanax PUBLIC "/wd4100" "/wd4244")
+endif(MSVC)
+
 add_lesson(19)
 add_lesson(20)
 add_lesson(21)
@@ -61,4 +81,5 @@ add_lesson(22)
 #add_lesson(23)
 #add_lesson(24)
 
+# Выполняем копирование файлов в выходную директорию
 file(COPY res DESTINATION ${CMAKE_BINARY_DIR})

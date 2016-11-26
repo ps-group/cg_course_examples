@@ -59,13 +59,14 @@ void SetupProfileAttributes(ContextProfile profile, ContextMode mode)
     }
 }
 
-void DebugOutputCallback(GLenum /*source*/,
-                         GLenum type,
-                         GLuint id,
-                         GLenum /*severity*/,
-                         GLsizei /*length*/,
-                         const GLchar* message,
-                         const void* /*userParam*/)
+void GLAPIENTRY DebugOutputCallback(
+	GLenum /*source*/,
+	GLenum type,
+	GLuint id,
+	GLenum /*severity*/,
+	GLsizei /*length*/,
+	const GLchar* message,
+	const void* /*userParam*/)
 {
     // Отсекаем все сообщения, кроме ошибок
     if (type != GL_DEBUG_TYPE_ERROR)

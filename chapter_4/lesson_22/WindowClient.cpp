@@ -34,8 +34,12 @@ glm::mat4 MakeProjectionMatrix(const glm::ivec2 &size)
     // и высоты окна, расстояния до ближней и дальней плоскостей отсечения.
     const float fieldOfView = glm::radians(70.f);
     const float aspect = float(size.x) / float(size.y);
-    const float zNear = 0.01f;
-    const float zFar = 100.f;
+
+	// Разница между zFar и zNear уменьшена в этом примере
+	//  ради избавления от ошибок из-за низкой точности вычислений
+	//  на некоторых видеокартах и драйверах.
+    const float zNear = 0.1f;
+    const float zFar = 50.f;
 
     return glm::perspective(fieldOfView, aspect, zNear, zFar);
 }

@@ -8,9 +8,8 @@ bool CPlatformFeatures::HasExtension(ExtensionId id)
     switch (id)
     {
     case ExtensionId::ARB_debug_output:
-        return GLEW_ARB_debug_output;
+        return (GLEW_ARB_debug_output == GL_TRUE);
     }
-
 
 #else
     // На остальных платфомах проверяем макросы.

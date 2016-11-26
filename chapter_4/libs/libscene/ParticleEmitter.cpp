@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES
 #include "ParticleEmitter.h"
 
 // Расширение GLM_GTX_rotate_vector

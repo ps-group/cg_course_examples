@@ -4,7 +4,7 @@
 //  и для получения более новых версий мы применим библиотеку GLEW,
 //  заголовок которой должен быть подключён перед `gl.h`
 // См. также http://stackoverflow.com/questions/3933027
-#if defined(__WIN32__)
+#if defined(_WIN32)
 #include <GL/glew.h>
 #include <GL/gl.h>
 #endif

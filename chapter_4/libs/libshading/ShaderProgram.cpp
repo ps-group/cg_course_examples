@@ -79,7 +79,7 @@ std::string GetInfoLog(GLuint shaderId, PFNGLGETSHADERIVPROC getShaderivProc,
 
 // Указатель на вызов OpenGL, принимающий id программы и имя переменной,
 // и возвращающий её значение.
-using GetProgramLocationFn = int (*)(unsigned programId, const GLchar *name);
+using GetProgramLocationFn = int (GLAPIENTRY *)(unsigned programId, const GLchar *name);
 
 // Запрашивает расположение uniform или attribute переменной
 //  по имени, используя переданный вызов API OpenGL.

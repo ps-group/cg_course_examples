@@ -17,6 +17,7 @@ if(WIN32)
 		 "$ENV{SDK2015}/boost/include"
 		 "$ENV{SDK2015}/SDL2/include"
 		 "$ENV{SDK2015}/glm"
+		 "$ENV{SDK2015}/assimp-3.3.1/include/"
 		 "$ENV{SDK2015}/glew/include")
  
  # Пути поиска библиотек
@@ -25,12 +26,13 @@ if(WIN32)
  
  # Для 32-битных платформ
 	if( CMAKE_SIZEOF_VOID_P EQUAL 4)
-	
+
 		set(CG_WIN32_LINKER_PATHS
 			 "$ENV{SDK2015}/boost/lib"
 			 "$ENV{SDK2015}/SDL2/lib/x86"
+			 "$ENV{SDK2015}/assimp-3.3.1/lib/${CMAKE_BUILD_TYPE}"
 			 "$ENV{SDK2015}/glew/lib/$(Configuration)/Win32")
-			 
+ 
  # Для 64-битных платформ
 	else( CMAKE_SIZEOF_VOID_P EQUAL 4)
 	

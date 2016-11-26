@@ -11,6 +11,7 @@ void CParticleRenderSystem::Render(const glm::mat4 &view, const glm::mat4 &proje
 {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glDepthMask(GL_FALSE);
 
     m_particleProgram.Use();
     m_particleProgram.GetUniform(UniformId::MATRIX_PROJECTION) = projection;
@@ -36,7 +37,8 @@ void CParticleRenderSystem::Render(const glm::mat4 &view, const glm::mat4 &proje
 
     texCoordAttr.DisablePointer();
     positionAttr.SetDivisor(0);
-    positionAttr.DisablePointer();
+	positionAttr.DisablePointer();
+	glDepthMask(GL_TRUE);
     glDisable(GL_BLEND);
 }
 

@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "Texture2D.h"
 #include "../tinyxml/tinyxml2.h"
 #include "AssetLoader.h"

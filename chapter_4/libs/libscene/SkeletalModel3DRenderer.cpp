@@ -87,7 +87,6 @@ void CSkeletalModel3DRenderer::UpdateNodeTransformsCache(const CSkeletalModel3D 
     const mat4 inverseRootMat4 = glm::inverse(rootMat4);
 
     m_nodeTransformsCache.clear();
-    std::cerr << "//////////////////////////////////" << std::endl;
     VisitNode(*model.m_rootNode, inverseRootMat4);
 }
 
@@ -113,9 +112,6 @@ void CSkeletalModel3DRenderer::VisitNode(const CSkeletalNode &node,
     // Запоминаем трансформацию из системы коодинат модели
     //  в систему координат узла, описывающего кость.
     m_nodeTransformsCache[node.m_name] = nodeMat4;
-
-    std::cerr << "-------------------------------------" << std::endl;
-    CAssimpUtils::PrintGlmMatrix4("  ", nodeMat4);
 
     // Посещаем все дочерние узлы графа сцены данной модели.
     for (const auto &pChild : node.m_children)
