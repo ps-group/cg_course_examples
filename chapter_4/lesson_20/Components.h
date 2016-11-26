@@ -1,14 +1,24 @@
 #pragma once
-#include "libchapter4/ComplexMesh.h"
-#include "libchapter4/Transform.h"
+#include "libscene/StaticModel3D.h"
+#include "libgeometry/Transform.h"
 #include <anax/Component.hpp>
 #include <glm/matrix.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-class CMeshComponent : public anax::Component
+class CMeshComponent
+        : public anax::Component
 {
 public:
-    CComplexMeshSharedPtr m_pMesh;
+    enum Category
+    {
+        // Объект заднего плана, сливающийся с окружением.
+        Environment,
+        // Объект переднего плана.
+        Foreground,
+    };
+
+    Category m_category;
+    CStaticModel3DPtr m_pModel;
 };
 
 class CTransformComponent

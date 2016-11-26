@@ -1,0 +1,47 @@
+{
+    "particleSystems": [
+        {
+            "position": [10, 5, 0],
+            "gravity": [0, 1.0, 0],
+            "texture": "Burst.png",
+            "emitter": {
+                "position": [0, 0, 0],
+                "distanceRange": [0, 1],
+                "direction": [0, 1, 0],
+                "maxDeviationAngle": 1,
+                "emitIntervalRange": [0.002, 0.004],
+                "lifetimeRange": [2, 3],
+                "speedRange": [2, 4]
+            }
+        },
+        {
+            "size": 0.7,
+            "position": [-12, -2, 0],
+            "gravity": [0, -0.2, 0],
+            "texture": "BoilingFoam.png",
+            "emitter": {
+                "position": [0, 0, 0],
+                "distanceRange": [0, 2],
+                "direction": [1, -0.5, 0],
+                "maxDeviationAngle": 0.3,
+                "emitIntervalRange": [0.003, 0.005],
+                "lifetimeRange": [2, 3],
+                "speedRange": [8, 10]
+            }
+        },
+        {
+            "size": 0.7,
+            "position": [-10, 15, 0],
+            "texture": "BoilingFoam.png",
+            "emitter": {
+                "position": [0, 0, 0],
+                "distanceRange": [5, 5.1],
+                "direction": [0, -1, 0],
+                "maxDeviationAngle": 3.14,
+                "emitIntervalRange": [0.003, 0.004],
+                "lifetimeRange": [3, 3.1],
+                "speedRange": [2, 2.1]
+            }
+        }
+    ]
+}

@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "WindowClient.h"
+#include "includes/opengl-common.hpp"
+#include <glm/gtc/matrix_transform.hpp>
 
 using glm::mat4;
 using glm::vec3;
@@ -7,10 +9,12 @@ using glm::vec4;
 
 namespace
 {
-const glm::vec3 CAMERA_EYE = { 0, 5, 10 };
-const glm::vec4 SUNLIGHT_POSITION = {0, 0, 0, 1};
-const glm::vec4 WHITE_RGBA = {1, 1, 1, 1};
-const glm::vec4 FADED_WHITE_RGBA = {0.3f, 0.3f, 0.3f, 1.0f};
+const vec3 CAMERA_EYE = {0, -10, 20};
+const vec3 CAMERA_AT = {0, 10, 0};
+const vec3 CAMERA_UP = {0, 1, 0};
+const vec4 WHITE_RGBA = {1, 1, 1, 1};
+const vec4 FADED_WHITE_RGBA = {0.3f, 0.3f, 0.3f, 1.0f};
+const char SCENE_JSON[] = "res/particle_system/scene.json";
 
 void SetupOpenGLState()
 {
@@ -38,28 +42,56 @@ glm::mat4 MakeProjectionMatrix(const glm::ivec2 &size)
 CWindowClient::CWindowClient(CWindow &window)
     : CAbstractWindowClient(window)
     , m_defaultVAO(CArrayObject::do_bind_tag())
-    , m_keplerSystem(m_timeController)
-    , m_rotationSystem(m_timeController)
-    , m_camera(CAMERA_EYE)
+    , m_mouseGrabber(window)
+    , m_camera(CAMERA_EYE, CAMERA_AT, CAMERA_UP)
 {
     const vec4 BLACK_RGBA = {0, 0, 0, 1};
+    const float CAM_SPEED = 20;
+
     window.SetBackgroundColor(BLACK_RGBA);
     SetupOpenGLState();
 
-    m_renderSystem.SetupLight0(SUNLIGHT_POSITION, WHITE_RGBA, FADED_WHITE_RGBA);
+    m_camera.SetMoveSpeed(CAM_SPEED);
+
+#if 0
+    // -------------------------------------------------------------
+    // TODO: move to CSceneLoader
+    CAssetLoader loader;
+    auto pTexture = loader.LoadTexture(PARTICLE_IMAGE);
+
+    auto pEmitter = std::make_unique<CParticleEmitter>();
+    pEmitter->SetDirection(glm::vec3(0, 1, 0));
+    pEmitter->SetEmitIntervalRange(0.001f, 0.002f);
+    pEmitter->SetLifetimeRange(2.f, 3.f);
+    pEmitter->SetMaxDeviationAngle(float(0.3 * M_PI));
+    pEmitter->SetMaxDistance(1.f);
+    pEmitter->SetPosition(glm::vec3(0, 0, 0));
+    pEmitter->SetSpeedRange(8.f, 15.f);
+
+    auto pSystem = std::make_shared<CParticleSystem>();
+    pSystem->SetEmitter(std::move(pEmitter));
+    pSystem->SetGravity(glm::vec3(0, -0.2f, 0));
+    pSystem->SetParticleTexture(pTexture);
+
+    auto entity = m_world.createEntity();
+    auto &particleCom = entity.addComponent<CParticleComponent>();
+    particleCom.m_pSystem = pSystem;
+    auto &transformCom = entity.addComponent<CTransformComponent>();
+    (void)transformCom;
+    entity.activate();
+    // -------------------------------------------------------------
+
+#else
 
     CSceneLoader loader(m_world);
-    loader.LoadScene("res/solar_system/solar_system_2012.json");
-
-    // Добавляем систему, отвечающую за изменение положения планет
-    //  согласно их орбитам и прошедшему времени по законам Кеплера.
-    m_world.addSystem(m_keplerSystem);
-
-    // Добавляем систему, выполняющую вращение тел вокруг своих осей.
-    m_world.addSystem(m_rotationSystem);
+    loader.LoadScene(SCENE_JSON);
+#endif
 
     // Добавляем систему, отвечающую за рендеринг планет.
     m_world.addSystem(m_renderSystem);
+
+    // Добавляем систему, отвечающую за обновление систем частиц
+    m_world.addSystem(m_updateSystem);
 
     // После активации новых сущностей или деактивации,
     //  а при добавления новых систем следует
@@ -69,18 +101,8 @@ CWindowClient::CWindowClient(CWindow &window)
 
 void CWindowClient::OnUpdate(float deltaSeconds)
 {
-    // Активируем камеру при первом обновлении, чтобы пропустить
-    //  события MouseMove, связанные с настройкой окна.
-    if (!m_didActivateCamera)
-    {
-        m_didActivateCamera = true;
-        m_camera.SetActive(true);
-    }
-
     m_camera.Update(deltaSeconds);
-    m_timeController.Update(deltaSeconds);
-    m_keplerSystem.Update();
-    m_rotationSystem.Update();
+    m_updateSystem.Update(deltaSeconds);
 }
 
 void CWindowClient::OnDraw()
@@ -111,7 +133,8 @@ bool CWindowClient::OnMousePress(const SDL_MouseButtonEvent &event)
 
 bool CWindowClient::OnMouseMotion(const SDL_MouseMotionEvent &event)
 {
-    return m_camera.OnMouseMotion(event);
+    return m_mouseGrabber.OnMouseMotion(event)
+            || m_camera.OnMouseMotion(event);
 }
 
 bool CWindowClient::OnMouseUp(const SDL_MouseButtonEvent &event)

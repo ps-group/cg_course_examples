@@ -1,22 +1,28 @@
 {
     "objects": [
         {
-            "model": "helicopter.md2",
+            "model": "md2/helicopter.md2",
             "position": [-8, 0, 0],
             "eulerAngles": [0, 1.57, 0],
             "size": 0.1
         },
         {
-            "model": "phoenix_ugv.md2",
+            "model": "md2/phoenix_ugv.md2",
             "position": [0, 0, 0],
-            "eulerAngles": [0, 0, 0],
+            "eulerAngles": [0, 3.14, 0],
             "size": 0.1
         },
         {
-            "model": "LOADER.3DS",
+            "model": "3ds/LOADER.3DS",
             "position": [8, 4.5, 0],
             "eulerAngles": [0, 1.57, 0],
             "size": 0.01
+        },
+        {
+            "model": "ase/tanks_cromwell.ase",
+            "position": [14, 0, 0],
+            "eulerAngles": [0, 0, 0],
+            "size": 0.04
         }
     ]
 }

@@ -27,9 +27,9 @@ void SetupOpenGLState()
     glEnable(GL_LIGHTING);
 }
 
-float GetSincFromXY(float x, float y)
+float GetSincFromXZ(float x, float z)
 {
-    const float radius = std::hypotf(x, y);
+    const float radius = std::hypotf(x, z);
     if (radius < std::numeric_limits<float>::epsilon())
     {
         return 1;
@@ -39,7 +39,7 @@ float GetSincFromXY(float x, float y)
 }
 
 CWindow::CWindow()
-    : m_surface(GetSincFromXY)
+    : m_surface(GetSincFromXZ)
     , m_camera(CAMERA_INITIAL_ROTATION, CAMERA_INITIAL_DISTANCE)
     , m_sunlight(GL_LIGHT0)
 {

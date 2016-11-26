@@ -7,8 +7,7 @@ int main(int, char *[])
     try
     {
         CWindow window(ContextProfile::RobustOpenGL_3_2, ContextMode::Debug);
-//        window.ShowFullscreen("Demo #20 (Battle Tanks));
-        window.Show("Demo #20 (Battle Tanks)", {800, 600});
+        window.Show("Demo #20 (Static 3D Models)", {800, 600});
         CWindowClient client(window);
         window.DoMainLoop();
     }

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "SceneLoader.h"
 #include "json/json.hpp"
-#include "libchapter4.h"
 #include "Components.h"
 #include <fstream>
 
@@ -62,7 +61,7 @@ public:
     }
 
 private:
-    CComplexMeshSharedPtr LoadModelWithCache(const path &abspath)
+    CStaticModel3DPtr LoadModelWithCache(const path &abspath)
     {
         // Пытаемся извлечь модель из кеша.
         auto it = m_modelsCache.find(abspath.generic_string());
@@ -71,24 +70,18 @@ private:
             return it->second;
         }
 
-        // В отладочном режиме выводим информацию о модели.
-#if !defined(NDEBUG)
-        m_modelLoader.DumpInfo(abspath);
-#endif
+        auto pModel = m_modelLoader.Load(abspath);
+        m_modelsCache[abspath.generic_string()] = pModel;
 
-        SComplexMeshData data;
-        m_modelLoader.Load(abspath, data);
-        auto pMesh = std::make_shared<CComplexMesh>();
-        pMesh->SetData(std::move(data));
-
-        return pMesh;
+        return pModel;
     }
 
     void AddMesh(anax::Entity &body, const json &dict)
     {
         const std::string filename = dict.at("model").get<std::string>();
         auto &mesh = body.addComponent<CMeshComponent>();
-        mesh.m_pMesh = LoadModelWithCache(m_workdir / filename);
+        mesh.m_category = CMeshComponent::Foreground;
+        mesh.m_pModel = LoadModelWithCache(m_workdir / filename);
     }
 
     void AddTransform(anax::Entity &body, const json &dict)
@@ -104,9 +97,9 @@ private:
     }
 
     anax::World &m_world;
-    CModelLoader m_modelLoader;
+    CStaticModelLoader m_modelLoader;
     path m_workdir;
-    std::unordered_map<std::string, CComplexMeshSharedPtr> m_modelsCache;
+    std::unordered_map<std::string, CStaticModel3DPtr> m_modelsCache;
 };
 }
 
@@ -117,11 +110,9 @@ CSceneLoader::CSceneLoader(anax::World &world)
 
 void CSceneLoader::LoadScene(const boost::filesystem::path &path)
 {
-    CAssetLoader assetLoader;
-
     // Получаем абсолютный путь к файлу описания сцены,
     //  каталог с данным файлом будет использован для поиска ресурсов.
-    const auto abspath = assetLoader.GetResourceAbspath(path);
+    const auto abspath = m_assetLoader.GetResourceAbspath(path);
     const auto resourceDir = abspath.parent_path();
 
     std::ifstream file(abspath.native());
@@ -131,6 +122,35 @@ void CSceneLoader::LoadScene(const boost::filesystem::path &path)
     }
     json sceneObj = json::parse(file);
 
-    CSceneDefinitionParser parser(m_world, assetLoader, resourceDir);
+    CSceneDefinitionParser parser(m_world, m_assetLoader, resourceDir);
     parser.ParseObjects(sceneObj["objects"]);
+}
+
+void CSceneLoader::LoadSkybox(const boost::filesystem::path &path)
+{
+    CTexture2DAtlas atlas(path, m_assetLoader);
+    std::vector<CFloatRect> rects;
+    rects.resize(static_cast<unsigned>(CubeFace::NumFaces));
+    rects[static_cast<unsigned>(CubeFace::Back)] = atlas.GetFrameRect("skybox-back.jpg");
+    rects[static_cast<unsigned>(CubeFace::Front)] = atlas.GetFrameRect("skybox-forward.jpg");
+    rects[static_cast<unsigned>(CubeFace::Left)] = atlas.GetFrameRect("skybox-left.jpg");
+    rects[static_cast<unsigned>(CubeFace::Right)] = atlas.GetFrameRect("skybox-right.jpg");
+    rects[static_cast<unsigned>(CubeFace::Top)] = atlas.GetFrameRect("skybox-top.jpg");
+    rects[static_cast<unsigned>(CubeFace::Bottom)] = atlas.GetFrameRect("skybox-bottom.jpg");
+
+    const CStaticGeometry cube = CTesselator::TesselateSkybox(rects);
+
+    auto pModel = std::make_shared<CStaticModel3D>();
+    pModel->m_pGeometry = cube.m_pGeometry;
+    pModel->m_meshes.emplace_back();
+    pModel->m_meshes.back().m_layout = cube.m_layout;
+    pModel->m_materials.emplace_back();
+    pModel->m_materials.back().pEmissive = atlas.GetTexture();
+
+    anax::Entity skybox = m_world.createEntity();
+    auto &mesh = skybox.addComponent<CMeshComponent>();
+    mesh.m_category = CMeshComponent::Environment;
+    mesh.m_pModel = pModel;
+    skybox.addComponent<CTransformComponent>();
+    skybox.activate();
 }

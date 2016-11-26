@@ -1,10 +1,11 @@
 #pragma once
-#include "libchapter4.h"
+#include "libsystem/AbstractWindowClient.h"
+#include "libsystem/MouseGrabber.h"
+#include "libscene/ArrayObject.h"
+#include "libscene/Camera.h"
 #include "SceneLoader.h"
-#include "RenderSystem.h"
-#include "TimeController.h"
-#include "KeplerLawSystem.h"
-#include "BodyRotationSystem.h"
+#include "ParticleRenderSystem.h"
+#include "ParticleUpdateSystem.h"
 #include <vector>
 
 class CWindowClient
@@ -19,9 +20,9 @@ protected:
     void OnDraw() override;
     bool OnKeyDown(const SDL_KeyboardEvent &) override;
     bool OnKeyUp(const SDL_KeyboardEvent &) override;
-    bool OnMousePress(const SDL_MouseButtonEvent &event) override;
-    bool OnMouseMotion(const SDL_MouseMotionEvent &event) override;
-    bool OnMouseUp(const SDL_MouseButtonEvent &event) override;
+    bool OnMousePress(const SDL_MouseButtonEvent &) override;
+    bool OnMouseMotion(const SDL_MouseMotionEvent &) override;
+    bool OnMouseUp(const SDL_MouseButtonEvent &) override;
 
 private:
     // Данный VAO будет объектом по-умолчанию.
@@ -29,11 +30,9 @@ private:
     //  http://stackoverflow.com/questions/13403807/
     CArrayObject m_defaultVAO;
     anax::World m_world;
-    CTimeController m_timeController;
-    CRenderSystem m_renderSystem;
-    CKeplerLawSystem m_keplerSystem;
-    CBodyRotationSystem m_rotationSystem;
+    CParticleRenderSystem m_renderSystem;
+    CParticleUpdateSystem m_updateSystem;
 
-    bool m_didActivateCamera = false;
+    CMouseGrabber m_mouseGrabber;
     CCamera m_camera;
 };

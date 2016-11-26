@@ -1,5 +1,8 @@
 #pragma once
-#include "libchapter4.h"
+#include "libsystem/AbstractWindowClient.h"
+#include "libsystem/MouseGrabber.h"
+#include "libscene/ArrayObject.h"
+#include "libscene/Camera.h"
 #include "SceneLoader.h"
 #include "RenderSystem.h"
 #include <vector>
@@ -29,6 +32,5 @@ private:
     CRenderSystem m_renderSystem;
 
     CMouseGrabber m_mouseGrabber;
-    bool m_didActivateCamera = false;
     CCamera m_camera;
 };
