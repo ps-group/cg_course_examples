@@ -1,25 +1,34 @@
 #pragma once
 #include "libscene/SkeletalModel3D.h"
+#include "libscene/StaticModel3D.h"
 #include "libscene/SkeletalAnimator.h"
 #include "libgeometry/Transform.h"
 #include <anax/Component.hpp>
 #include <glm/matrix.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <boost/variant.hpp>
 
-class CMeshComponent
+
+class CRenderableComponent
         : public anax::Component
 {
 public:
-    enum Category
+    struct EnvironmentObject
     {
-        // Объект заднего плана, сливающийся с окружением.
-        Environment,
-        // Объект переднего плана.
-        Foreground,
+        CStaticModel3DPtr m_pModel;
     };
 
-    Category m_category;
-    CSkeletalModel3DPtr m_pModel;
+    struct ForegroundObject
+    {
+        CSkeletalModel3DPtr m_pModel;
+    };
+
+    using Object = boost::variant<
+            EnvironmentObject,
+            ForegroundObject
+        >;
+
+    Object m_object;
 };
 
 class CAnimateComponent

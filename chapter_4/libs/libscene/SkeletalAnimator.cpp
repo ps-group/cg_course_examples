@@ -4,47 +4,71 @@
 
 // для перегруженной glm::lerp, принимающей glm::vec3
 #include <glm/gtx/compatibility.hpp>
+#include <glm/gtc/quaternion.hpp>
+
+using glm::quat;
+using glm::vec3;
 
 namespace
 {
 template <class T>
 using Keyframe = CNodeAnimation::Keyframe<T>;
 
+// Выполняет сферическую линейную интерполяцию (slerp) двух кватернионов.
+quat Interpolate(const quat &a, const quat &b, float weight)
+{
+    return glm::slerp(a, b, weight);
+}
+
+// Выполняет линейную интерполяцию (смешивание) двух векторов.
+vec3 Interpolate(const vec3 &a, const vec3 &b, float weight)
+{
+    return glm::mix(a, b, weight);
+}
+
 // Возвращает значение, интерполированное между двумя ключевыми кадрами.
 template <class T>
-T GetInterpolatedValue(const std::vector<Keyframe<T>> &keyframes, double time)
+T GetInterpolatedValue(const std::vector<Keyframe<T>> &keyframes, double phase)
 {
-    // Ищем первый ключевой кадр (keyframe),
-    //  который должен наступить позднее текущей фазы анимации.
+    // Обрабатываем вырожденный случай (массив из 1-го элемента).
+    if (keyframes.size() <= 1)
+    {
+        return keyframes.at(0).value;
+    }
+
+    // Ищем ближайший ключевой кадр (keyframe),
+    //  который анимации предстоит пройти.
     size_t ki = 0;
     for (; ki < keyframes.size(); ++ki)
     {
-        if (keyframes[ki].time >= time)
+        if (keyframes[ki].time >= phase)
         {
             break;
         }
     }
 
-    // Если анимация находится до первого ключевого кадра или после последнего,
-    //  то просто возвращаем крайнее значение.
+    // Если анимация не достигла первого ключевого кадра, используем его.
     if (ki == 0)
     {
         return keyframes.front().value;
     }
+    // Если анимация преодолела последний ключевой кадр, используем его.
     if (ki == keyframes.size())
     {
         return keyframes.back().value;
     }
 
     // Если анимация находится между двумя ключевыми кадрами,
-    //  интерполируем их значения.
-    // Функция glm::lerp перегружена для скаляров,
-    //  для векторов из 2-4 значений и для квантерионов.
+    //  пройденным и предстоящим, и мы интерполируем их значения.
+    // Функция Interpolate перегружена для vec3 и для quat.
     const auto &a = keyframes[ki - 1];
     const auto &b = keyframes[ki];
-    const double weight = (time - a.time) / (b.time - a.time);
+    const double weight = (phase - a.time) / (b.time - a.time);
 
-    return glm::lerp(a.value, b.value, float(weight));
+    // Вес будет в диапазоне [0..1], что даёт усреднённое значение между A и B.
+    assert(weight > -0.01f && weight < 1.01f);
+
+    return Interpolate(a.value, b.value, float(weight));
 }
 }
 

@@ -14,6 +14,13 @@
 class CAssetLoader;
 struct SPhongMaterial;
 
+enum class SceneImportQuality
+{
+    Fast,
+    HighQuality,
+    MaxQuality,
+};
+
 class CAssimpUtils
 {
 public:
@@ -23,7 +30,8 @@ public:
     // Если файла нет, бросает исключение
     // Памятью для хранения возвращаемой сцены владеет importer.
     static const aiScene &OpenScene(const boost::filesystem::path &path,
-                                    Assimp::Importer &importer);
+                                    Assimp::Importer &importer,
+                                    SceneImportQuality quality = SceneImportQuality::HighQuality);
 
     // Выводит подробную информацию о ранее открытой сцене
     static void DumpSceneInfo(const aiScene &scene);
@@ -36,6 +44,10 @@ public:
                               CAssetLoader &assetLoader,
                               const aiScene &scene,
                               std::vector<SPhongMaterial> &materials);
+
+    // Печатает матрицу 4x4 в 4 строки с отступом, заданным строкой indent.
+    static void PrintGlmMatrix4(const std::string &indent,
+                                const glm::mat4 &transform);
 
     // Конвертирует матрицу формата libassimp в матрицу формата OpenGL/GLM.
     // Процесс включает в себя транспонирование, т.к. матрицы в OpenGL

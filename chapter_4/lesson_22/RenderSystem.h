@@ -1,12 +1,13 @@
 #pragma once
 #include "Components.h"
 #include "SkeletalAnimationProgram.h"
+#include "PhongProgram.h"
 #include <anax/System.hpp>
 
 class CSkeletalModel3DRenderer;
 
 class CRenderSystem
-        : public anax::System<anax::Requires<CMeshComponent, CTransformComponent>>
+        : public anax::System<anax::Requires<CRenderableComponent, CTransformComponent>>
 {
 public:
     CRenderSystem();
@@ -17,15 +18,9 @@ public:
     void Render(const glm::mat4 &view, const glm::mat4 &projection);
 
 private:
-    struct LightSource
-    {
-        glm::vec4 m_position;
-        glm::vec4 m_diffuse;
-        glm::vec4 m_specular;
-    };
+    void RenderEnvironment(const glm::mat4 &view, const glm::mat4 &projection);
+    void RenderForeground(const glm::mat4 &view, const glm::mat4 &projection);
 
-    void DoRenderPass(CMeshComponent::Category category, CSkeletalModel3DRenderer &renderer);
-
-    CSkeletalAnimationProgram m_planetProgram;
-    LightSource m_light0;
+    CSkeletalAnimationProgram m_skeletalProgram;
+    CPhongProgram m_phongProgram;
 };

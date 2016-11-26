@@ -26,12 +26,43 @@ T *AddItemsToWrite(std::vector<T> &data, size_t count)
     return (data.data() + oldSize);
 }
 
+PrimitiveType MapPrimitiveType(unsigned aiPrimitiveTypeValue)
+{
+    switch (aiPrimitiveTypeValue)
+    {
+    case aiPrimitiveType_POINT:
+        return PrimitiveType::Points;
+    case aiPrimitiveType_LINE:
+        return PrimitiveType::Lines;
+    case aiPrimitiveType_TRIANGLE:
+        return PrimitiveType::Triangles;
+    }
+    throw std::runtime_error("Unsupported assimp primitive type "
+                             + std::to_string(aiPrimitiveTypeValue));
+}
+
+unsigned GetPrimitiveVertexCount(PrimitiveType type)
+{
+    switch (type)
+    {
+    case PrimitiveType::Points:
+        return 1;
+    case PrimitiveType::Lines:
+        return 2;
+    case PrimitiveType::Triangles:
+        return 3;
+    default:
+        break;
+    }
+    throw std::runtime_error("Unexpected internal primitive type "
+                             + std::to_string(static_cast<unsigned>(type)));
+}
+
 // Накапливает информацию о сетках треугольников и геометрии.
 class CMeshAccumulator
 {
 public:
     static const size_t RESERVED_SIZE = 4 * 1024;
-    static const unsigned TRI_VERTEX_COUNT = 3;
 
     CMeshAccumulator()
     {
@@ -55,10 +86,6 @@ public:
     // Добавляет сетку треугольников в общий набор данных.
     void Add(const aiMesh& mesh)
     {
-        if (mesh.mPrimitiveTypes != aiPrimitiveType_TRIANGLE)
-        {
-            throw std::runtime_error("Only triangle meshes are supported");
-        }
         const unsigned meshNo = unsigned(m_meshes.size());
         CStaticMesh3D mesh3d;
         mesh3d.m_materialIndex = mesh.mMaterialIndex;
@@ -73,7 +100,7 @@ public:
         }
         SetupBytesLayout(mesh, mesh3d.m_layout);
         CopyVertexes(mesh, mesh3d.m_layout);
-        CopyIndexes(mesh);
+        CopyIndexes(mesh, mesh3d.m_layout);
 
         m_meshes.push_back(mesh3d);
     }
@@ -125,10 +152,11 @@ private:
     //  в байтах для подсети треугольников.
     void SetupBytesLayout(const aiMesh& mesh, SGeometryLayout &layout)
     {
-        // TODO: реализуйте поддержку других примитивов (Lines, Points).
-        layout.m_primitive = PrimitiveType::Triangles;
+        const PrimitiveType primitive = MapPrimitiveType(mesh.mPrimitiveTypes);
+        const unsigned vertexPerPrimitive = GetPrimitiveVertexCount(primitive);
 
-        layout.m_indexCount = size_t(TRI_VERTEX_COUNT * mesh.mNumFaces);
+        layout.m_primitive = primitive;
+        layout.m_indexCount = size_t(vertexPerPrimitive * mesh.mNumFaces);
         layout.m_vertexCount = size_t(mesh.mNumVertices);
         layout.m_baseVertexOffset = GetBytesCount(m_geometry.m_vertexData);
         layout.m_baseIndexOffset = GetBytesCount(m_geometry.m_indicies);
@@ -197,17 +225,20 @@ private:
         }
     }
 
-    void CopyIndexes(const aiMesh& mesh)
+    void CopyIndexes(const aiMesh& mesh, SGeometryLayout &layout)
     {
         // Добавляем нужное число элементов uint32_t в массив,
         //  затем формируем указатель для начала записи данных.
-        const size_t dataSize = TRI_VERTEX_COUNT * mesh.mNumFaces;
+        const unsigned vertexPerPrimitive = GetPrimitiveVertexCount(layout.m_primitive);
+        const size_t dataSize = vertexPerPrimitive * mesh.mNumFaces;
         uint32_t *pDestData = AddItemsToWrite(m_geometry.m_indicies, dataSize);
+
+        // Копируем данные о всех гранях в единый буфер байт.
         for (unsigned i = 0, n = mesh.mNumFaces; i < n; i += 1)
         {
             unsigned *indicies = mesh.mFaces[i].mIndices;
-            std::memcpy(pDestData, indicies, sizeof(unsigned) * TRI_VERTEX_COUNT);
-            pDestData += TRI_VERTEX_COUNT;
+            std::memcpy(pDestData, indicies, sizeof(unsigned) * vertexPerPrimitive);
+            pDestData += vertexPerPrimitive;
         }
     }
 

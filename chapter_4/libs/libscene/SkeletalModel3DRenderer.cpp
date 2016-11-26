@@ -7,6 +7,8 @@
 #include "libshading/IProgramAdapter.h"
 #include "includes/glm-common.hpp"
 #include "includes/opengl-common.hpp"
+#include "AssimpUtils.h"
+#include <iostream>
 
 using glm::mat4;
 
@@ -43,7 +45,7 @@ void CSkeletalModel3DRenderer::Draw(CSkeletalModel3D &model)
     SetupTransforms();
 
     // Обновляем трансформации костей по именам.
-    UpdateBoneTransformsCache(model);
+    UpdateNodeTransformsCache(model);
 
     model.m_pGeometry->Bind();
     for (CSkeletalMesh3D &mesh : model.m_meshes)
@@ -66,15 +68,15 @@ CProgramUniform CSkeletalModel3DRenderer::GetUniform(UniformId id) const
 //  - перспективного преобразования
 void CSkeletalModel3DRenderer::SetupTransforms()
 {
-    const mat4 worldMat4 = m_view * m_world;
-    const mat4 normalMat4 = CDrawUtils::GetNormalMat4(worldMat4);
+    const mat4 worldViewMat4 = m_view * m_world;
+    const mat4 normalMat4 = CDrawUtils::GetNormalMat4(worldViewMat4);
     GetUniform(UniformId::MATRIX_PROJECTION) = m_projection;
     GetUniform(UniformId::MATRIX_VIEW) = m_view;
-    GetUniform(UniformId::MATRIX_WORLDVIEW) = worldMat4;
+    GetUniform(UniformId::MATRIX_WORLDVIEW) = worldViewMat4;
     GetUniform(UniformId::MATRIX_NORMALWORLDVIEW) = normalMat4;
 }
 
-void CSkeletalModel3DRenderer::UpdateBoneTransformsCache(const CSkeletalModel3D &model)
+void CSkeletalModel3DRenderer::UpdateNodeTransformsCache(const CSkeletalModel3D &model)
 {
     if (model.m_rootNode == nullptr)
     {
@@ -84,16 +86,18 @@ void CSkeletalModel3DRenderer::UpdateBoneTransformsCache(const CSkeletalModel3D 
     const mat4 rootMat4 = model.m_rootNode->m_transform.ToMat4();
     const mat4 inverseRootMat4 = glm::inverse(rootMat4);
 
-    m_boneTransformsCache.clear();
+    m_nodeTransformsCache.clear();
+    std::cerr << "//////////////////////////////////" << std::endl;
     VisitNode(*model.m_rootNode, inverseRootMat4);
 }
 
 void CSkeletalModel3DRenderer::SetupBoneTransforms(const CSkeletalMesh3D &mesh)
 {
-    std::vector<mat4> data(mesh.m_bones.size());
+    std::vector<mat4> data(Limits::MAX_BONES_COUNT);
     std::transform(mesh.m_bones.begin(), mesh.m_bones.end(),
-                   data.begin(), [&](const CSkeletalNode *pNode) {
-        return m_boneTransformsCache[pNode->m_name];
+                   data.begin(), [&](const CSkeletalBone &bone) {
+        return m_nodeTransformsCache[bone.m_pNode->m_name]
+                * bone.m_boneOffset;
     });
 
     GetUniform(UniformId::BONE_TRANSFORM_ARRAY) = data;
@@ -106,13 +110,12 @@ void CSkeletalModel3DRenderer::VisitNode(const CSkeletalNode &node,
     //  с учётом динамически изменяемой трансформации кости.
     const mat4 nodeMat4 = parentMat4 * node.m_transform.ToMat4();
 
-    // Общее преобразовани сначала помещает вершину в коодинаты узла (кости),
-    //  и затем преобразует обратно в координаты модели.
-    const mat4 transform = nodeMat4 * node.m_boneOffset;
-
     // Запоминаем трансформацию из системы коодинат модели
-    //  в систему координат кости.
-    m_boneTransformsCache[node.m_name] = transform;
+    //  в систему координат узла, описывающего кость.
+    m_nodeTransformsCache[node.m_name] = nodeMat4;
+
+    std::cerr << "-------------------------------------" << std::endl;
+    CAssimpUtils::PrintGlmMatrix4("  ", nodeMat4);
 
     // Посещаем все дочерние узлы графа сцены данной модели.
     for (const auto &pChild : node.m_children)

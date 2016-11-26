@@ -79,12 +79,18 @@ private:
     void AddAnimatedMesh(anax::Entity &body, const json &dict)
     {
         const std::string filename = dict.at("model").get<std::string>();
-        auto &mesh = body.addComponent<CMeshComponent>();
-        mesh.m_category = CMeshComponent::Foreground;
-        mesh.m_pModel = LoadModelWithCache(m_workdir / filename);
+        auto pModel = LoadModelWithCache(m_workdir / filename);
 
-        auto &animation = body.addComponent<CAnimateComponent>();
-        animation.SetModel(mesh.m_pModel);
+        auto &mesh = body.addComponent<CRenderableComponent>();
+        CRenderableComponent::ForegroundObject object;
+        object.m_pModel = pModel;
+        mesh.m_object = object;
+
+        if (!pModel->m_animations.empty())
+        {
+            auto &animation = body.addComponent<CAnimateComponent>();
+            animation.SetModel(pModel);
+        }
     }
 
     void AddTransform(anax::Entity &body, const json &dict)
@@ -143,7 +149,7 @@ void CSceneLoader::LoadSkybox(const boost::filesystem::path &path)
 
     const CStaticGeometry cube = CTesselator::TesselateSkybox(rects);
 
-    auto pModel = std::make_shared<CSkeletalModel3D>();
+    auto pModel = std::make_shared<CStaticModel3D>();
     pModel->m_pGeometry = cube.m_pGeometry;
     pModel->m_meshes.emplace_back();
     pModel->m_meshes.back().m_layout = cube.m_layout;
@@ -151,9 +157,11 @@ void CSceneLoader::LoadSkybox(const boost::filesystem::path &path)
     pModel->m_materials.back().pEmissive = atlas.GetTexture();
 
     anax::Entity skybox = m_world.createEntity();
-    auto &mesh = skybox.addComponent<CMeshComponent>();
-    mesh.m_category = CMeshComponent::Environment;
-    mesh.m_pModel = pModel;
+    auto &mesh = skybox.addComponent<CRenderableComponent>();
+    CRenderableComponent::EnvironmentObject object;
+    object.m_pModel = pModel;
+    mesh.m_object = object;
+
     skybox.addComponent<CTransformComponent>();
     skybox.activate();
 }

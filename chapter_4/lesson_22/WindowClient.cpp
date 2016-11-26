@@ -58,7 +58,7 @@ CWindowClient::CWindowClient(CWindow &window)
 
     CSceneLoader loader(m_world);
     loader.LoadScene(SCENE_JSON);
-//    loader.LoadSkybox(SKYBOX_PLIST);
+    loader.LoadSkybox(SKYBOX_PLIST);
 
     // Добавляем систему, отвечающую за рендеринг моделей.
     m_world.addSystem(m_renderSystem);

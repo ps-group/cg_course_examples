@@ -266,9 +266,25 @@ private:
 };
 }
 
-const aiScene &CAssimpUtils::OpenScene(const boost::filesystem::path &path, Assimp::Importer &importer)
+const aiScene &CAssimpUtils::OpenScene(const boost::filesystem::path &path, Assimp::Importer &importer, SceneImportQuality quality)
 {
-    const unsigned importFlags = aiProcessPreset_TargetRealtime_Fast;
+    // Выбираем один из предопределённых в Assimp наборов флагов
+    //  для рендеринга в реальном времени с указанным уровнем качества.
+    unsigned importFlags = 0;
+    switch (quality)
+    {
+    case SceneImportQuality::Fast:
+        importFlags = aiProcessPreset_TargetRealtime_Fast;
+        break;
+    case SceneImportQuality::HighQuality:
+        importFlags = aiProcessPreset_TargetRealtime_Quality;
+        break;
+    case SceneImportQuality::MaxQuality:
+        importFlags = aiProcessPreset_TargetRealtime_MaxQuality;
+        break;
+    }
+
+    // Загружаем сцену из указанного файла.
     const aiScene *pScene = importer.ReadFile(path.generic_string().c_str(), importFlags);
     if (pScene == nullptr)
     {
@@ -384,18 +400,13 @@ glm::mat4 CAssimpUtils::ConvertMat4(const aiMatrix4x4 &value)
 
 glm::quat CAssimpUtils::ConvertQuat(const aiQuaternion &quat)
 {
-    // Чтобы правильно преобразовать кватернионы из правосторонней системы
-    //  координат, преобразуем кватернион в матрицу 3x3,
-    //  переводим матрицу в формат OpenGL и затем преобразуем
-    //  матрицу 3x3 в кватернион.
-
-    const aiMatrix3x3 aiMat3 = quat.GetMatrix();
-    const glm::mat3 glmMat3 = glm::transpose(glm::make_mat3(&aiMat3.a1));
-
-    return glm::quat_cast(glmMat3);
+    // Конструктор glm::quat принимает параметры в порядке (w, x, y, z),
+    //  но внутри класса хранятия (x, y, z, w),
+    //  поэтому мы не используем glm::make_quat.
+    return glm::quat(quat.w, quat.x, quat.y, quat.z);
 }
 
-void PrintGlmMatrix4(const std::string &indent, const glm::mat4 &transform)
+void CAssimpUtils::PrintGlmMatrix4(const std::string &indent, const glm::mat4 &transform)
 {
     const unsigned SIZE = 4;
     for (unsigned row = 0; row < SIZE; ++row)

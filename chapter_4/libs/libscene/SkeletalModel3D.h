@@ -14,20 +14,30 @@ using CSkeletalModel3DPtr = std::shared_ptr<CSkeletalModel3D>;
 class CSkeletalNode;
 using CSkeletalNodePtr = std::unique_ptr<CSkeletalNode>;
 
-// Представляет узел модели, который может использоваться как кость.
+// Представляет узел модели, который может использоваться как
+//  источник трансформаций для костей или сеток.
 class CSkeletalNode
 {
 public:
     // Имя узла (для указания в описании анимации).
     std::string m_name;
-    // Матрица перехода из системы координат родительского узла
-    //  в систему координат узла.
-    glm::mat4 m_boneOffset;
     // Трансформация данного узла,
     //  задающая переход в координаты родительского узла.
     CTransform3D m_transform;
-    // Список дочерних узлов (возможно, играющих роль костей).
+    // Список дочерних узлов графа сцены.
     std::vector<CSkeletalNodePtr> m_children;
+};
+
+class CSkeletalBone
+{
+public:
+    // Матрица перехода из системы координат сетки треугольников
+    //  в систему координат узла, описывающего кость.
+    glm::mat4 m_boneOffset;
+
+    // Указатель на узел, представляющий кость
+    //  и её зависимости от других костей.
+    const CSkeletalNode *m_pNode = nullptr;
 };
 
 class CSkeletalMesh3D
@@ -38,7 +48,7 @@ public:
     // Номер материала в материалах модели.
     unsigned m_materialIndex = 0;
     // Список узлов-костей, взаимодействующих с данной сеткой.
-    std::vector<const CSkeletalNode*> m_bones;
+    std::vector<CSkeletalBone> m_bones;
 };
 
 class CNodeAnimation

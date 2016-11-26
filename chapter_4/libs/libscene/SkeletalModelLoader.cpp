@@ -31,6 +31,7 @@ T *AddItemsToWrite(std::vector<T> &data, size_t count)
     return (data.data() + oldSize);
 }
 
+// Хранит информацию о применении костей к одной вершине.
 struct CVertexSkinning
 {
     uint8_t indexes[BONES_PER_VERTEX];
@@ -46,6 +47,8 @@ struct CVertexSkinning
     // Добавляет вес и индекс кости, от которой зависит вершина.
     void AddWeight(unsigned boneId, float weight)
     {
+        assert(weight > EPSILON);
+
         // Индекс кости сохраняется в uint8_t,
         //  поэтому более 256 костей в модели быть не должно.
         if (boneId > MAX_BONES_COUNT)
@@ -74,7 +77,8 @@ struct CVertexSkinning
     }
 };
 
-// Накапливает информацию о сетках треугольников и геометрии.
+// Накапливает информацию о сетках треугольников и геометрии,
+//  а также об анимациях и скелете модели.
 class CMeshAccumulator
 {
 public:
@@ -204,9 +208,9 @@ private:
 
         // Анимированная модель обязана иметь кости.
         layout.m_boneIndexes = layout.m_vertexSize;
-        layout.m_vertexSize += sizeof(uint8_t[BONES_PER_VERTEX]);
+        layout.m_vertexSize += sizeof(uint8_t) * BONES_PER_VERTEX;
         layout.m_boneWeights = layout.m_vertexSize;
-        layout.m_vertexSize += sizeof(glm::ivec4);
+        layout.m_vertexSize += sizeof(float) * BONES_PER_VERTEX;
 
         // Текстурные координаты UV - опциональный атрибут
         if (mesh.HasTextureCoords(0))
@@ -306,25 +310,22 @@ private:
     //  собирающая информацию о скининке вершин сетки,
     //  и составляющее отображение номеров костей на кости.
     void CollectPerVertexSkinning(const aiMesh &mesh,
-                                  std::vector<const CSkeletalNode *> &bones)
+                                  std::vector<CSkeletalBone> &bones)
     {
-        // Очищаем массив данных о скининге вершин.
-        m_meshSkinning.clear();
-        bones.clear();
-
         // Заполняем массивы пустыми данными нужном в количестве.
         m_meshSkinning.resize(mesh.mNumVertices, CVertexSkinning());
-        bones.resize(mesh.mNumBones, nullptr);
+        std::fill(m_meshSkinning.begin(), m_meshSkinning.end(), CVertexSkinning());
+        bones.resize(mesh.mNumBones);
 
         for (unsigned boneId = 0; boneId < mesh.mNumBones; ++boneId)
         {
+            auto &bone = bones[boneId];
             const aiBone &srcBone = *mesh.mBones[boneId];
             const std::string boneName = srcBone.mName.C_Str();
 
-            // Заносим узел в массив узлов, воздействующих на сетку.
-            CSkeletalNode *pNode = m_nodeNameMapping.at(boneName);
-            pNode->m_boneOffset = CAssimpUtils::ConvertMat4(srcBone.mOffsetMatrix);
-            bones[boneId] = pNode;
+            // Заполняем данные о кости.
+            bone.m_pNode = m_nodeNameMapping.at(boneName);
+            bone.m_boneOffset = CAssimpUtils::ConvertMat4(srcBone.mOffsetMatrix);
 
             for (unsigned wi = 0; wi < srcBone.mNumWeights; ++wi)
             {
@@ -380,7 +381,7 @@ private:
         const std::string nodeName = srcAnim.mNodeName.C_Str();
         anim.m_pNode = m_nodeNameMapping.at(nodeName);
 
-        // Копируем ключевые точки изменения размера.
+        // Копируем ключевые кадры для изменения размера.
         anim.m_scaleKeyframes.resize(srcAnim.mNumScalingKeys);
         for (unsigned ki = 0; ki < srcAnim.mNumScalingKeys; ++ki)
         {
@@ -390,7 +391,7 @@ private:
             };
         }
 
-        // Копируем ключевые точки вращения.
+        // Копируем ключевые кадры для вращения.
         anim.m_rotationKeyframes.resize(srcAnim.mNumRotationKeys);
         for (unsigned ki = 0; ki < srcAnim.mNumRotationKeys; ++ki)
         {
@@ -400,7 +401,7 @@ private:
             };
         }
 
-        // Копируем ключевые точки перемещения.
+        // Копируем ключевые кадры для перемещения.
         anim.m_positionKeyframes.resize(srcAnim.mNumPositionKeys);
         for (unsigned ki = 0; ki < srcAnim.mNumPositionKeys; ++ki)
         {
@@ -445,6 +446,10 @@ CSkeletalModel3DPtr CSkeletalModelLoader::Load(const boost::filesystem::path &pa
     const boost::filesystem::path abspath = m_assetLoader.GetResourceAbspath(path);
 
     Assimp::Importer importer;
+
+    // Для загружаемых моделей ограничим число костей, влияющих на вершину.
+    importer.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, BONES_PER_VERTEX);
+
     const aiScene &scene = CAssimpUtils::OpenScene(abspath, importer);
 
     // В отладочном режиме выводим информацию о модели.

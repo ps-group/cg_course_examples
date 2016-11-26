@@ -23,17 +23,19 @@ uniform mat4 boneTransforms[64];
 
 void main(void)
 {
-    mat4 boneTransform = mat4(1);
+    mat4 boneTransform = mat4(0);
     for (int bi = 0; bi < BONES_PER_VERTEX; ++bi)
     {
         int boneId = boneIds[bi];
         float weight = boneWeights[bi];
-        boneTransform += boneTransforms[boneId] * weight;
+        boneTransform += weight * boneTransforms[boneId];
     }
+
+    mat4 normalTransform = normalModelView * transpose(inverse(boneTransform));
 
     vec4 posInViewSpace = modelView * boneTransform * vec4(vertex, 1.0);
     fragPosInViewSpace = vec3(posInViewSpace);
-    fragNormal = normalize(vec3(normalModelView * vec4(normal, 0.0)));
+    fragNormal = normalize(vec3(normalTransform * vec4(normal, 0.0)));
     fragTextureUV = textureUV;
 
     gl_Position = projection * posInViewSpace;

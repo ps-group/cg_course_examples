@@ -25,7 +25,7 @@ namespace Limits
 static const size_t BONES_PER_VERTEX = 4;
 
 // Максимальное число костей в одной модели.
-static const size_t MAX_BONES_COUNT = std::numeric_limits<uint8_t>::max();
+static const size_t MAX_BONES_COUNT = 64;
 }
 
 // Гибкая шаблонная структура для хранения вершинных данных,

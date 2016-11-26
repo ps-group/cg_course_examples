@@ -24,7 +24,7 @@ public:
 private:
     CProgramUniform GetUniform(UniformId id)const;
     void SetupTransforms();
-    void UpdateBoneTransformsCache(const CSkeletalModel3D &model);
+    void UpdateNodeTransformsCache(const CSkeletalModel3D &model);
     void SetupBoneTransforms(const CSkeletalMesh3D &mesh);
     void VisitNode(const CSkeletalNode &node,
                    const glm::mat4 &parentMat4);
@@ -36,5 +36,5 @@ private:
     glm::mat4 m_view;
     glm::mat4 m_projection;
     glm::mat4 m_normal;
-    std::unordered_map<std::string, glm::mat4> m_boneTransformsCache;
+    std::unordered_map<std::string, glm::mat4> m_nodeTransformsCache;
 };

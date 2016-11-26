@@ -1,11 +1,22 @@
 {
     "objects": [
         {
-            "model": "guard/boblampclean.md5mesh",
-            "position": [4, 0, 0],
+            "model": "animated-hand/hand_rig.md5mesh",
+            "position": [-8, 0, 0],
+            "eulerAngles": [-1.57, 0, 0],
+            "size": 1.0
+        },
+        {
+            "model": "animated-guard/boblampclean.md5mesh",
+            "position": [0, 0, 0],
             "eulerAngles": [-1.57, 0, 0],
             "size": 0.2
+        },
+        {
+            "model": "static-human/human-man.dae",
+            "position": [8, 0, 0],
+            "eulerAngles": [-1.57, 0, 0],
+            "size": 1.0
         }
-
     ]
 }
