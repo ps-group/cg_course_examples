@@ -7,21 +7,21 @@ include(../cmake/win32_paths.cmake)
 if(UNIX)
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/libs/glm-0.9.8.2")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra -Wno-unused-parameter")
+    # Сторонние заранее собранные библиотеки
     set(PROJECT_LIBS SDL2 SDL2_image SDL2_ttf GL GLEW GLU boost_filesystem boost_system assimp)
+    # Библиотеки, собираемые в составе проекта
+    set(PROJECT_LIBS ${PROJECT_LIBS} libsystem libshading libscene libanax libgeometry libcommons)
 else(UNIX)
     include_directories(${CG_WIN32_INCLUDE_PATHS})
     link_directories(${CG_WIN32_LINKER_PATHS})
     add_definitions(-DGLEW_STATIC=1)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4201 /wd4324")
     set(CG_GLEW_LIBRARY optimized glew32s debug glew32sd)
+    # Сторонние заранее собранные библиотеки
     set(PROJECT_LIBS SDL2main SDL2 SDL2_image SDL2_ttf ${CG_GLEW_LIBRARY} OpenGL32 assimp-vc140-mt)
+    # Библиотеки, собираемые в составе проекта
+    set(PROJECT_LIBS ${PROJECT_LIBS} libcommons libsystem libgeometry libshading libscene libanax)
 endif(UNIX)
-
-macro(add_lesson NUM)
-    file(GLOB SRC_LESSON_${NUM} "lesson_${NUM}/*.cpp" "lesson_${NUM}/*.h")
-    add_executable(lesson_${NUM} ${SRC_LESSON_${NUM}})
-    target_link_libraries(lesson_${NUM} libcommons libsystem libgeometry libshading libscene libanax ${PROJECT_LIBS})
-endmacro(add_lesson)
 
 # Добавляем 'libs' в пути поиска заголовочных файлов.
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
@@ -74,11 +74,17 @@ if(MSVC)
 target_compile_options(libanax PUBLIC "/wd4100" "/wd4244")
 endif(MSVC)
 
-add_lesson(19)
+macro(add_lesson NUM)
+    file(GLOB SRC_LESSON_${NUM} "lesson_${NUM}/*.cpp" "lesson_${NUM}/*.h")
+    add_executable(lesson_${NUM} ${SRC_LESSON_${NUM}})
+    target_link_libraries(lesson_${NUM} libcommons libsystem libgeometry libshading libscene libanax ${PROJECT_LIBS})
+endmacro(add_lesson)
+
+#add_lesson(19)
 add_lesson(20)
 add_lesson(21)
 add_lesson(22)
-#add_lesson(23)
+add_lesson(23)
 #add_lesson(24)
 
 # Выполняем копирование файлов в выходную директорию

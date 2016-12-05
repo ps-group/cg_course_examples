@@ -112,10 +112,6 @@ public:
         {
             throw std::runtime_error("Only triangle meshes are supported");
         }
-        if (mesh.mNumBones == 0)
-        {
-            throw std::runtime_error("Only meshes with bones are supported");
-        }
 
         CSkeletalMesh3D mesh3d;
         mesh3d.m_materialIndex = mesh.mMaterialIndex;

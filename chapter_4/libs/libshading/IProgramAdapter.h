@@ -22,7 +22,7 @@ enum class UniformId : unsigned
     // Матрицы трансформаций
     MATRIX_VIEW, // mat4
     MATRIX_PROJECTION, // mat4
-    MATRIX_WORLDVIEW, // mat4
+    MATRIX_WORLDVIEW, // mat4 или mat3
     MATRIX_NORMALWORLDVIEW, // mat4
     // Отдельные элементы преобразований
     TRANSFORM_SCALE, // vec3
@@ -32,7 +32,7 @@ enum class UniformId : unsigned
 
 enum class AttributeId
 {
-    // Позиция вершины (vec3)
+    // Позиция вершины (vec3 или vec2)
     POSITION,
     // Текстурные координаты (vec2)
     TEX_COORD_UV,
