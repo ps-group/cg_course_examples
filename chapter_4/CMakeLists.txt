@@ -80,11 +80,11 @@ macro(add_lesson NUM)
     target_link_libraries(lesson_${NUM} libcommons libsystem libgeometry libshading libscene libanax ${PROJECT_LIBS})
 endmacro(add_lesson)
 
-#add_lesson(19)
+add_lesson(19)
 add_lesson(20)
 add_lesson(21)
 add_lesson(22)
-add_lesson(23)
+#add_lesson(23)
 #add_lesson(24)
 
 # Выполняем копирование файлов в выходную директорию
