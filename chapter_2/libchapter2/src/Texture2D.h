@@ -1,13 +1,11 @@
 #pragma once
 
-#include <boost/noncopyable.hpp>
-#include <boost/scope_exit.hpp>
-#include <boost/filesystem/path.hpp>
 #include <string>
 #include <memory>
 #include <unordered_map>
 #include "FloatRect.h"
 #include "Utils.h"
+#include "filesystem_alias.h"
 
 class CTexture2D;
 using CTexture2DUniquePtr = std::unique_ptr<CTexture2D>;
@@ -24,11 +22,14 @@ enum class TextureWrapMode
 /// Класс владеет текстурой типа GL_TEXTURE_2D,
 ///    у которой есть две координаты "s" и "t",
 ///    и позволяет привязывать её к контексту OpenGL
-class CTexture2D : private boost::noncopyable
+class CTexture2D
 {
 public:
     CTexture2D(const glm::ivec2 &size, bool hasAlpha);
     ~CTexture2D();
+
+	CTexture2D(const CTexture2D&) = delete;
+	CTexture2D& operator=(const CTexture2D&) = delete;
 
     glm::ivec2 GetSize()const;
     bool HasAlpha()const;
@@ -40,11 +41,17 @@ public:
     void DoWhileBinded(TFunction && fn)const
     {
         Bind();
-        // При выходе из функции гарантированно выполняем Unbind.
-        BOOST_SCOPE_EXIT_ALL(&) {
-            Unbind();
-        };
-        fn();
+		// При выходе из функции гарантированно выполняем Unbind.
+		try
+		{
+			fn();
+		}
+		catch (...)
+		{
+			Unbind();
+			throw;
+		}
+		Unbind();
     }
 
 private:
@@ -59,7 +66,7 @@ private:
 class CTexture2DLoader
 {
 public:
-    CTexture2DUniquePtr Load(const boost::filesystem::path &path);
+    CTexture2DUniquePtr Load(const fs::path &path);
 
     void SetWrapMode(TextureWrapMode wrap);
     void SetWrapMode(TextureWrapMode wrapS, TextureWrapMode wrapT);
@@ -75,11 +82,14 @@ private:
 ///    текстуры на прямоугольники с помощью текстурных координат.
 /// Формат текстур совместим с cocos2d-x, и может быть создан
 ///    с помощью github.com/sergey-shambir/Cheetah-Texture-Packer
-class CTexture2DAtlas : private boost::noncopyable
+class CTexture2DAtlas
 {
 public:
-    CTexture2DAtlas(const boost::filesystem::path &xmlPath,
+    CTexture2DAtlas(const fs::path &xmlPath,
                     CTexture2DLoader loader = CTexture2DLoader());
+
+	CTexture2DAtlas(const CTexture2DAtlas&) = delete;
+	CTexture2DAtlas& operator=(const CTexture2DAtlas&) = delete;
 
     const CTexture2D &GetTexture()const;
     CFloatRect GetFrameRect(const std::string &frameName)const;

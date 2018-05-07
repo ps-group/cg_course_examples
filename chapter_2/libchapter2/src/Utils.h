@@ -1,9 +1,10 @@
 ﻿#pragma once
 
-#include <memory>
+#include <SDL2/SDL_video.h>
 #include <chrono>
 #include <glm/fwd.hpp>
-#include <SDL2/SDL_video.h>
+#include <memory>
+#include <string>
 
 // Did you install SDL_ttf development files?
 // see http://www.libsdl.org/projects/SDL_ttf/
@@ -13,33 +14,33 @@ namespace detail
 {
 struct SDLWindowDeleter
 {
-    void operator()(SDL_Window *ptr)
-    {
-        SDL_DestroyWindow(ptr);
-    }
+	void operator()(SDL_Window* ptr)
+	{
+		SDL_DestroyWindow(ptr);
+	}
 };
 struct SDLGLContextDeleter
 {
-    void operator()(SDL_GLContext ptr)
-    {
-        SDL_GL_DeleteContext(ptr);
-    }
+	void operator()(SDL_GLContext ptr)
+	{
+		SDL_GL_DeleteContext(ptr);
+	}
 };
 struct SDLSurfaceDeleter
 {
-    void operator()(SDL_Surface *ptr)
-    {
-        SDL_FreeSurface(ptr);
-    }
+	void operator()(SDL_Surface* ptr)
+	{
+		SDL_FreeSurface(ptr);
+	}
 };
 struct TtfFontDeleter
 {
-    void operator ()(TTF_Font *font)
-    {
-        TTF_CloseFont(font);
-    }
+	void operator()(TTF_Font* font)
+	{
+		TTF_CloseFont(font);
+	}
 };
-}
+} // namespace detail
 
 // Используем unique_ptr с явно заданным функтором удаления вместо delete.
 using SDLWindowPtr = std::unique_ptr<SDL_Window, detail::SDLWindowDeleter>;
@@ -56,10 +57,10 @@ public:
 	static void ValidateSDL2Errors();
 	static void ValidateOpenGLErrors();
 
-    static void FlipSurfaceVertically(SDL_Surface &surface);
-    static SDLSurfacePtr RenderUtf8Text(TTF_Font & font,
-                                        const std::string &text,
-                                        const glm::vec3 &color);
+	static void FlipSurfaceVertically(SDL_Surface& surface);
+	static SDLSurfacePtr RenderUtf8Text(TTF_Font& font,
+		const std::string& text,
+		const glm::vec3& color);
 };
 
 class CChronometer
@@ -68,7 +69,7 @@ public:
 	CChronometer();
 	float GrabDeltaTime();
 
-	void WaitNextFrameTime(const std::chrono::milliseconds &framePeriod);
+	void WaitNextFrameTime(const std::chrono::milliseconds& framePeriod);
 
 private:
 	std::chrono::system_clock::time_point m_lastTime;

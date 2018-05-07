@@ -1,15 +1,15 @@
 #pragma once
 #include "Utils.h"
+#include "filesystem_alias.h"
 #include <string>
-#include <boost/filesystem/path.hpp>
 
 class CFilesystemUtils
 {
 public:
-    CFilesystemUtils() = delete;
+	CFilesystemUtils() = delete;
 
-    static boost::filesystem::path GetResourceAbspath(const boost::filesystem::path &path);
-    static std::string LoadFileAsString(const boost::filesystem::path &path);
-    static SDLSurfacePtr LoadImage(const boost::filesystem::path &path);
-    static TTFFontPtr LoadFixedSizeFont(const boost::filesystem::path &path, int pointSize);
+	static fs::path GetResourceAbspath(const fs::path& path);
+	static std::string LoadFileAsString(const fs::path& path);
+	static SDLSurfacePtr LoadImageByPath(const fs::path& path);
+	static TTFFontPtr LoadFixedSizeFont(const fs::path& path, int pointSize);
 };

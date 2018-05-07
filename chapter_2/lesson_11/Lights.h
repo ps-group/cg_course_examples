@@ -3,7 +3,6 @@
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
-#include <boost/noncopyable.hpp>
 #include <set>
 
 class ILightSource
@@ -22,12 +21,14 @@ public:
 
 class CAbstractLightSource
         : public ILightSource
-        , private boost::noncopyable
 {
 public:
     /// @param index - один из GL_LIGHT*
     CAbstractLightSource(unsigned index);
     ~CAbstractLightSource();
+
+	CAbstractLightSource(const CAbstractLightSource&) = delete;
+	CAbstractLightSource& operator=(const CAbstractLightSource&) = delete;
 
     glm::vec4 GetAmbient() const final;
     glm::vec4 GetDiffuse() const final;

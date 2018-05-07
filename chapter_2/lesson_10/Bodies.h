@@ -2,7 +2,6 @@
 
 #include "libchapter2.h"
 #include <GL/glu.h>
-#include <boost/noncopyable.hpp>
 
 enum class CubeFace
 {
@@ -50,11 +49,13 @@ private:
 
 class CSphereQuadric final
         : public ISceneObject
-        , private boost::noncopyable
 {
 public:
     CSphereQuadric();
     ~CSphereQuadric();
+
+	CSphereQuadric(const CSphereQuadric&) = delete;
+	CSphereQuadric& operator=(const CSphereQuadric&) = delete;
 
     void Update(float) final {}
     void Draw()const final;
@@ -68,11 +69,13 @@ private:
 
 class CConoidQuadric final
         : public ISceneObject
-        , private boost::noncopyable
 {
 public:
     CConoidQuadric();
     ~CConoidQuadric();
+
+	CConoidQuadric(const CConoidQuadric&) = delete;
+	CConoidQuadric& operator=(const CConoidQuadric&) = delete;
 
     void Update(float) final {}
     void Draw()const final;

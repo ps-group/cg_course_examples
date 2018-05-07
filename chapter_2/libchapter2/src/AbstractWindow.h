@@ -1,15 +1,17 @@
 #pragma once
 
 #include <memory>
-#include <boost/noncopyable.hpp>
 #include <glm/fwd.hpp>
 #include <SDL2/SDL_events.h>
 
-class CAbstractWindow : private boost::noncopyable
+class CAbstractWindow
 {
 public:
     CAbstractWindow();
     virtual ~CAbstractWindow();
+
+	CAbstractWindow(const CAbstractWindow&) = delete;
+	CAbstractWindow& operator=(const CAbstractWindow&) = delete;
 
     void Show(const std::string &title, glm::ivec2 const& size);
     void DoGameLoop();

@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "Window.h"
 #include "IdentitySphere.h"
-#include <boost/range/algorithm/find_if.hpp>
-#include <boost/range/adaptor/reversed.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace

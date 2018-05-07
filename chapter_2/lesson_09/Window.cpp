@@ -2,8 +2,6 @@
 #include "Window.h"
 #include "Bodies.h"
 #include "Decorators.h"
-#include <boost/range/algorithm/find_if.hpp>
-#include <boost/range/adaptor/reversed.hpp>
 
 namespace
 {

@@ -3,13 +3,15 @@
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 #include <SDL2/SDL_events.h>
-#include <boost/noncopyable.hpp>
 #include <set>
 
-class CCamera : private boost::noncopyable
+class CCamera
 {
 public:
     explicit CCamera(float rotationRadians, float distance);
+
+	CCamera(const CCamera&) = delete;
+	CCamera& operator=(const CCamera&) = delete;
 
     void Update(float deltaSec);
     bool OnKeyDown(const SDL_KeyboardEvent &event);
